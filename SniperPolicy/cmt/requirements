@@ -1,0 +1,113 @@
+package SniperPolicy
+
+macro		cpp 		"g++"
+macro_remove	cppflags	"-ansi -pedantic "
+macro_prepend   cppflags        "-std=c++11 -fPIC "
+macro libraryshr_linkopts       "-fPIC -ldl -Wl,--as-needed "
+
+macro_append libraryshr_linkopts "" \
+      Linux            "-Wl,--no-undefined "
+
+macro_append libraryshr_linkopts   "" \
+	coverage  " $(linkdebugflags) "
+
+macro_append libraryshr_linkopts   "" \
+        slc4-ia32             " -m32" \
+        slc5-ia32             " -m32"
+
+macro application_linkopts  "" \
+      Linux                 "-Wl,--export-dynamic "
+
+macro ppcmd "-I"
+
+macro BINDIR              "$(tag)"\
+    CERN                  "$(tag)"\
+    LOCAL                 "$(tag)"\
+    static              "${CMTCONFIG}"
+
+pattern library_Softlinks \
+    macro_append <package>_libraries        "" \
+         <project>_without_installarea&Unix " <library> "\
+                 Unix&static                ""
+
+pattern library_Llinkopts \
+    macro_append <package>_linkopts                 "" \
+         <project>_with_installarea&Unix     " -l<library> "\
+         <project>_without_installarea&Unix  " -L$(<package>Dir) -l<library> "\
+                                Unix&static  " $(<package>Dir)/lib<library>.a "
+
+pattern library_Lshlibflags \
+    private ; \ 
+    macro <library>_shlibflags "$(libraryshr_linkopts) $(cmt_installarea_linkopts) $(<library>_use_linkopts)" ; \
+    macro_remove <library>_use_linkopts "$(<package>_linkopts)" ; \
+    end_private
+
+pattern library_stamps \
+    macro <package>_stamps "${<PACKAGE>ROOT}/${BINDIR}/<library>.stamp "
+
+pattern linker_library \
+    apply_pattern library_Softlinks   library="<library>" ; \
+    apply_pattern library_Llinkopts   library="<library>" ; \
+    apply_pattern library_Lshlibflags library="<library>" ; \
+    apply_pattern library_stamps      library="<library>" ; \
+    macro <package>_linker_library    "<library>"
+
+pattern install_more_includes \
+    document install_more_includes install_more_includes more=<more> offset=<offset> ; \
+    macro_prepend includes '' <project>_without_installarea ' $(ppcmd)"$(<package>_root)" ' ; \
+    private ; \
+    macro_prepend includes ' $(ppcmd)"$(<package>_root)" ' <project>_without_installarea '' ; \
+    end_private
+
+make_fragment install_more_includes -header=install_more_includes_header
+
+cmtpath_pattern \
+   macro <project>_home "<path>"
+
+cmtpath_pattern_reverse \
+   macro <project>_install_include "" \
+         <project>_without_installarea "" \
+         <project>_with_installarea&Unix " <path>/$(<project>_installarea_prefix)/include "\
+         <project>_with_installarea&WIN32 ' "<path>\$(<project>_installarea_prefix)\include"' ; \
+   include_dirs ${<project>_install_include} 
+
+macro install_command 'python $(SniperPolicy_root)/cmt/fragments/install.py -xCVS -x.svn -x*~ -x*.stamp --log=./install.history '
+macro uninstall_command 'python $(SniperPolicy_root)/cmt/fragments/install.py -u --log=./install.history '
+
+macro remove_command "$(cmt_uninstallarea_command)"
+
+macro library_install_command "python $(SniperPolicy_root)/cmt/fragments/install.py -xCVS -x.svn -x*~ -x*.stamp -s --log=./install.history "
+macro cmt_installarea_command "python $(SniperPolicy_root)/cmt/fragments/install.py -xCVS -x.svn -x*~ -x*.stamp -s --log=./install.history "
+
+# setup python path
+
+cmtpath_pattern \
+    macro <project>_python_path "" \
+          <project>_without_installarea "" \
+          <project>_with_installarea <path>/$(<project>_installarea_prefix)/$(tag)/lib ; \
+    path_remove PYTHONPATH $(<project>_python_path) ; \
+    path_prepend PYTHONPATH $(<project>_python_path) ;
+
+# From Gaudi
+
+#--------------------------------------------
+# Patterns for specifically declaring and installing python files in the
+# current installation area
+#--------------------------------------------
+
+cmtpath_pattern \
+   macro <project>_install_python "" \
+         <project>_without_installarea "" \
+         <project>_with_installarea "<path>/$(<project>_installarea_prefix)/python" ; \
+    path_remove  PYTHONPATH ${<project>_install_python} ; \
+    path_prepend PYTHONPATH ${<project>_install_python}
+
+pattern install_python_modules \
+    macro <package>_install_python "" \
+         <project>_without_installarea&target-unix "$(<package>_root)/python"; \
+    path_remove  PYTHONPATH ${<package>_install_python} ; \
+    path_prepend PYTHONPATH ${<package>_install_python} ; \
+    document install_python <package>_python ;
+
+make_fragment install_python -header=install_python_header
+

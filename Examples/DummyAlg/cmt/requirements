@@ -1,0 +1,7 @@
+package DummyAlg
+
+use SniperKernel   v*
+use RootWriter     v*   SniperSvc
+
+library DummyAlg *.cc
+apply_pattern install_python_modules

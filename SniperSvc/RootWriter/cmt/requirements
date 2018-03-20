@@ -1,0 +1,14 @@
+package RootWriter
+
+use SniperKernel   v*
+use ROOT  v* Externals
+
+use Boost v* Externals
+
+macro_append ROOT_linkopts " -lPyROOT "
+
+apply_pattern install_more_includes more="RootWriter"
+apply_pattern install_python_modules
+
+library RootWriter *.cc ../binding/RootWriterBinding.cc
+apply_pattern linker_library library=RootWriter

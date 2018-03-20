@@ -1,0 +1,57 @@
+#-- start of install_python_header ------
+
+
+installarea = ${CMTINSTALLAREA}
+install_python_dir = $(installarea)
+
+ifneq ($(strip "$(source)"),"")
+src = ../$(source)
+dest = $(install_python_dir)/python
+else
+src = ../python
+dest = $(install_python_dir)
+endif
+
+ifneq ($(strip "$(offset)"),"")
+dest = $(install_python_dir)/python
+endif
+
+${CONSTITUENT} :: ${CONSTITUENT}install
+
+install :: ${CONSTITUENT}install
+
+${CONSTITUENT}install :: $(install_python_dir)
+	@if [ ! "$(installarea)" = "" ] ; then\
+	  echo "installation done"; \
+	fi
+
+$(install_python_dir) ::
+	@if [ "$(installarea)" = "" ] ; then \
+	  echo "Cannot install header files, no installation source specified"; \
+	else \
+	  if [ -d $(src) ] ; then \
+	    echo "Installing files from $(src) to $(dest)" ; \
+	    if [ "$(offset)" = "" ] ; then \
+	      $(install_command) --exclude="*.py?" $(src) $(dest) ; \
+	    else \
+	      $(install_command) --exclude="*.py?" $(src) $(dest) --destname $(offset); \
+	    fi ; \
+	  else \
+	    echo "no source  $(src)"; \
+	  fi; \
+	fi
+
+${CONSTITUENT}clean :: ${CONSTITUENT}uninstall
+
+uninstall :: ${CONSTITUENT}uninstall
+
+${CONSTITUENT}uninstall ::
+	@if test "$(installarea)" = ""; then \
+	  echo "Cannot uninstall header files, no installation source specified"; \
+	else \
+	  echo "Uninstalling files from $(dest)"; \
+	  $(uninstall_command) "$(dest)" ; \
+	fi
+
+
+#-- end of install_python_header ------

@@ -1,0 +1,67 @@
+#-- start of install_more_includes_header ------
+
+#
+#  We want to install all header files that follow the standard convention
+#
+#    ../<more>
+#
+#  This document generator needs no parameterization, since it simply expects
+#  the standard convention.
+#
+
+installarea = ${CMTINSTALLAREA}
+install_include_dir = $(installarea)/include
+
+${CONSTITUENT} :: ${CONSTITUENT}install
+
+install :: ${CONSTITUENT}install
+
+${CONSTITUENT}install :: $(install_include_dir)
+	@if test ! "$(installarea)" = ""; then\
+	  echo "installation done"; \
+	fi
+
+$(install_include_dir) ::
+	@if test "$(installarea)" = ""; then \
+	  echo "Cannot install header files, no installation directory specified"; \
+	else \
+	  if test ! "$(offset)" = "";then \
+	    if test -d ../${offset}; then \
+	       echo "Installing files from offset ../$(offset) to $(install_include_dir)"; \
+	       if test ! -d $(install_include_dir) ; then mkdir -p $(install_include_dir); fi; \
+	       if test ! -d $(install_include_dir)/$(offset); then mkdir -p $(install_include_dir)/$(offset); fi;\
+	       $(install_command) ../$(offset) $(install_include_dir);\
+	    else \
+	       echo "no offset  $(offset) include directory"; \
+	    fi; \
+	  fi; \
+	  if test ! "$(more)" = ""; then \
+	    if test -d ../${more}; then \
+	      echo "Installing files from more ../$(more) to $(install_include_dir)"; \
+	      if test ! -d $(install_include_dir) ; then mkdir -p $(install_include_dir); fi; \
+	      if test ! -d $(install_include_dir)/$(more); then mkdir -p $(install_include_dir)/$(more); fi;\
+	        $(install_command) ../$(more) $(install_include_dir);\
+	    else \
+	      echo "No more $(more) include directory"; \
+	    fi; \
+          fi; \
+	fi
+
+${CONSTITUENT}clean :: ${CONSTITUENT}uninstall
+
+uninstall :: ${CONSTITUENT}uninstall
+
+${CONSTITUENT}uninstall ::
+	@if test "$(installarea)" = ""; then \
+	  echo "Cannot uninstall header files, no installation directory specified"; \
+	else \
+	  echo "Uninstalling files from $(install_include_dir)/$(more)"; \
+	  $(uninstall_command) "$(install_include_dir)/$(more)/*" ; \
+	  if test -f $(install_include_dir)/$(more).cmtref ; then \
+	    echo "Removing $(install_include_dir)/$(more).cmtref"; \
+	    eval rm -f $(install_include_dir)/$(more).cmtref ; \
+	  fi; \
+	fi
+
+
+#-- end of install_more_includes_header ------

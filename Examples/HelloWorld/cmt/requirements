@@ -1,0 +1,6 @@
+package HelloWorld
+
+use SniperKernel   v*
+
+library HelloWorld *.cc
+apply_pattern install_python_modules

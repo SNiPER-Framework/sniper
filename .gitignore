@@ -1,0 +1,9 @@
+.svn
+InstallArea
+setup.*
+cleanup.*
+Makefile
+install.history
+amd64*
+Linux*
+*.pyc
