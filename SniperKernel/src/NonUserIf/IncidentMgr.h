@@ -40,7 +40,8 @@ class IncidentMgr
 
     private :
 
-        bool handle(Incident& incident);
+        /// return the number of handlers for the incident, -1 in case of error
+        int  handle(Incident& incident);
         void regist(const std::string& incident, IIncidentHandler* handler);
         void unregist(const std::string& incident, IIncidentHandler* handler);
 

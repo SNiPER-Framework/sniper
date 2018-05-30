@@ -22,7 +22,7 @@ void export_Sniper_Incident()
 {
     using namespace boost::python;
 
-    bool (Incident::*member_fire)(Task&) = &Incident::fire;
+    int (Incident::*member_fire)(Task&) = &Incident::fire;
 
     class_<Incident>("Incident", init<const std::string&>())
         .def("fire", member_fire)

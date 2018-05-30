@@ -51,19 +51,21 @@ void IncidentMgr::release()
     s_mgrMap.clear();
 }
 
-bool IncidentMgr::handle(Incident& incident)
+int IncidentMgr::handle(Incident& incident)
 {
     LogDebug << "Processing incident " << incident.name() << std::endl;
+    int count = 0;
     IncidentMap::iterator ii = m_map.find(incident.name());
     if ( ii != m_map.end() ) {
         HandlerList& handlers = ii->second;
         for ( auto& ih : handlers ) {
             if ( ! ih->handle(incident) ) {
-                return false;
+                return -1;
             }
         }
+        count = handlers.size();
     }
-    return true;
+    return count;
 }
 
 void IncidentMgr::regist(const std::string& incident, IIncidentHandler* handler)

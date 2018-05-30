@@ -25,14 +25,16 @@ class Incident
 {
     public :
 
-        static bool fire(Task& domain, const std::string& key);
+        /// return the number of handlers for the incident, -1 in case of error
+        static int fire(Task& domain, const std::string& key);
 
         Incident(const std::string& key)
             : m_key(key) {}
 
         virtual ~Incident() {}
 
-        virtual bool fire(Task& domain);
+        /// return the number of handlers for the incident, -1 in case of error
+        virtual int fire(Task& domain);
 
         const std::string& name() { return m_key; }
 

@@ -18,13 +18,13 @@
 #include "SniperKernel/Task.h"
 #include "NonUserIf/IncidentMgr.h"
 
-bool Incident::fire(Task& domain, const std::string& key)
+int Incident::fire(Task& domain, const std::string& key)
 {
     Incident incident(key);
     return incident.fire(domain);
 }
 
-bool Incident::fire(Task& domain)
+int Incident::fire(Task& domain)
 {
     if ( domain.isRoot() ) {
         return IncidentMgr::instance(domain).handle(*this);
