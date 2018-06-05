@@ -5,4 +5,3 @@ use SniperPolicy    v*
 use SniperKernel    v*
 use DataBuffer      v*   SniperUtil
 use HelloWorld      v*   Examples
-use SniperMuster    v*
