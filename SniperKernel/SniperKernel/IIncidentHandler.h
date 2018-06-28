@@ -40,11 +40,13 @@ class IIncidentHandler
 
         void listening();
 
+    protected :
+
+        Task&                   m_domain;
 
     private :
 
         long                    m_id;
-        Task&                   m_domain;
         std::list<std::string>  m_msg;
 };
 
