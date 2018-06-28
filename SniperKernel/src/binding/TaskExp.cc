@@ -36,24 +36,6 @@ struct TaskWrap : Task, bp::wrapper<Task>
     bool default_run() {
         return this->Task::run();
     }
-
-    DLElement* find(const std::string& name) {
-        if ( bp::override f = this->get_override("find") ) return f(name);
-        return Task::find(name);
-    }
-
-    DLElement* default_find(const std::string& name) {
-        return this->Task::find(name);
-    }
-
-    void remove(const std::string& name) {
-        if ( bp::override f = this->get_override("remove" ) ) f(name);
-        return Task::remove(name);
-    }
-
-    void default_remove(const std::string& name) {
-        return this->Task::remove(name);
-    }
 };
 
 void export_Sniper_Task()
@@ -73,8 +55,8 @@ void export_Sniper_Task()
                 return_value_policy<reference_existing_object>())
         .def("createAlg",  &Task::createAlg,
                 return_value_policy<reference_existing_object>())
-        .def("find",       &Task::find, &TaskWrap::default_find,
+        .def("find",       &Task::find,
                 return_value_policy<reference_existing_object>())
-        .def("remove",     &Task::remove, &TaskWrap::default_remove)
+        .def("remove",     &Task::remove)
         ;
 }
