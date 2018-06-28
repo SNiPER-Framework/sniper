@@ -21,14 +21,14 @@
 #include <algorithm>
 
 IIncidentHandler::IIncidentHandler(Task& domain)
-    : m_id(long(domain.getRoot())),
-      m_domain(domain)
+    : m_domain(domain),
+      m_id(long(domain.getRoot()))
 {
 }
 
 IIncidentHandler::IIncidentHandler(Task* domain)
-    : m_id(long(domain->getRoot())),
-      m_domain(*domain)
+    : m_domain(*domain),
+      m_id(long(domain->getRoot()))
 {
 }
 
