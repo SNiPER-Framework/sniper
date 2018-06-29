@@ -18,6 +18,7 @@
 #include "SniperKernel/Task.h"
 #include "SniperKernel/SniperLog.h"
 #include "SniperKernel/SniperException.h"
+#include <fstream>
 #include <dlfcn.h>
 #include <unistd.h>
 #include <time.h>
@@ -30,6 +31,31 @@ void Sniper::setLogLevel(int level)
 {
     LogTest << "Set TopTask/default LogLevel" << std::endl;
     SniperLog::LogLevel = level;
+}
+
+void Sniper::setShowTime()
+{
+    SniperLog::ShowTime = true;
+}
+
+void Sniper::setLogFile(char* fname, bool append)
+{
+    std::ios_base::openmode mode = std::ios_base::out;
+    if ( append ) {
+        mode |= std::ios::app;
+    }
+    else {
+        mode |= std::ios::trunc;
+    }
+
+    LogWarn << "Now using log file: " << fname << std::endl;
+    SniperLog::LogStream = new std::ofstream(fname, mode);
+
+    if ( ! SniperLog::LogStream->good() ) {
+        LogWarn << "Failed to open log file, recover to cout" << std::endl;
+        delete SniperLog::LogStream;
+        SniperLog::LogStream = &std::cout;
+    }
 }
 
 void Sniper::loadDll(char* dll)

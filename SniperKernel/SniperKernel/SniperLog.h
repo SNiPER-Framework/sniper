@@ -31,6 +31,12 @@ namespace SniperLog
     const std::string& scope();
     const std::string& objName();
 
+    //whether show the system time at beginning of each log entry
+    extern bool ShowTime;
+
+    //the stream for log output, std::cout by default
+    extern std::ostream* LogStream;
+
     class LogHelper
     {
         public :
@@ -49,7 +55,7 @@ namespace SniperLog
             template<typename T>
             LogHelper& operator<<(const T& t)
             {
-                if ( m_active ) std::cout << t;
+                if ( m_active ) (*LogStream) << t;
                 return *this;
             }
 
@@ -57,7 +63,6 @@ namespace SniperLog
         private :
 
             const bool m_active;
-            static std::atomic_flag lock;
     };
 
 }

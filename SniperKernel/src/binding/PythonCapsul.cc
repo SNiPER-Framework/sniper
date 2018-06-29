@@ -17,11 +17,13 @@
 #include "SniperKernel/Task.h"
 #include "SniperKernel/Sniper.h"
 #include "SniperKernel/SniperContext.h"
+#include "SniperKernel/SniperLog.h"
 #include "NonUserIf/PythonCapsul.h"
 #include "NonUserIf/IncidentMgr.h"
 #include "NonUserIf/WhiteBoard.h"
 #include "NonUserIf/DLEFactory.h"
 #include <iostream>
+#include <fstream>
 
 void Sniper::python_capsul()
 {
@@ -46,6 +48,9 @@ void Sniper::python_capsul()
             sniper_context.sys_info();
             sniper_context.summary();
             std::cout << std::endl;
+            if ( dynamic_cast<std::ofstream*>(SniperLog::LogStream) ) {
+                delete SniperLog::LogStream;
+            }
         }
     } aCapsul;
 }

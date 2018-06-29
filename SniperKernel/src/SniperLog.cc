@@ -17,7 +17,9 @@
 #include "SniperKernel/SniperLog.h"
 
 namespace SniperLog{
-    int LogLevel = 3;
+    int           LogLevel  = 3;
+    bool          ShowTime  = false;
+    std::ostream* LogStream = &std::cout;
 }
 
 int SniperLog::logLevel()
@@ -39,8 +41,6 @@ const std::string& SniperLog::objName()
 
 using SniperLog::LogHelper;
 
-std::atomic_flag LogHelper::lock = ATOMIC_FLAG_INIT;
-
 static const char* _LogHelper_flags[] = {
     "  TEST: ",
     0,
@@ -51,6 +51,9 @@ static const char* _LogHelper_flags[] = {
     " FATAL: "
 };
 
+static std::atomic_flag _LogHelper_lock_log = ATOMIC_FLAG_INIT;
+static std::atomic_flag _LogHelper_lock_ctime = ATOMIC_FLAG_INIT;
+
 LogHelper::LogHelper(int flag,
                      int level,
                      const std::string& scope,
@@ -60,23 +63,40 @@ LogHelper::LogHelper(int flag,
     : m_active(flag >= level)
 {
     if ( m_active ) {
-        std::string prefix = scope;
+        int sKeep = 30;
+        std::string prefix;
+
+        if ( ShowTime ) {
+            sKeep = 56;
+            prefix.reserve(63);
+            time_t t = time(0);
+            while(_LogHelper_lock_ctime.test_and_set());
+            prefix = ctime(&t);  // ctime() is not thread safe
+            _LogHelper_lock_ctime.clear();
+            prefix.replace(24, 1, "  ");
+        }
+        else {
+            prefix.reserve(35);
+        }
+
+        prefix += scope;
         prefix += objName;
         prefix += '.';
         prefix += func;
-        while(lock.test_and_set());
-        std::cout << std::setiosflags(std::ios::left) << std::setw(30)
-                  << prefix << _LogHelper_flags[flag];
+
+        while(_LogHelper_lock_log.test_and_set());
+        (*LogStream) << std::setiosflags(std::ios::left) << std::setw(sKeep)
+            << prefix << _LogHelper_flags[flag];
     }
 }
 
 LogHelper::~LogHelper()
 {
-    if ( m_active ) lock.clear();
+    if ( m_active ) _LogHelper_lock_log.clear();
 }
 
 LogHelper& LogHelper::operator<<(std::ostream& (*_f)(std::ostream&))
 {
-    if ( m_active ) _f(std::cout);
+    if ( m_active ) _f(*LogStream);
     return *this;
 }

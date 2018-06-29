@@ -23,5 +23,7 @@ void export_Sniper_Sniper()
     using namespace boost::python;
 
     def("setLogLevel", &Sniper::setLogLevel);
+    def("setShowTime", &Sniper::setShowTime);
+    def("setLogFile",  &Sniper::setLogFile);
     def("loadDll",     &Sniper::loadDll);
 }
