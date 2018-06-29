@@ -106,10 +106,9 @@ bool Task::finalize()
     if ( ! m_algs.finalize() ) stat = false;
     if ( ! m_svcs.finalize() ) stat = false;
 
-    if ( stat ) {
-        LogInfo << "finalized" << std::endl;
-    }
-    else {
+    LogInfo << "events processed " << m_done << std::endl;
+
+    if ( ! stat ) {
         m_snoopy.setErr();
     }
 

@@ -145,7 +145,11 @@ bool TaskWatchDog::finalize()
 
     SNOOPY_PASS_AWAY(RunState::Finalized);
     //SNOOPY_CHECK_ERR();
-    if ( ! isErr() ) {
+    if ( isErr() ) {
+        LogWarn << "try to finalize within error" << std::endl;
+        m_task.finalize();
+    }
+    else {
         SNOOPY_WARN_MSG(RunState::Finalized);
     }
     return false;
