@@ -53,7 +53,7 @@ void IncidentMgr::release()
 
 int IncidentMgr::handle(Incident& incident)
 {
-    LogDebug << "Processing incident " << incident.name() << std::endl;
+    //LogTest << "Processing incident " << incident.name() << std::endl;
     int count = 0;
     IncidentMap::iterator ii = m_map.find(incident.name());
     if ( ii != m_map.end() ) {
@@ -91,7 +91,6 @@ void IncidentMgr::unregist(const std::string& incident, IIncidentHandler* handle
 IncidentMgr::IncidentMgr()
     : m_name("IncidentMgr")
 {
-    LogTest << "Make IncidentMgr" << std::endl;
 }
 
 IncidentMgr::~IncidentMgr()

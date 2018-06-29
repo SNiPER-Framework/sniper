@@ -18,6 +18,7 @@
 
 namespace SniperLog{
     int           LogLevel  = 3;
+    int           Colorful  = 9;
     bool          ShowTime  = false;
     std::ostream* LogStream = &std::cout;
 }
@@ -41,6 +42,16 @@ const std::string& SniperLog::objName()
 
 using SniperLog::LogHelper;
 
+static const char* _LogHelper_colors[] = {
+    "",
+    0,
+    "\033[36m",         // DEBUG: Cyan
+    "\033[32m",         // INFO:  Green
+    "\033[33m",         // WARN:  Yellow
+    "\033[31m",         // ERROR: Red
+    "\033[1m\033[31m"   // FATAL: Bold Red
+};
+
 static const char* _LogHelper_flags[] = {
     "  TEST: ",
     0,
@@ -53,6 +64,8 @@ static const char* _LogHelper_flags[] = {
 
 static std::atomic_flag _LogHelper_lock_log = ATOMIC_FLAG_INIT;
 static std::atomic_flag _LogHelper_lock_ctime = ATOMIC_FLAG_INIT;
+
+static bool _LogHelper_color_on = false;
 
 LogHelper::LogHelper(int flag,
                      int level,
@@ -85,6 +98,9 @@ LogHelper::LogHelper(int flag,
         prefix += func;
 
         while(_LogHelper_lock_log.test_and_set());
+        if ( (_LogHelper_color_on = (flag >= Colorful)) ) {
+            (*LogStream) << _LogHelper_colors[flag];
+        }
         (*LogStream) << std::setiosflags(std::ios::left) << std::setw(sKeep)
             << prefix << _LogHelper_flags[flag];
     }
@@ -92,7 +108,12 @@ LogHelper::LogHelper(int flag,
 
 LogHelper::~LogHelper()
 {
-    if ( m_active ) _LogHelper_lock_log.clear();
+    if ( m_active ) {
+        if ( _LogHelper_color_on ) {
+            (*LogStream) << "\033[0m";
+        }
+        _LogHelper_lock_log.clear();
+    }
 }
 
 LogHelper& LogHelper::operator<<(std::ostream& (*_f)(std::ostream&))

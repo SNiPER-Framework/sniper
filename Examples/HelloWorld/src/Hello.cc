@@ -63,6 +63,12 @@ HelloAlg::execute()
     ++m_count;
     LogInfo << "Hello world: count: " << m_count << std::endl;
 
+    LogDebug << "debug message" << std::endl;
+    LogInfo  << "info message" << std::endl;
+    LogWarn  << "warn message" << std::endl;
+    LogError << "error message" << std::endl;
+    LogFatal << "fatal message" << std::endl;
+
     return true;
 }
 

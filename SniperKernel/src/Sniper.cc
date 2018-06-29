@@ -24,18 +24,24 @@
 #include <time.h>
 
 namespace SniperLog {
-    extern int LogLevel;
+    extern int  LogLevel;
+    extern int  Colorful;
+    extern bool ShowTime;
 }
 
 void Sniper::setLogLevel(int level)
 {
-    LogTest << "Set TopTask/default LogLevel" << std::endl;
     SniperLog::LogLevel = level;
 }
 
-void Sniper::setShowTime()
+void Sniper::setColorful(int level)
 {
-    SniperLog::ShowTime = true;
+    SniperLog::Colorful = level;
+}
+
+void Sniper::setShowTime(bool flag)
+{
+    SniperLog::ShowTime = flag;
 }
 
 void Sniper::setLogFile(char* fname, bool append)

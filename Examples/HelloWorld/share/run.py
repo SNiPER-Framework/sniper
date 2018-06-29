@@ -8,9 +8,12 @@ import Sniper
 
 if __name__ == "__main__":
 
+    Sniper.setLogLevel(2)
+    Sniper.setColorful(2)
+    #Sniper.setShowTime(True)
+
     task = Sniper.Task("task")
     task.setEvtMax(1)
-    task.setLogLevel(2)
 
     import HelloWorld
 

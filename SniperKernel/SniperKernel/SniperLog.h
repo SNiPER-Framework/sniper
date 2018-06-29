@@ -31,9 +31,6 @@ namespace SniperLog
     const std::string& scope();
     const std::string& objName();
 
-    //whether show the system time at beginning of each log entry
-    extern bool ShowTime;
-
     //the stream for log output, std::cout by default
     extern std::ostream* LogStream;
 

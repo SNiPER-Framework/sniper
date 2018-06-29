@@ -22,7 +22,8 @@
 namespace Sniper {
 
     void setLogLevel(int level);
-    void setShowTime();
+    void setColorful(int level);
+    void setShowTime(bool flag);
     void setLogFile(char* fname, bool append);
 
     void loadDll(char* dll);
