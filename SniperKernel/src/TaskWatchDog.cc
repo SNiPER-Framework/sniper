@@ -131,6 +131,7 @@ bool TaskWatchDog::stop()
     }
 
     SNOOPY_PASS_AWAY(RunState::Stopped);
+    SNOOPY_PASS_AWAY(RunState::Finalized);
     SNOOPY_CHECK_ERR();
     SNOOPY_WARN_MSG(RunState::Stopped);
     return false;
@@ -189,6 +190,9 @@ bool TaskWatchDog::run_once()
     }
 
     SNOOPY_PASS_AWAY(RunState::Running);
+    if ( m_stat == RunState::Stopped ) {
+        return false;
+    }
     SNOOPY_CHECK_ERR();
     SNOOPY_WARN_MSG(RunState::Running);
     return false;
