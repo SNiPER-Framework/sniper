@@ -65,8 +65,6 @@ static const char* _LogHelper_flags[] = {
 static std::atomic_flag _LogHelper_lock_log = ATOMIC_FLAG_INIT;
 static std::atomic_flag _LogHelper_lock_ctime = ATOMIC_FLAG_INIT;
 
-static bool _LogHelper_color_on = false;
-
 LogHelper::LogHelper(int flag,
                      int level,
                      const std::string& scope,
@@ -76,20 +74,20 @@ LogHelper::LogHelper(int flag,
     : m_active(flag >= level)
 {
     if ( m_active ) {
-        int sKeep = 30;
         std::string prefix;
-
+        prefix.reserve(71);
+        int plen = 0;
+        if ( (m_colored = (flag >= Colorful)) ) {
+            prefix = _LogHelper_colors[flag];
+            plen = prefix.length();
+        }
         if ( ShowTime ) {
-            sKeep = 56;
-            prefix.reserve(63);
             time_t t = time(0);
             while(_LogHelper_lock_ctime.test_and_set());
-            prefix = ctime(&t);  // ctime() is not thread safe
+            prefix += ctime(&t);  // ctime() is not thread safe
             _LogHelper_lock_ctime.clear();
-            prefix.replace(24, 1, "  ");
-        }
-        else {
-            prefix.reserve(35);
+            plen = prefix.length() - 1;
+            prefix.replace(plen, 1, "  ");
         }
 
         prefix += scope;
@@ -97,19 +95,22 @@ LogHelper::LogHelper(int flag,
         prefix += '.';
         prefix += func;
 
-        while(_LogHelper_lock_log.test_and_set());
-        if ( (_LogHelper_color_on = (flag >= Colorful)) ) {
-            (*LogStream) << _LogHelper_colors[flag];
+        plen -= prefix.length() - 30;
+        if ( plen > 0 ) {
+            prefix.append(plen, ' ');
         }
-        (*LogStream) << std::setiosflags(std::ios::left) << std::setw(sKeep)
-            << prefix << _LogHelper_flags[flag];
+
+        prefix += _LogHelper_flags[flag];
+
+        while(_LogHelper_lock_log.test_and_set());
+        (*LogStream) << prefix;
     }
 }
 
 LogHelper::~LogHelper()
 {
     if ( m_active ) {
-        if ( _LogHelper_color_on ) {
+        if ( m_colored ) {
             (*LogStream) << "\033[0m";
         }
         _LogHelper_lock_log.clear();

@@ -60,6 +60,7 @@ namespace SniperLog
         private :
 
             const bool m_active;
+            bool       m_colored;
     };
 
 }
