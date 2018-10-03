@@ -147,3 +147,8 @@ set(modlist)
 foreach(dir ${subdirs})
   add_subdirectory(${dir})
 endforeach()
+
+#
+# install
+file(GLOB setup setup.sh)
+install(FILES ${setup} DESTINATION .)
