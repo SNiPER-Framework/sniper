@@ -139,9 +139,12 @@ if(DEBUG)
 endif()
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed -Wl,--no-undefined")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--export-dynamic")
+set(datadir "share/sniper")
 
 #
 # build targets
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cmt/project.cmt "project sniper\n\nuse ExternalInterface\n\nbuild_strategy with_installarea\nsetup_strategy no_root\nsetup_strategy no_config\nstructure_strategy without_version_directory\n")
+file(COPY cmt/version.cmt DESTINATION cmt)
 set(subdirs SniperKernel SniperUtil SniperSvc Examples)
 set(modlist)
 foreach(dir ${subdirs})
@@ -150,5 +153,6 @@ endforeach()
 
 #
 # install
-file(GLOB setup setup.sh)
-install(FILES ${setup} DESTINATION .)
+install(FILES setup.sh DESTINATION .)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${datadir})
+install(DIRECTORY SniperPolicy/cmt/fragments DESTINATION ${datadir}/SniperKernel/cmt)
