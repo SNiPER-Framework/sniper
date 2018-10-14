@@ -17,7 +17,7 @@ string(TOLOWER "${PROJECT_NAME}" ${PROJECT_NAME}_TOLOW)
 set(${PROJECT_NAME}_VERSION_MAJOR 1)
 set(${PROJECT_NAME}_VERSION_MINOR 1)
 set(${PROJECT_NAME}_VERSION_PATCH )
-set(${PROJECT_NAME}_VERSION 
+string(REGEX REPLACE "\\.+$" "" ${PROJECT_NAME}_VERSION 
   ${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH})
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
@@ -140,6 +140,9 @@ endif()
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed -Wl,--no-undefined")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--export-dynamic")
 set(datadir "share/sniper")
+string(TIMESTAMP CONFIG_DATE)
+set(CONFIG_DATE ${CONFIG_DATE} CACHE INTERNAL "Date when build was made")
+set(CONFIG_USER $ENV{USER} CACHE INTERNAL "Name who did the build")
 
 #
 # build targets
@@ -150,9 +153,12 @@ set(modlist)
 foreach(dir ${subdirs})
   add_subdirectory(${dir})
 endforeach()
+# config is after subdirs since we need filename of SniperKernel library
+configure_file("${PROJECT_SOURCE_DIR}/${${PROJECT_NAME}_TOLOW}-config.in" "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-config" @ONLY)
 
 #
 # install
 install(FILES setup.sh DESTINATION .)
+install(PROGRAMS "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-config" DESTINATION bin)
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${datadir})
 install(DIRECTORY SniperPolicy/cmt/fragments DESTINATION ${datadir}/SniperKernel/cmt)
