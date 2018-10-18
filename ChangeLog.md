@@ -1,4 +1,4 @@
-#Change Log
+# Change Log
 
 This is the ChangeLog for the SNiPER project.
 
