@@ -1,0 +1,102 @@
+#!/bin/sh
+
+if [ "x$use_relative_path" != "xyes" ]; then
+  prefix="@CMAKE_INSTALL_PREFIX@"
+  exec_prefix="$prefix/bin"
+  includedir="$prefix/include"
+  libdir="$prefix/lib"
+else
+  prefix=`echo $0 | sed -e 's|/[^/]*$||; s|^[^/]*$|.|'`
+  exec_prefix=$prefix
+  includedir=$prefix/../include
+  libdir=$prefix/../lib
+fi
+
+usage()
+{
+    cat <<EOF
+Usage: sniper-config [OPTION]
+
+Available values for OPTION include:
+
+  --help             display this help and exit
+  --prefix           install prefix
+  --version          version information
+  --features         list of all supported features
+  --build            show build id
+  --incdir           directory with header files
+  --cflags           compile flags and header paths
+  --libdir           directory with library files
+  --libs             link flags and libraries
+
+EOF
+
+    exit $1
+}
+
+if test $# -eq 0; then
+    echo "Usage: sniper-config [--help] [--prefix] [--version] [--features] [--build] [--incdir] [--cflags] [--libdir] [--libs]"
+    exit 1;
+fi
+
+while test $# -gt 0; do
+    case "$1" in
+    # this deals with options in the style
+    # --option=value and extracts the value part
+    # [not currently used]
+    -*=*) value=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+    *) value= ;;
+    esac
+
+    case "$1" in
+
+    --help)
+        usage 0
+        ;;
+
+    --prefix)
+        echo "$prefix"
+        ;;
+
+    --version)
+        echo "@SNiPER_VERSION@"
+        exit 0
+        ;;
+
+    --feature|--features)
+        for feature in RootWriter ""; do
+            test -n "$feature" && echo "$feature"
+        done
+        ;;
+
+    --build)
+        echo "@PROJECT_NAME@ v@SNiPER_VERSION@ built by @CONFIG_USER@ at @CONFIG_DATE@"
+        exit 0
+        ;;
+
+    --incdir)
+        echo "$includedir"
+        ;;
+
+    --cflags)
+        echo "-std=c++11 -fPIC -I$includedir -I@Boost_INCLUDE_DIR@ -I@PYTHON_INCLUDE_DIR@"
+        ;;
+
+    --libdir)
+        echo "$libdir"
+        ;;
+
+    --libs)
+        echo "-fPIC -Wl,--as-needed -Wl,--no-undefined $libdir/@SniperKernel_LIB_NAME@ @Boost_PYTHON_LIBRARY@ @PYTHON_LIBRARY@"
+        ;;
+
+    *)
+        echo "unknown option: $1"
+        usage 1
+        ;;
+    esac
+    shift
+done
+
+exit 0
+

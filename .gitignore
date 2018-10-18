@@ -7,3 +7,5 @@ install.history
 amd64*
 Linux*
 *.pyc
+build
+install
