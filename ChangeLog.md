@@ -12,6 +12,7 @@ This is the ChangeLog for the SNiPER project.
     - Optimization of SniperLog. Now we can print colorful logs, add timestamps for each line, and set a log file instead of cout.
 
 - New features
+    - Add CMake build support. This is contributed by Vladimir Belov <belov@itep.ru>.
 
 ## v1.1
 
