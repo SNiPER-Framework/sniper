@@ -10,4 +10,4 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cmt/requirements "package DataBuffer\n\nu
 
 # install
 install(FILES DataBuffer/DataBuffer.h DESTINATION include/DataBuffer)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${datadir}/DataBuffer)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${datadir}/SniperUtil/DataBuffer)

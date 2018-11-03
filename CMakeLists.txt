@@ -148,7 +148,7 @@ set(CONFIG_USER $ENV{USER} CACHE INTERNAL "Name who did the build")
 # build targets
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cmt/project.cmt "project sniper\n\nuse ExternalInterface\n\nbuild_strategy with_installarea\nsetup_strategy no_root\nsetup_strategy no_config\nstructure_strategy without_version_directory\n")
 file(COPY cmt/version.cmt DESTINATION cmt)
-set(subdirs SniperKernel SniperUtil SniperSvc Examples)
+set(subdirs SniperKernel SniperPolicy SniperUtil SniperSvc Examples)
 set(modlist)
 foreach(dir ${subdirs})
   add_subdirectory(${dir})
@@ -161,4 +161,3 @@ configure_file("${PROJECT_SOURCE_DIR}/${${PROJECT_NAME}_TOLOW}-config.in" "${PRO
 install(FILES setup.sh DESTINATION .)
 install(PROGRAMS "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-config" DESTINATION bin)
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${datadir})
-install(DIRECTORY SniperPolicy/cmt/fragments DESTINATION ${datadir}/SniperKernel/cmt)
