@@ -25,6 +25,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 option(DEBUG      "Turn debug options on" OFF)
 set(CMT_SEARCH_DIRS "Externals" CACHE STRING "Set a path for packages location for CMT" )
 option(USE_SIMPLE_DIRS "Use simplified directory structure" OFF)
+option(BUILD_CMT_PROJECT "Create a project to use sniper in CMT system" ON)
 
 # Also https://cmake.org/Wiki/CMake:How_To_Write_Platform_Checks
 include(CheckCXXCompilerFlag)
@@ -262,8 +263,6 @@ set(CONFIG_USER $ENV{USER} CACHE INTERNAL "Name who did the build")
 
 #
 # build targets
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cmt/project.cmt "project sniper\n\nuse ExternalInterface\n\nbuild_strategy with_installarea\nsetup_strategy no_root\nsetup_strategy no_config\nstructure_strategy without_version_directory\n")
-file(COPY cmt/version.cmt DESTINATION cmt)
 set(subdirs SniperKernel SniperPolicy SniperUtil SniperSvc Examples)
 set(modlist)
 foreach(dir ${subdirs})
@@ -283,6 +282,10 @@ export LD_LIBRARY_PATH=\"\$basedir/${CMAKE_INSTALL_LIBDIR}\${LD_LIBRARY_PATH:+:\
 ")
 configure_file("${PROJECT_SOURCE_DIR}/${${PROJECT_NAME}_TOLOW}-config.in" "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-config" @ONLY)
 configure_file("${PROJECT_SOURCE_DIR}/${${PROJECT_NAME}_TOLOW}-modulefile.in" "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-modulefile" @ONLY)
+if(BUILD_CMT_PROJECT)
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cmt/project.cmt "project sniper\n\nuse ExternalInterface\n\nbuild_strategy with_installarea\nsetup_strategy no_root\nsetup_strategy no_config\nstructure_strategy without_version_directory\n")
+  file(COPY cmt/version.cmt DESTINATION cmt)
+endif()
 
 #
 # install
@@ -293,4 +296,6 @@ else()
 endif()
 install(PROGRAMS "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-config" DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-modulefile" DESTINATION ${CMAKE_INSTALL_DATADIR}/modulefiles RENAME ${${PROJECT_NAME}_TOLOW})
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${CMAKE_INSTALL_CMTPROJECTDIR})
+if(BUILD_CMT_PROJECT)
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${CMAKE_INSTALL_CMTPROJECTDIR})
+endif()

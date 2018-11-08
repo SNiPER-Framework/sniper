@@ -21,8 +21,9 @@ target_link_libraries(RootWriter SniperKernel ${ROOT_Core_LIBRARY} ${ROOT_RIO_LI
 set(file)
 get_target_property(file RootWriter LOCATION)
 get_filename_component(file ${file} NAME)
-file(COPY cmt/version.cmt DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/cmt)
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cmt/requirements "
+if(BUILD_CMT_PROJECT)
+  file(COPY cmt/version.cmt DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/cmt)
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cmt/requirements "
 package RootWriter
 
 use SniperKernel v*
@@ -33,11 +34,14 @@ include_dirs \"${ROOT_INCLUDE_DIRS}\"
 macro_append RootWriter_cppflags \" -Wno-long-long \"
 macro_append RootWriter_linkopts \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${file} ${ROOT_Tree_LIBRARY} ${ROOT_Core_LIBRARY} \"
 ")
+endif()
 
 # install
 install(TARGETS RootWriter DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES RootWriter/RootWriter.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/RootWriter)
 install(DIRECTORY python/RootWriter DESTINATION ${CMAKE_INSTALL_PYTHONDIR})
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${CMAKE_INSTALL_CMTPROJECTDIR}/SniperSvc/RootWriter)
+if(BUILD_CMT_PROJECT)
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${CMAKE_INSTALL_CMTPROJECTDIR}/SniperSvc/RootWriter)
+endif()
 
 endif()

@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 # Define project
 #project(SniperPolicy)
 
+if(BUILD_CMT_PROJECT)
 #
 # build
 file(COPY cmt/version.cmt DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/cmt)
@@ -31,3 +32,5 @@ unset(_offset)
 # install
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${CMAKE_INSTALL_CMTPROJECTDIR}/SniperPolicy)
 install(DIRECTORY cmt/fragments DESTINATION ${CMAKE_INSTALL_CMTPROJECTDIR}/SniperPolicy/cmt)
+
+endif()
