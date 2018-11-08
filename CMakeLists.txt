@@ -272,7 +272,6 @@ endforeach()
 # config is after subdirs since we need filename of SniperKernel library
 get_filename_component(_CMTPROJECTPATH "${CMAKE_INSTALL_CMTPROJECTDIR}" DIRECTORY)
 # actually CMT expects _parent_ directory of CMTPROJECTDIR in CMTPROJECTPATH
-configure_file("${PROJECT_SOURCE_DIR}/${${PROJECT_NAME}_TOLOW}-config.in" "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-config" @ONLY)
 file(WRITE ${PROJECT_BINARY_DIR}/setup.sh "#!/bin/bash
 
 filename=`readlink -f \"\${BASH_SOURCE[0]}\"`
@@ -282,6 +281,8 @@ export CMTPROJECTPATH=\"\$basedir/${_CMTPROJECTPATH}\${CMTPROJECTPATH:+:\${CMTPR
 export PYTHONPATH=\"\$basedir/${CMAKE_INSTALL_PYTHONDIR}\${PYTHONPATH:+:\${PYTHONPATH}}\"
 export LD_LIBRARY_PATH=\"\$basedir/${CMAKE_INSTALL_LIBDIR}\${LD_LIBRARY_PATH:+:\${LD_LIBRARY_PATH}}\"
 ")
+configure_file("${PROJECT_SOURCE_DIR}/${${PROJECT_NAME}_TOLOW}-config.in" "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-config" @ONLY)
+configure_file("${PROJECT_SOURCE_DIR}/${${PROJECT_NAME}_TOLOW}-modulefile.in" "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-modulefile" @ONLY)
 
 #
 # install
@@ -291,4 +292,5 @@ else()
   install(FILES ${PROJECT_BINARY_DIR}/setup.sh DESTINATION ${CMAKE_INSTALL_DATADIR})
 endif()
 install(PROGRAMS "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-config" DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-modulefile" DESTINATION ${CMAKE_INSTALL_DATADIR}/modulefiles RENAME ${${PROJECT_NAME}_TOLOW})
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${CMAKE_INSTALL_CMTPROJECTDIR})
