@@ -24,6 +24,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 # ... and configuration options
 option(DEBUG      "Turn debug options on" OFF)
 set(CMT_SEARCH_DIRS "Externals" CACHE STRING "Set a path for packages location for CMT" )
+option(USE_SIMPLE_DIRS "Use simplified directory structure" OFF)
 
 # Also https://cmake.org/Wiki/CMake:How_To_Write_Platform_Checks
 include(CheckCXXCompilerFlag)
@@ -178,6 +179,45 @@ if(GIT_FOUND)
 
 endif()
 
+# Let's define installation directories
+if(USE_SIMPLE_DIRS)
+  set(CMAKE_INSTALL_BINDIR "bin")
+  set(CMAKE_INSTALL_LIBDIR "lib")
+  set(CMAKE_INSTALL_INCLUDEDIR "include")
+  set(CMAKE_INSTALL_PYTHONDIR "python")
+  set(CMAKE_INSTALL_DATADIR "share/${${PROJECT_NAME}_TOLOW}")
+  set(CMAKE_INSTALL_CMTPROJECTDIR ${CMAKE_INSTALL_DATADIR})
+else()
+  include(GNUInstallDirs)
+  if(NOT CMAKE_CACHEFILE_DIR)
+    # we don't have cache, let's override defaults
+    #set(CMAKE_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}/${${PROJECT_NAME}_TOLOW}" CACHE PATH "C/C++ header files (include/PROJECT_NAME)" FORCE)
+    set(CMAKE_INSTALL_DOCDIR "${CMAKE_INSTALL_DATAROOTDIR}/doc/${${PROJECT_NAME}_TOLOW}-${${PROJECT_NAME}_VERSION}" CACHE PATH "documentation root (DATAROOTDIR/doc/PROJECT_NAME)" FORCE)
+    set(CMAKE_INSTALL_DATADIR "${CMAKE_INSTALL_DATAROOTDIR}/${${PROJECT_NAME}_TOLOW}" CACHE PATH "read-only architecture-independent data (DATAROOTDIR)" FORCE)
+  endif()
+  if(WIN32)
+    set(python_site "Lib/site-packages")
+  else()
+    if(PYTHON_EXECUTABLE)
+      execute_process(
+        COMMAND ${PYTHON_EXECUTABLE} "-c" "import sys; print \"python%d.%d\" % (sys.version_info[0:2]);"
+        OUTPUT_VARIABLE python
+        ERROR_QUIET
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    else()
+      set(python "python")
+    endif()
+    set(python_site "${CMAKE_INSTALL_LIBDIR}/${python}/site-packages")
+  endif()
+  if(NOT CMAKE_INSTALL_PYTHONDIR)
+    set(CMAKE_INSTALL_PYTHONDIR "${python_site}" CACHE PATH "python modules (LIBDIR/pythonX.Y/site-packages)")
+  endif()
+  if(NOT CMAKE_INSTALL_CMTPROJECTDIR)
+    set(CMAKE_INSTALL_CMTPROJECTDIR "${CMAKE_INSTALL_DATADIR}/cmt-project/${${PROJECT_NAME}_TOLOW}" CACHE PATH "CMT project for devel (DATADIR/cmt-project/PROJECT_NAME)" FORCE)
+  endif()
+endif()
+cmake_print_variables(CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR CMAKE_INSTALL_DATADIR CMAKE_INSTALL_PYTHONDIR CMAKE_INSTALL_CMTPROJECTDIR)
+
 #
 #add_definitions(-DHAVE_CONFIG_H)
 include_directories(${Boost_INCLUDE_DIRS})
@@ -191,14 +231,14 @@ if(ROOT_FOUND)
 endif()
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   add_definitions(-DLINUX)
-  set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib")
+  set(CMAKE_INSTALL_RPATH "\$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-new-dtags")
 endif()
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   # APPLE is in around
   add_definitions(-DDARWIN)
-  set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
+  set(CMAKE_INSTALL_RPATH "@loader_path/../${CMAKE_INSTALL_LIBDIR}")
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
   if(POLICY CMP0042)
     cmake_policy(SET CMP0042 NEW) # MACOSX_RPATH
@@ -216,7 +256,6 @@ if(DEBUG)
 endif()
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed -Wl,--no-undefined")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--export-dynamic")
-set(datadir "share/sniper")
 string(TIMESTAMP CONFIG_DATE)
 set(CONFIG_DATE ${CONFIG_DATE} CACHE INTERNAL "Date when build was made")
 set(CONFIG_USER $ENV{USER} CACHE INTERNAL "Name who did the build")
@@ -231,10 +270,25 @@ foreach(dir ${subdirs})
   add_subdirectory(${dir})
 endforeach()
 # config is after subdirs since we need filename of SniperKernel library
+get_filename_component(_CMTPROJECTPATH "${CMAKE_INSTALL_CMTPROJECTDIR}" DIRECTORY)
+# actually CMT expects _parent_ directory of CMTPROJECTDIR in CMTPROJECTPATH
 configure_file("${PROJECT_SOURCE_DIR}/${${PROJECT_NAME}_TOLOW}-config.in" "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-config" @ONLY)
+file(WRITE ${PROJECT_BINARY_DIR}/setup.sh "#!/bin/bash
+
+filename=`readlink -f \"\${BASH_SOURCE[0]}\"`
+basedir=`dirname \"\${filename}\"`
+
+export CMTPROJECTPATH=\"\$basedir/${_CMTPROJECTPATH}\${CMTPROJECTPATH:+:\${CMTPROJECTPATH}}\"
+export PYTHONPATH=\"\$basedir/${CMAKE_INSTALL_PYTHONDIR}\${PYTHONPATH:+:\${PYTHONPATH}}\"
+export LD_LIBRARY_PATH=\"\$basedir/${CMAKE_INSTALL_LIBDIR}\${LD_LIBRARY_PATH:+:\${LD_LIBRARY_PATH}}\"
+")
 
 #
 # install
-install(FILES setup.sh DESTINATION .)
-install(PROGRAMS "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-config" DESTINATION bin)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${datadir})
+if(USE_SIMPLE_DIRS)
+  install(FILES ${PROJECT_BINARY_DIR}/setup.sh DESTINATION .)
+else()
+  install(FILES ${PROJECT_BINARY_DIR}/setup.sh DESTINATION ${CMAKE_INSTALL_DATADIR})
+endif()
+install(PROGRAMS "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-config" DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${CMAKE_INSTALL_CMTPROJECTDIR})

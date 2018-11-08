@@ -28,15 +28,16 @@ use SniperPolicy *
 include_path none
 
 #macro SniperKernel_cppflags \"-std=c++11 -fPIC \"
-macro SniperKernel_linkopts \" -Wl,--as-needed -Wl,--no-undefined ${CMAKE_INSTALL_PREFIX}/lib/${file} ${Boost_PYTHON_LIBRARY} ${PYTHON_LIBRARIES} \"
+macro SniperKernel_linkopts \" -Wl,--as-needed -Wl,--no-undefined ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${file} ${Boost_PYTHON_LIBRARY} ${PYTHON_LIBRARIES} \"
 
 ")
 unset(file)
 
 # install
-install(TARGETS SniperKernel SniperPython DESTINATION lib)
+install(TARGETS SniperKernel DESTINATION ${CMAKE_INSTALL_LIBDIR})
 file(GLOB headers SniperKernel/*.h)
-install(FILES ${headers} DESTINATION include/SniperKernel)
-file(GLOB python python/Sniper/*.py)
-install(FILES ${python} DESTINATION python/Sniper)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${datadir}/SniperKernel)
+install(FILES ${headers} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SniperKernel)
+install(TARGETS SniperPython DESTINATION ${CMAKE_INSTALL_PYTHONDIR}/Sniper)
+install(DIRECTORY python/Sniper DESTINATION ${CMAKE_INSTALL_PYTHONDIR})
+install(FILES share/HelloTask.py DESTINATION ${CMAKE_INSTALL_DATADIR}/Examples RENAME run-HelloTask.py)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${CMAKE_INSTALL_CMTPROJECTDIR}/SniperKernel)

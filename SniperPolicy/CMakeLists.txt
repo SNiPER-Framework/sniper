@@ -13,12 +13,12 @@ macro_remove    cppflags        \"-ansi -pedantic \"
 macro_prepend   cppflags        \"-std=c++11 -fPIC \"
 
 include_path none
-include_dirs \"${CMAKE_INSTALL_PREFIX}/include\"
+include_dirs \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}\"
 include_dirs \"${Boost_INCLUDE_DIR}\"
 include_dirs \"${PYTHON_INCLUDE_DIR}\"
 
-path_prepend PYTHONPATH \"${CMAKE_INSTALL_PREFIX}/python:${CMAKE_INSTALL_PREFIX}/lib\"
-path_prepend LD_LIBRARY_PATH \"${CMAKE_INSTALL_PREFIX}/lib\"
+path_prepend PYTHONPATH \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_PYTHONDIR}\"
+path_prepend LD_LIBRARY_PATH \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}\"
 
 ")
 file(READ cmt/requirements _rules)
@@ -29,5 +29,5 @@ unset(_rules)
 unset(_offset)
 
 # install
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${datadir}/SniperPolicy)
-install(DIRECTORY cmt/fragments DESTINATION ${datadir}/SniperPolicy/cmt)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${CMAKE_INSTALL_CMTPROJECTDIR}/SniperPolicy)
+install(DIRECTORY cmt/fragments DESTINATION ${CMAKE_INSTALL_CMTPROJECTDIR}/SniperPolicy/cmt)

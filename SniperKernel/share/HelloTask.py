@@ -1,5 +1,5 @@
-from libSniperPython import Task
-from libSniperPython import Incident
+from Sniper import Task
+from Sniper import Incident
 
 class HelloTask(Task) :
 
