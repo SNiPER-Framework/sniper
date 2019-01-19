@@ -1,6 +1,6 @@
 # SNiPER
 
-The SNiPER is a open-source general purpose software framework for High Energy Physics data processing. It is dedicated for needs of rare-process search experiments, such as neutrino interactions, dark matter, double beta and other.
+The SNiPER is an open-source general purpose software framework for High Energy Physics data processing. It is dedicated for needs of rare-process search experiments, such as neutrino interactions, dark matter, double beta and other.
 
 For more info please visit [the SNiPER home at GitHub](https://github.com/SNiPER-Framework).
 
@@ -54,17 +54,16 @@ Make build directory and change to it:
 $ mkdir build && cd build
 ```
 
-Run CMake to configure your build. By default it installs to `/usr/local`:
+Run CMake to configure your build. You can change your settings with `ccmake` or other tools. CMake has powerful ability to find software, but if it fails to locate yours, you can help it by defining `<NAME>_DIR` variables. Also it can use available CMT environment for search. By default installation goes to `/usr/local`.
 
 ```
 $ cmake -DCMAKE_INSTALL_REFIX=<install_dir> ..
 ```
 
-Then build and install result:
+Then build and install the result. Default build agent is `make` and you can call it directly.
 
 ```
-$ make
-$ make install
+$ cmake --build . --target install
 ```
 
-Your build is now installed to the directory you provided to CMake, shell script `setup.sh` will help you to set the required environment.
+Your build is now installed to the directory you provided to CMake. For the best experience one needs to set the proper environment. This can be done with the help of shell script `share/sniper/setup.sh`, or, a modern solution, using an Environment Modules file `share/sniper/modulefiles/sniper`. Also provided is a CMT project that allows use of SNiPER in CMT environment.
