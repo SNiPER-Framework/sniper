@@ -11,6 +11,6 @@ add_library(HelloWorld SHARED ${sources})
 target_link_libraries(HelloWorld SniperKernel)
 
 # install
-install(TARGETS HelloWorld DESTINATION lib)
-file(GLOB python python/HelloWorld/*.py share/*.py)
-install(FILES ${python} DESTINATION python/HelloWorld)
+install(TARGETS HelloWorld DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(DIRECTORY python/HelloWorld DESTINATION ${CMAKE_INSTALL_PYTHONDIR})
+install(FILES share/run.py DESTINATION ${CMAKE_INSTALL_DATADIR}/Examples RENAME run-HelloWorld.py)

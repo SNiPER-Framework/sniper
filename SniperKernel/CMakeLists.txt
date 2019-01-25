@@ -8,54 +8,40 @@ cmake_minimum_required(VERSION 2.8)
 include_directories(${PROJECT_SOURCE_DIR}/SniperKernel)
 file(GLOB sources src/*.cc)
 add_library(SniperKernel SHARED ${sources})
-target_link_libraries(SniperKernel dl ${PYTHON_LIBRARY} boost_python)
+target_link_libraries(SniperKernel dl ${Boost_PYTHON_LIBRARY} ${PYTHON_LIBRARIES})
 
 include_directories(${PROJECT_SOURCE_DIR}/SniperKernel/src)
 file(GLOB sources src/binding/*.cc)
 add_library(SniperPython SHARED ${sources})
 target_link_libraries(SniperPython SniperKernel)
 
-get_target_property(_file SniperKernel LOCATION)
-get_filename_component(_file ${_file} NAME)
-set(SniperKernel_LIB_NAME ${_file} PARENT_SCOPE)
-file(COPY cmt/version.cmt DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/cmt)
-set(req_head "
+set(file)
+get_target_property(file SniperKernel LOCATION)
+get_filename_component(file ${file} NAME)
+set(SniperKernel_LIB_NAME ${file} PARENT_SCOPE)
+if(BUILD_CMT_PROJECT)
+  file(COPY cmt/version.cmt DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/cmt)
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cmt/requirements "
 package SniperKernel
 
-macro SniperKernel_home \"${CMAKE_INSTALL_PREFIX}\"
-macro SniperKernel_root \"$(SniperKernel_home)/share/sniper/SniperKernel\"
-
-macro_remove    cppflags        \"-ansi -pedantic \"
-macro_prepend   cppflags        \"-std=c++11 -fPIC \"
+use SniperPolicy *
 
 include_path none
-include_dirs \"$(SniperKernel_home)/include\"
-include_dirs \"${Boost_INCLUDE_DIR}\"
-include_dirs \"${PYTHON_INCLUDE_DIR}\"
 
 #macro SniperKernel_cppflags \"-std=c++11 -fPIC \"
-macro SniperKernel_linkopts \"-fPIC -Wl,--as-needed -Wl,--no-undefined $(SniperKernel_home)/lib/${_file} ${Boost_PYTHON_LIBRARY} ${PYTHON_LIBRARY} \"
+macro SniperKernel_linkopts \" -Wl,--as-needed -Wl,--no-undefined ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${file} ${Boost_PYTHON_LIBRARY} ${PYTHON_LIBRARIES} \"
 
-path_prepend PYTHONPATH \"$(SniperKernel_home)/python:$(SniperKernel_home)/lib\"
-path_prepend LD_LIBRARY_PATH \"$(SniperKernel_home)/lib\"
-
-#
-# from SniperPolicy
-#
 ")
-file(READ ${PROJECT_SOURCE_DIR}/SniperPolicy/cmt/requirements _rules)
-string(FIND "${_rules}" "pattern" _offset)
-string(SUBSTRING "${_rules}" "${_offset}" "-1" _rules)
-string(REPLACE "SniperPolicy_" "SniperKernel_" req_rules "${_rules}")
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cmt/requirements "${req_head}${req_rules}")
-unset(_file)
-unset(_rules)
-unset(_offset)
+endif()
+unset(file)
 
 # install
-install(TARGETS SniperKernel SniperPython DESTINATION lib)
+install(TARGETS SniperKernel DESTINATION ${CMAKE_INSTALL_LIBDIR})
 file(GLOB headers SniperKernel/*.h)
-install(FILES ${headers} DESTINATION include/SniperKernel)
-file(GLOB python python/Sniper/*.py)
-install(FILES ${python} DESTINATION python/Sniper)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${datadir}/SniperKernel)
+install(FILES ${headers} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SniperKernel)
+install(TARGETS SniperPython DESTINATION ${CMAKE_INSTALL_PYTHONDIR}/Sniper)
+install(DIRECTORY python/Sniper DESTINATION ${CMAKE_INSTALL_PYTHONDIR})
+install(FILES share/HelloTask.py DESTINATION ${CMAKE_INSTALL_DATADIR}/Examples RENAME run-HelloTask.py)
+if(BUILD_CMT_PROJECT)
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmt DESTINATION ${CMAKE_INSTALL_CMTPROJECTDIR}/SniperKernel)
+endif()

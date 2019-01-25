@@ -2,14 +2,14 @@
 
 if [ "x$use_relative_path" != "xyes" ]; then
   prefix="@CMAKE_INSTALL_PREFIX@"
-  exec_prefix="$prefix/bin"
-  includedir="$prefix/include"
-  libdir="$prefix/lib"
+  exec_prefix="$prefix/@CMAKE_INSTALL_BINDIR@"
+  includedir="$prefix/@CMAKE_INSTALL_INCLUDEDIR@"
+  libdir="$prefix/@CMAKE_INSTALL_LIBDIR@"
 else
   prefix=`echo $0 | sed -e 's|/[^/]*$||; s|^[^/]*$|.|'`
   exec_prefix=$prefix
-  includedir=$prefix/../include
-  libdir=$prefix/../lib
+  includedir=$prefix/../@CMAKE_INSTALL_INCLUDEDIR@
+  libdir=$prefix/../@CMAKE_INSTALL_LIBDIR@
 fi
 
 usage()

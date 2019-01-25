@@ -1,0 +1,26 @@
+#%Module1.0#####################################################################
+##
+## sniper modulefile
+##
+## Generated from setup.sh by env2.
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\t[module-info name] - loads environment for @PROJECT_NAME@ framework"
+        puts stderr "\n\tThis adds $prefix/* to several of the"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis   "loads environment for SNiPER framework"
+
+# for Tcl script use only
+set     version         @SNiPER_VERSION@
+set     prefix          @CMAKE_INSTALL_PREFIX@
+
+# for actual set
+prepend-path CMTPROJECTPATH ${prefix}/@_CMTPROJECTPATH@
+prepend-path LD_LIBRARY_PATH ${prefix}/@CMAKE_INSTALL_LIBDIR@
+prepend-path PYTHONPATH ${prefix}/@CMAKE_INSTALL_PYTHONDIR@
+
