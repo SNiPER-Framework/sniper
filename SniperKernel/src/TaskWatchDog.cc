@@ -20,9 +20,11 @@
 #include "SniperKernel/Task.h"
 #include "SniperKernel/SniperLog.h"
 #include "SniperKernel/SniperContext.h"
+#include "SniperKernel/SniperException.h"
 #include <map>
 
 using Sniper::RunState;
+using Sniper::StopRun;
 
 static std::map<RunState, const char*> snoopy_o2str{
     { RunState::Invalid,    "((Invalid))" },
@@ -100,8 +102,13 @@ bool TaskWatchDog::run()
     if ( m_stat == RunState::Ready ) {
         m_stat = RunState::Running;
         bool res = true;
-        while ( res && m_stat == RunState::Running ) {
-            res = m_task.execute();
+        try {
+            while ( res && m_stat == RunState::Running ) {
+                res = m_task.execute();
+            }
+        }
+        catch (StopRunProcess& e) {
+            if ( ! m_task.isRoot() ) throw e;
         }
         return res;
     }
@@ -125,11 +132,20 @@ bool TaskWatchDog::pause()
     return false;
 }
 
-bool TaskWatchDog::stop()
+bool TaskWatchDog::stop(StopRun mode)
 {
     if ( m_stat == RunState::Running || m_stat == RunState::Ready ) {
+        if ( mode == StopRun::ThisEvent ) {
+            throw StopRunThisEvent();
+        }
+
         m_stat = RunState::Stopped;
-        return true;
+
+        if ( mode == StopRun::Promptly ) {
+            throw StopRunProcess();
+        }
+
+        return true;  // mode == StopRun::Peacefully
     }
 
     SNOOPY_PASS_AWAY(RunState::Stopped);

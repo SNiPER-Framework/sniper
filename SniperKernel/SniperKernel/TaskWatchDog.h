@@ -37,7 +37,7 @@ class TaskWatchDog final  //XXX: final?
         bool initialize();
         bool run();
         bool pause();
-        bool stop();
+        bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly);
         bool finalize();
         bool terminate();
         // execute one time and then pause
@@ -50,6 +50,8 @@ class TaskWatchDog final  //XXX: final?
         void setErr();
 
         // status report
+        bool isRunning() { return m_stat == Sniper::RunState::Running; }
+        bool isStopped() { return m_stat == Sniper::RunState::Stopped; }
         bool isErr();
 
         // ...

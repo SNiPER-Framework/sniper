@@ -5,6 +5,14 @@ This is the ChangeLog for the SNiPER project.
 ## Unreleased
 
 - Changes
+    - The default behaviour of Task::stop()/TaskWatchDog::stop() is stopping the process promptly, which is different than before (peacefully).
+
+- New features
+    - Stop SNiPER via Task::stop()/TaskWatchDog::stop() in multiple ways with a parameter.
+
+## v1.2
+
+- Changes
     - ParaPack is seperated as a standalone project, MT.SNiPER. Please see https://github.com/SNiPER-Framework/mt.sniper
     - Remove some python bindings which are not thread safe.
 

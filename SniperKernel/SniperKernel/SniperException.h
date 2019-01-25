@@ -42,4 +42,18 @@ class ContextMsgException : public SniperException
         ContextMsgException(const std::string& msg);
 };
 
+class StopRunProcess : public SniperException
+{
+    public :
+        StopRunProcess()
+            : SniperException("StopRunProcess") {}
+};
+
+class StopRunThisEvent : public SniperException
+{
+    public :
+        StopRunThisEvent()
+            : SniperException("StopRunThisEvent") {}
+};
+
 #endif

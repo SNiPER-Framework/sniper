@@ -43,7 +43,7 @@ class Task : public DLElement
         virtual bool run();
 
         //stop this task
-        virtual bool stop();
+        virtual bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly);
 
         //ooo~~ just as its name
         TaskWatchDog& Snoopy() { return m_snoopy; }

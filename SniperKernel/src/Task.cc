@@ -75,9 +75,9 @@ bool Task::run()
     return ! m_snoopy.isErr();
 }
 
-bool Task::stop()
+bool Task::stop(Sniper::StopRun mode)
 {
-    return m_snoopy.stop();
+    return m_snoopy.stop(mode);
 }
 
 bool Task::config()
@@ -134,6 +134,9 @@ bool Task::execute()
         }
         m_endEvt.fire(*this);
         if ( m_snoopy.isErr() ) return false;
+    }
+    catch (StopRunThisEvent& e) {
+        LogDebug << "stop current event and continue next one" << std::endl;
     }
     catch (std::exception& e) {
         m_snoopy.setErr();

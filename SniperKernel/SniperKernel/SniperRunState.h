@@ -34,6 +34,16 @@ namespace Sniper
         EndUp        =  0x200,
         Error        =  0x800
     };
+
+    // the Mode to operate a Statemachine
+    enum class StopRun : RunStateInt {
+        // stop the eventloop without delay
+        Promptly,
+        // stop the eventloop until current event is finished
+        Peacefully,
+        // stop handling current event and continue the next event
+        ThisEvent
+    };
 }
 
 #endif
