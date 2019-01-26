@@ -138,6 +138,10 @@ bool Task::execute()
     catch (StopRunThisEvent& e) {
         LogDebug << "stop current event and continue next one" << std::endl;
     }
+    catch (StopRunProcess& e) {
+        LogInfo << "stop run promtly." << std::endl;
+        throw e;
+    }
     catch (std::exception& e) {
         m_snoopy.setErr();
         LogError << e.what() << std::endl;
