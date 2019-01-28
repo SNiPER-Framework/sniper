@@ -2,7 +2,7 @@
 
 This is the ChangeLog for the SNiPER project.
 
-## Unreleased
+## v1.3
 
 - Changes
     - The default behaviour of Task::stop()/TaskWatchDog::stop() is stopping the process promptly, which is different than before (peacefully).
