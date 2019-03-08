@@ -57,7 +57,7 @@ $ mkdir build && cd build
 Run CMake to configure your build. You can change your settings with `ccmake` or other tools. CMake has powerful ability to find software, but if it fails to locate yours, you can help it by defining `<NAME>_DIR` variables. Also it can use available CMT environment for search. By default installation goes to `/usr/local`.
 
 ```
-$ cmake -DCMAKE_INSTALL_REFIX=<install_dir> ..
+$ cmake -DCMAKE_INSTALL_PREFIX=<install_dir> ..
 ```
 
 Then build and install the result. Default build agent is `make` and you can call it directly.

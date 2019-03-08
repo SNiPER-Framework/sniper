@@ -13,13 +13,15 @@ if __name__ == "__main__":
     #Sniper.setShowTime(True)
 
     task = Sniper.Task("task")
-    task.setEvtMax(1)
+    task.setEvtMax(3)
+
+    import PyDataStore
+    task.createSvc("PyDataStoreSvc")
 
     import HelloWorld
+    task.property("algs").append("HelloAlg/SetAlg")
 
-    task.property("algs").append("HelloAlg/x")
-
-    x = task.find("x")
+    x = task.find("SetAlg")
     print "Before setting properties"
     x.show()
 
@@ -30,5 +32,12 @@ if __name__ == "__main__":
     x.property("MapStrInt").set( {"str%d"%v:v for v in range(6)} )
     print "After setting properties"
     x.show()
+
+    y = HelloWorld.HelloPy("PyAlg")
+    task.addAlg(y)
+
+    z = task.createAlg("HelloAlg/GetAlg")
+
+    #task.show()
 
     task.run()

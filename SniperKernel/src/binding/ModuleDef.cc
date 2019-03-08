@@ -22,10 +22,12 @@
 void export_Sniper_Incident();
 void export_Sniper_IIncidentHandler();
 void export_Sniper_Property();
+void export_Sniper_IDataBlock();
 void export_Sniper_DLElement();
 void export_Sniper_SvcBase();
 void export_Sniper_AlgBase();
 void export_Sniper_ToolBase();
+void export_Sniper_DataMemSvc();
 void export_Sniper_Task();
 void export_Sniper_TopTask();
 void export_Sniper_TaskWatchDog();
@@ -37,10 +39,12 @@ BOOST_PYTHON_MODULE(libSniperPython)
     export_Sniper_Incident();
     export_Sniper_IIncidentHandler();
     export_Sniper_Property();
+    export_Sniper_IDataBlock();
     export_Sniper_DLElement();
     export_Sniper_SvcBase();
     export_Sniper_AlgBase();
     export_Sniper_ToolBase();
+    export_Sniper_DataMemSvc();
     export_Sniper_Task();
     export_Sniper_TopTask();
     export_Sniper_TaskWatchDog();

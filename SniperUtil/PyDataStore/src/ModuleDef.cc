@@ -16,37 +16,18 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef Hello_h
-#define Hello_h
+#include "PyDataStore/PyDataStore.h"
+#include <boost/python.hpp>
+#include "boost/make_shared.hpp"
 
-#include "SniperKernel/AlgBase.h"
-#include <vector>
-#include <map>
-
-class PyDataStore;
-
-class HelloAlg: public AlgBase
+BOOST_PYTHON_MODULE(libPyDataStore)
 {
-    public:
-        HelloAlg(const std::string& name);
+    using namespace boost::python;
 
-        ~HelloAlg();
-
-        bool initialize();
-        bool execute();
-        bool finalize();
-
-    private:
-
-        void print();
-
-        int m_count;
-
-        PyDataStore*  m_ds;
-
-        std::string                 m_string;
-        std::vector<int>            m_vector_int;
-        std::map<std::string, int>  m_str_int;
-};
-
-#endif
+    class_<PyDataStore, boost::shared_ptr<PyDataStore>, bases<IDataBlock>, boost::noncopyable>
+        ("PyDataStore", no_init)
+        .def("data",      &PyDataStore::data,
+                return_value_policy<copy_non_const_reference>())
+        .def("clear",     &PyDataStore::clear)
+        ;
+}

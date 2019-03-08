@@ -52,6 +52,10 @@ void export_Sniper_Task()
         //.def("config",     &Task::config)
         //.def("execute",    &Task::execute)
         //.def("reset",      &Task::reset)
+        .def("addAlg",     &Task::addAlg,
+                return_value_policy<reference_existing_object>())
+        .def("addSvc",     &Task::addSvc,
+                return_value_policy<reference_existing_object>())
         .def("setEvtMax",  &Task::setEvtMax)
         .def("createSvc",  &Task::createSvc,
                 return_value_policy<reference_existing_object>())

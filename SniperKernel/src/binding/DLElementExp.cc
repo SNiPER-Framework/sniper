@@ -66,6 +66,9 @@ void export_Sniper_DLElement()
                 &DLElementWrap::default_setLogLevel)
         .def("initialize",   pure_virtual(&DLElement::initialize))
         .def("finalize",     pure_virtual(&DLElement::finalize))
+        .def("tag",          &DLElement::tag,
+                return_value_policy<reference_existing_object>())
+        .def("setTag",       &DLElement::setTag)
         .def("getParent",     &DLElement::getParent,
                 return_value_policy<reference_existing_object>())
         //.def("setParent",     &DLElement::setParent)

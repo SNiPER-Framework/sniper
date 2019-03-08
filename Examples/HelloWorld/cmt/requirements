@@ -1,6 +1,7 @@
 package HelloWorld
 
 use SniperKernel   v*
+use PyDataStore    v*  SniperUtil
 
 library HelloWorld *.cc
 apply_pattern install_python_modules

@@ -16,37 +16,18 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef Hello_h
-#define Hello_h
+#include "SniperKernel/DataMemSvc.h"
+#include "SniperKernel/IDataBlock.h"
+#include <boost/python.hpp>
+#include "boost/make_shared.hpp"
 
-#include "SniperKernel/AlgBase.h"
-#include <vector>
-#include <map>
-
-class PyDataStore;
-
-class HelloAlg: public AlgBase
+void export_Sniper_DataMemSvc()
 {
-    public:
-        HelloAlg(const std::string& name);
+    using namespace boost::python;
 
-        ~HelloAlg();
-
-        bool initialize();
-        bool execute();
-        bool finalize();
-
-    private:
-
-        void print();
-
-        int m_count;
-
-        PyDataStore*  m_ds;
-
-        std::string                 m_string;
-        std::vector<int>            m_vector_int;
-        std::map<std::string, int>  m_str_int;
-};
-
-#endif
+    class_<DataMemSvc, boost::shared_ptr<DataMemSvc>, bases<SvcBase>, boost::noncopyable>
+        ("DataMemSvc", no_init)
+        .def("find",       &DataMemSvc::find,
+                return_value_policy<reference_existing_object>())
+        ;
+}

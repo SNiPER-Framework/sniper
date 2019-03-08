@@ -6,9 +6,10 @@ cmake_minimum_required(VERSION 2.8)
 #
 # build
 include_directories(${PROJECT_SOURCE_DIR}/SniperKernel)
+include_directories(${PROJECT_SOURCE_DIR}/SniperUtil/PyDataStore)
 file(GLOB sources src/*.cc)
 add_library(HelloWorld SHARED ${sources})
-target_link_libraries(HelloWorld SniperKernel)
+target_link_libraries(HelloWorld SniperKernel PyDataStore)
 
 # install
 install(TARGETS HelloWorld DESTINATION ${CMAKE_INSTALL_LIBDIR})

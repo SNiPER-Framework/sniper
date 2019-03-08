@@ -17,7 +17,9 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "Hello.h"
+#include "PyDataStore/PyDataStore.h"
 #include "SniperKernel/AlgFactory.h"
+#include "SniperKernel/SniperPtr.h"
 #include "SniperKernel/SniperLog.h"
 
 DECLARE_ALGORITHM(HelloAlg);
@@ -36,48 +38,76 @@ HelloAlg::~HelloAlg()
 {
 }
 
-bool
-HelloAlg::initialize()
+bool HelloAlg::initialize()
 {
+    m_ds = SniperDataPtr<PyDataStore>(m_par, "PyDataStore").data();
+
     LogInfo << " initialized successfully" << std::endl;
-    LogInfo << " MyString: " << m_string << std::endl;
+    print();
 
-    LogInfo << " MyVectorInt(" << m_vector_int.size() << "): " << std::endl;
-    for (std::vector<int>::iterator i=m_vector_int.begin();
-            i!=m_vector_int.end(); ++i) {
-        LogInfo << (*i) << std::endl;
-    }
-    LogInfo << std::endl;
-
-    LogInfo << " MyStrInt(" << m_str_int.size() << "): " << std::endl; 
-    for (std::map<std::string, int>::iterator i=m_str_int.begin();
-            i!=m_str_int.end(); ++i) {
-        LogInfo << i->first << ":"
-                << i->second
-                << std::endl;
-    }
     return true;
 }
 
-bool
-HelloAlg::execute()
+bool HelloAlg::execute()
 {
     ++m_count;
     LogInfo << "Hello world: count: " << m_count << std::endl;
 
-    LogDebug << "debug message" << std::endl;
-    LogInfo  << "info message" << std::endl;
-    LogWarn  << "warn message" << std::endl;
-    LogError << "error message" << std::endl;
-    LogFatal << "fatal message" << std::endl;
+    if ( m_count == 1 ) {
+        LogDebug << "debug message" << std::endl;
+        LogInfo  << "info message" << std::endl;
+        LogWarn  << "warn message" << std::endl;
+        LogError << "error message" << std::endl;
+        LogFatal << "fatal message" << std::endl;
+
+        return true;
+    }
+
+    if ( m_name == "SetAlg" ) {
+        m_ds->clear();
+
+        LogInfo << " set values into PyDataStore" << std::endl;
+        print();
+
+        // a simple value
+        m_ds->set("aStr", m_string);
+        // a vector
+        m_ds->set("aVec", m_vector_int);
+        // a map
+        m_ds->set("aMap", m_str_int);
+    }
+
+    if ( m_name == "GetAlg" ) {
+        // a new float value
+        float vf = 0;
+        m_ds->get("newValue", vf);
+        // a simple value
+        m_ds->get("aStr", m_string);
+        // a vector
+        m_ds->get("aVec", m_vector_int);
+        // a map: I don't know how to get a map
+        //m_ds->get("aMap", m_str_int);
+
+        LogInfo << " get values from PyDataStore" << std::endl;
+        std::cout << "A new value = " << vf << std::endl;
+        print();
+    }
 
     return true;
 }
 
-bool
-HelloAlg::finalize()
+bool HelloAlg::finalize()
 {
     LogInfo << " finalized successfully" << std::endl;
 
     return true;
+}
+
+void  HelloAlg::print()
+{
+    property("VarString")->show();
+    property("VectorInt")->show();
+    property("MapStrInt")->show();
+
+    std::cout << std::endl;
 }
