@@ -2,6 +2,13 @@
 
 This is the ChangeLog for the SNiPER project.
 
+## Unreleased
+
+- New features
+    - Now we can write algorithms in Python. An example: Examples/HelloWorld/python/HelloWorld/HelloPy.py
+    - Add a new Package SniperUtil/PyDataStore. We can exchange data between C++ and Python algorithms with PyDataStore.
+    - In Examples/HelloWorld, we can find how PyDataStore works.
+
 ## v1.3
 
 - Changes
