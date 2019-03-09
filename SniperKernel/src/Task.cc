@@ -44,6 +44,7 @@ Task::Task(const std::string& name)
 {
     if ( m_tag.empty() ) m_tag = "Task";  //protection for derived classes
 
+    declProp("EvtMax", m_evtMax);
     m_pmgr.addProperty(new TaskProperty("svcs", this));
     m_pmgr.addProperty(new TaskProperty("algs", this));
 
@@ -264,13 +265,7 @@ void Task::remove(const std::string& name)
 
 void Task::show(int indent)
 {
-    make_indent(indent);
-    std::cout << '[' << m_tag << ']' << m_scope << m_name << std::endl;
-
-    make_indent(indent+1);
-    std::cout << "[ATR]LogLevel   = " << m_logLevel << std::endl;
-    make_indent(indent+1);
-    std::cout << "[ATR]EvtMax     = " << m_evtMax << std::endl;
+    DLElement::show(indent);
 
     for ( auto target : m_targets ) {
         for ( auto obj : target->list() ) {

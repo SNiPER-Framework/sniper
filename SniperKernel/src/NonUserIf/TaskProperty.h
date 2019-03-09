@@ -75,6 +75,8 @@ class TaskProperty : public SniperProperty<std::vector<std::string> >
             return true;
         }
 
+        void show(int /*indent*/) {}
+
     private :
 
         bool createAlg(const std::string& name) {

@@ -24,6 +24,7 @@ DLElement::DLElement(const std::string& name)
       m_par(nullptr),
       m_pmgr(this)
 {
+    declProp("LogLevel", m_logLevel);
 }
 
 DLElement::~DLElement()
@@ -62,9 +63,6 @@ void DLElement::show(int indent)
     std::cout << '[' << m_tag << ']';
     if ( indent == 0 ) std::cout << m_scope;
     std::cout << m_name << std::endl;
-
-    make_indent(indent+1);
-    std::cout << "[ATR]LogLevel   = " << m_logLevel << std::endl;
 
     for ( auto& p : m_pmgr.properties() ) {
         p.second->show(indent+1);
