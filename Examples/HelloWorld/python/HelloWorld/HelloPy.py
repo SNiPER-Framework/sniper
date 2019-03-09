@@ -7,7 +7,7 @@ class HelloPy(PyAlgBase):
         self.count = 0;
 
     def initialize(self):
-        self.data = self.get("PyDataStore").data()
+        self.data = self.get("DataStore").data()
         self.LogInfo("initialized")
         return True
 

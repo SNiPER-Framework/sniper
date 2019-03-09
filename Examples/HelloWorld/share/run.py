@@ -16,7 +16,7 @@ if __name__ == "__main__":
     task.setEvtMax(3)
 
     import PyDataStore
-    task.createSvc("PyDataStoreSvc")
+    task.createSvc("PyDataStoreSvc/DataStore")
 
     import HelloWorld
     task.property("algs").append("HelloAlg/SetAlg")

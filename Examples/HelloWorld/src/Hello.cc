@@ -40,7 +40,7 @@ HelloAlg::~HelloAlg()
 
 bool HelloAlg::initialize()
 {
-    m_ds = SniperDataPtr<PyDataStore>(m_par, "PyDataStore").data();
+    m_ds = SniperDataPtr<PyDataStore>(m_par, "DataStore").data();
 
     LogInfo << " initialized successfully" << std::endl;
     print();

@@ -72,6 +72,8 @@ void export_Sniper_DLElement()
         .def("getParent",     &DLElement::getParent,
                 return_value_policy<reference_existing_object>())
         //.def("setParent",     &DLElement::setParent)
+        .def("getRoot",     &DLElement::getRoot,
+                return_value_policy<reference_existing_object>())
         .def("property",     &DLElement::property,
                 return_value_policy<reference_existing_object>())
         .def("show",         showf)

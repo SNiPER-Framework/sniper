@@ -36,7 +36,7 @@ PyDataStoreSvc::~PyDataStoreSvc()
 bool PyDataStoreSvc::initialize()
 {
     SniperPtr<DataMemSvc> pSvc(m_par, "DataMemSvc");
-    pSvc->regist("PyDataStore", new PyDataStore());
+    pSvc->regist(m_name, new PyDataStore());
 
     return true;
 }
