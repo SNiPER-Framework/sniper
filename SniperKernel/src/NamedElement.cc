@@ -25,8 +25,8 @@ NamedElement::NamedElement(const std::string& name)
     m_logLevel = SniperLog::logLevel();
 }
 
-NamedElement::NamedElement(const std::string& scope, const std::string& name)
-    : m_scope(scope), m_name(name)
+NamedElement::NamedElement(const std::string& scope_, const std::string& name_)
+    : m_scope(scope_), m_name(name_)
 {
     m_logLevel = SniperLog::logLevel();
 }

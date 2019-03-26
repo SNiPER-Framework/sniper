@@ -180,9 +180,9 @@ void Task::setLogLevel(int level)
     }
 }
 
-void Task::setEvtMax(int evtMax)
+void Task::setEvtMax(int evtMax_)
 {
-    m_evtMax = evtMax;
+    m_evtMax = evtMax_;
     m_limited = (m_evtMax >= 0);
 }
 

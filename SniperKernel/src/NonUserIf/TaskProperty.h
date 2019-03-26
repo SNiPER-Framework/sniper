@@ -28,21 +28,21 @@ class TaskProperty : public SniperProperty<std::vector<std::string> >
 
         typedef SniperProperty<std::vector<std::string> > BaseType;
 
-        TaskProperty(const std::string&key, Task* domain)
-            : BaseType(key, m_names), m_domain(domain)
+        TaskProperty(const std::string& key_, Task* domain_)
+            : BaseType(key_, m_names), m_domain(domain_)
         {
-            if ( key == "algs") {
+            if ( key_ == "algs") {
                 pclear  = &Task::clearAlgs;
                 pcreate = &TaskProperty::createAlg;
                 padd    = &TaskProperty::addAlg;
             }
-            else if ( key == "svcs" ) {
+            else if ( key_ == "svcs" ) {
                 pclear  = &Task::clearSvcs;
                 pcreate = &TaskProperty::createSvc;
                 padd    = &TaskProperty::addSvc;
             }
             else {
-                throw ContextMsgException( key + " : invalid TaskProperty Key");
+                throw ContextMsgException( key_ + " : invalid TaskProperty Key");
             }
         }
 

@@ -66,8 +66,8 @@ class SniperProperty : public Property
 {
     public :
 
-        SniperProperty(const std::string& key, T& var)
-            : Property(key), m_var(var) {}
+        SniperProperty(const std::string& key_, T& var_)
+            : Property(key_), m_var(var_) {}
 
         bool set(bp::object& var)
         {
@@ -96,8 +96,8 @@ class SniperProperty<std::vector<T> > : public Property
 {
     public :
 
-        SniperProperty(const std::string& key, std::vector<T>& var)
-            : Property(key), m_var(var) {}
+        SniperProperty(const std::string& key_, std::vector<T>& var_)
+            : Property(key_), m_var(var_) {}
 
         bool set(bp::object& var) {
             m_var.clear();
@@ -138,8 +138,8 @@ class SniperProperty<std::map<K, V> > : public Property
 {
     public:
 
-        SniperProperty(const std::string& key, std::map<K, V>& var)
-            : Property(key), m_var(var) {}
+        SniperProperty(const std::string& key_, std::map<K, V>& var_)
+            : Property(key_), m_var(var_) {}
 
         bool set(bp::object& var) {
             m_var.clear();

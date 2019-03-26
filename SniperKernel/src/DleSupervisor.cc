@@ -27,8 +27,8 @@ DleSupervisor::DleSupervisor(const std::string& name)
 {
 }
 
-DleSupervisor::DleSupervisor(const std::string& scope, const std::string& name)
-    : NamedElement(scope, name)
+DleSupervisor::DleSupervisor(const std::string& scope_, const std::string& name_)
+    : NamedElement(scope_, name_)
 {
 }
 
