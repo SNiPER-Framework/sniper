@@ -22,7 +22,9 @@
 #include "SniperKernel/NamedElement.h"
 #include <list>
 #include <map>
-#include <bits/stl_pair.h>
+#ifndef __clang__
+  #include <bits/stl_pair.h>
+#endif
 #include <string>
 
 class DLElement;
