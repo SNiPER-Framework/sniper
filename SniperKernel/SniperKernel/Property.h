@@ -150,7 +150,11 @@ class SniperProperty<std::map<K, V> > : public Property
             bp::extract<bp::dict> dvar_(var);
             if ( dvar_.check() ) {
                 bp::dict dvar = dvar_();
+# if PY_MAJOR_VERSION >= 3
+                bp::list iterkeys = dvar.keys();
+# else
                 bp::list iterkeys = (bp::list)dvar.iterkeys();
+# endif
                 bp::ssize_t dsize = bp::len(iterkeys);
                 for(bp::ssize_t i = 0; i < dsize; ++i) {
                     bp::object kobj = iterkeys[i];
