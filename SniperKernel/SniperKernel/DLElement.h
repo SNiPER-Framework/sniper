@@ -47,7 +47,7 @@ class DLElement : public NamedElement
         Task* getRoot();
 
         // set the tag
-        void setTag(const std::string& tag) { m_tag = tag; }
+        void setTag(const std::string& tag_) { m_tag = tag_; }
 
         // set the parent (Task) pointer
         void setParent(Task* parent);

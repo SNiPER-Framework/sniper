@@ -41,12 +41,12 @@ Property* PropertyMgr::property(const std::string& key)
     throw ContextMsgException(key + " : invalid Property Key");
 }
 
-bool PropertyMgr::addProperty(Property* property)
+bool PropertyMgr::addProperty(Property* property_)
 {
-    std::string key = property->key();
+    std::string key = property_->key();
     std::map<std::string, Property*>::iterator it = m_dict.find(key);
     if ( it == m_dict.end() ) {
-        m_dict[key] = property;
+        m_dict[key] = property_;
         return true;
     }
     throw ContextMsgException(key + " : duplicated Property Key");

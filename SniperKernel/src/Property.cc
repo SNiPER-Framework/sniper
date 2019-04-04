@@ -18,8 +18,8 @@
 
 #include "SniperKernel/Property.h"
 
-Property::Property(const std::string& key)
-    : m_key(key)
+Property::Property(const std::string& key_)
+    : m_key(key_)
 {
 }
 
