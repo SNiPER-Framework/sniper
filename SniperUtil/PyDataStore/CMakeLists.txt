@@ -11,6 +11,11 @@ file(GLOB sources src/*.cc)
 add_library(PyDataStore SHARED ${sources})
 target_link_libraries(PyDataStore SniperKernel)
 
+file(GLOB sources binding/*.cc)
+add_library(PyDataStore_PyLib SHARED ${sources})
+target_link_libraries(PyDataStore_PyLib PyDataStore)
+
 # install
 install(TARGETS PyDataStore DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS PyDataStore_PyLib DESTINATION ${CMAKE_INSTALL_PYTHONDIR}/PyDataStore)
 install(DIRECTORY python/PyDataStore DESTINATION ${CMAKE_INSTALL_PYTHONDIR})

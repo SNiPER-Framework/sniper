@@ -8,4 +8,9 @@ apply_pattern install_more_includes more="PyDataStore"
 apply_pattern install_python_modules
 
 library PyDataStore *.cc
-apply_pattern linker_library library=RootWriter
+apply_pattern linker_library library=PyDataStore
+
+library PyDataStore_PyLib ../binding/*.cc
+apply_pattern linker_library library=PyDataStore_PyLib
+macro PyDataStore_PyLib_dependencies PyDataStore
+macro_append PyDataStore_PyLib_shlibflags " -lPyDataStore "

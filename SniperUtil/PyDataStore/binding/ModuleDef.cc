@@ -20,7 +20,7 @@
 #include <boost/python.hpp>
 #include "boost/make_shared.hpp"
 
-BOOST_PYTHON_MODULE(libPyDataStore)
+BOOST_PYTHON_MODULE(libPyDataStore_PyLib)
 {
     using namespace boost::python;
 
