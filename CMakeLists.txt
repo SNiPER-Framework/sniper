@@ -284,6 +284,7 @@ basedir=`dirname \"\${filename}\"`
 export CMTPROJECTPATH=\"\$basedir/${_CMTPROJECTPATH}\${CMTPROJECTPATH:+:\${CMTPROJECTPATH}}\"
 export PYTHONPATH=\"\$basedir/${CMAKE_INSTALL_PYTHONDIR}\${PYTHONPATH:+:\${PYTHONPATH}}\"
 export LD_LIBRARY_PATH=\"\$basedir/${CMAKE_INSTALL_LIBDIR}\${LD_LIBRARY_PATH:+:\${LD_LIBRARY_PATH}}\"
+export PATH=\"\$basedir/${CMAKE_INSTALL_BINDIR}\${PATH:+:\${PATH}}\"
 ")
 configure_file("${PROJECT_SOURCE_DIR}/${${PROJECT_NAME}_TOLOW}-config.in" "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-config" @ONLY)
 configure_file("${PROJECT_SOURCE_DIR}/${${PROJECT_NAME}_TOLOW}-modulefile.in" "${PROJECT_BINARY_DIR}/${${PROJECT_NAME}_TOLOW}-modulefile" @ONLY)
