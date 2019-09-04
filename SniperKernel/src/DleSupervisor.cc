@@ -39,12 +39,13 @@ DleSupervisor::~DleSupervisor()
 
 bool DleSupervisor::initialize()
 {
-    //try initializing all objs even with errors
+    //initializing all objs, but break when error happens
     bool res = true;
     for ( auto o : m_list ) {
         if ( ! o->initialize() ) {
             LogError << o->scope() << o->objName() << " initialize failed" << std::endl;
             res = false;
+            break;
         }
     }
     return res;
