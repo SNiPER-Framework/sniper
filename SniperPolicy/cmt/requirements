@@ -71,13 +71,13 @@ cmtpath_pattern_reverse \
          <project>_with_installarea&WIN32 ' "<path>\$(<project>_installarea_prefix)\include"' ; \
    include_dirs ${<project>_install_include} 
 
-macro install_command 'python $(SniperPolicy_root)/cmt/fragments/install.py -xCVS -x.svn -x*~ -x*.stamp --log=./install.history '
-macro uninstall_command 'python $(SniperPolicy_root)/cmt/fragments/install.py -u --log=./install.history '
+macro install_command 'python2 $(SniperPolicy_root)/cmt/fragments/install.py -xCVS -x.svn -x*~ -x*.stamp --log=./install.history '
+macro uninstall_command 'python2 $(SniperPolicy_root)/cmt/fragments/install.py -u --log=./install.history '
 
 macro remove_command "$(cmt_uninstallarea_command)"
 
-macro library_install_command "python $(SniperPolicy_root)/cmt/fragments/install.py -xCVS -x.svn -x*~ -x*.stamp -s --log=./install.history "
-macro cmt_installarea_command "python $(SniperPolicy_root)/cmt/fragments/install.py -xCVS -x.svn -x*~ -x*.stamp -s --log=./install.history "
+macro library_install_command "python2 $(SniperPolicy_root)/cmt/fragments/install.py -xCVS -x.svn -x*~ -x*.stamp -s --log=./install.history "
+macro cmt_installarea_command "python2 $(SniperPolicy_root)/cmt/fragments/install.py -xCVS -x.svn -x*~ -x*.stamp -s --log=./install.history "
 
 # setup python path
 
