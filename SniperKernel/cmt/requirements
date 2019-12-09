@@ -10,6 +10,5 @@ library SniperKernel *.cc
 apply_pattern linker_library library=SniperKernel
 
 library SniperPython binding/*.cc
-apply_pattern linker_library library=SniperPython
 macro SniperPython_dependencies SniperKernel
 macro_append SniperPython_shlibflags " -lSniperKernel "
