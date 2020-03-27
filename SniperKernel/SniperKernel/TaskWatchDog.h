@@ -56,7 +56,7 @@ class TaskWatchDog final  //XXX: final?
 
         // ...
         const Sniper::RunState& state() { return m_stat; }
-        Sniper::RunState  pre_state();
+        Sniper::RunState  real_state();
 
     private:
 

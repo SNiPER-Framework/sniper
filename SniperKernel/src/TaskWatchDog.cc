@@ -50,7 +50,7 @@ static std::map<RunState, const char*> snoopy_o2str{
     }
 
 #define SNOOPY_WARN_MSG(StateX) \
-    LogWarn << "invalid state tranform " << snoopy_o2str[m_stat] \
+    LogWarn << "invalid state tranform " << snoopy_o2str[ real_state() ] \
         << " => " << snoopy_o2str[StateX] << std::endl
 
 
@@ -157,43 +157,49 @@ bool TaskWatchDog::stop(StopRun mode)
 
 bool TaskWatchDog::finalize()
 {
-    if ( m_stat == RunState::Stopped || m_stat == RunState::Ready ) {
+    const RunState real_stat = real_state();
+    if ( real_stat == RunState::Stopped || real_stat == RunState::Ready ) {
+        bool errFlag = isErr();
         m_stat = RunState::Finalized;
-        return m_task.finalize();
+        if ( errFlag ) {
+            this->setErr();
+            LogWarn << "try to finalize within error" << std::endl;
+        }
+        m_task.finalize();
+        return isErr();
+    }
+    else if ( real_stat == RunState::Finalized ) {
+        LogInfo << "already in state " << snoopy_o2str[RunState::Finalized] << std::endl;
+        return isErr();
     }
 
-    SNOOPY_PASS_AWAY(RunState::Finalized);
-    //SNOOPY_CHECK_ERR();
-    if ( isErr() ) {
-        LogWarn << "try to finalize within error" << std::endl;
-        m_task.finalize();
-    }
-    else {
-        SNOOPY_WARN_MSG(RunState::Finalized);
-    }
+    SNOOPY_WARN_MSG(RunState::Finalized);
+
     return false;
 }
 
 bool TaskWatchDog::terminate()
 {
-    if ( m_stat == RunState::Finalized ) {
+    const RunState real_stat = real_state();
+    if ( real_stat == RunState::Running || real_stat == RunState::Ready ) {
+        LogDebug << "try to finalize before terminate" << std::endl;
+        this->finalize();
+    }
+    else if ( real_stat == RunState::EndUp ) {
+        return isErr();
+    }
+
+    typedef Sniper::RunStateInt S_Int;
+    if ( (S_Int)(m_stat) & (S_Int)(RunState::Finalized) ) {
+        bool errFlag = isErr();
         m_stat = RunState::EndUp;
         m_task.reset();
-        return true;
-    }
-
-    if ( isErr() ) {
-        const RunState e_stat = pre_state();
-        typedef Sniper::RunStateInt S_Int;
-        m_stat = (RunState)((S_Int)(RunState::Error) | (S_Int)(RunState::EndUp));
-        if ( e_stat == RunState::Running || e_stat == RunState::Ready ) {
-            LogWarn << "try to finalize before terminate" << std::endl;
-            m_task.finalize();
+        if ( errFlag ) {
+            this->setErr();
         }
-        return false;
+        return isErr();
     }
 
-    SNOOPY_PASS_AWAY(RunState::EndUp);
     SNOOPY_CHECK_ERR();
     SNOOPY_WARN_MSG(RunState::EndUp);
     return false;
@@ -234,10 +240,15 @@ bool TaskWatchDog::isErr()
     return ((S_Int)(m_stat) & (S_Int)(RunState::Error));
 }
 
-Sniper::RunState TaskWatchDog::pre_state()
+Sniper::RunState TaskWatchDog::real_state()
 {
     typedef Sniper::RunStateInt S_Int;
-    return (RunState)((S_Int)(RunState::Error) ^ (S_Int)(m_stat));
+    if ( isErr() ) {
+        return (RunState)((S_Int)(RunState::Error) ^ (S_Int)(m_stat));
+    }
+    else {
+        return m_stat;
+    }
 }
 
 int TaskWatchDog::logLevel()
