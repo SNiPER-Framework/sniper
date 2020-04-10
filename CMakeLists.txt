@@ -26,6 +26,7 @@ option(DEBUG      "Turn debug options on" OFF)
 set(CMT_SEARCH_DIRS "Externals" CACHE STRING "Set a path for packages location for CMT" )
 option(USE_SIMPLE_DIRS "Use simplified directory structure" OFF)
 option(BUILD_CMT_PROJECT "Create a project to use sniper in CMT system" ON)
+option(BUILD_TESTS "whether build (and run) the tests" OFF)
 
 # Also https://cmake.org/Wiki/CMake:How_To_Write_Platform_Checks
 include(CheckCXXCompilerFlag)
@@ -281,6 +282,10 @@ set(modlist)
 foreach(dir ${subdirs})
   add_subdirectory(${dir})
 endforeach()
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif(BUILD_TESTS)
 # config is after subdirs since we need filename of SniperKernel library
 get_filename_component(_CMTPROJECTPATH "${CMAKE_INSTALL_CMTPROJECTDIR}" DIRECTORY)
 # actually CMT expects _parent_ directory of CMTPROJECTDIR in CMTPROJECTPATH
