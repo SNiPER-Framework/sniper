@@ -154,30 +154,30 @@ private:
 
     // function template helps to access type[1]
     template <typename T>
-    void toCppVar(T &var) const;
+    inline void toCppVar(T &var) const;
 
     // function template helps to access type[2]
     template <typename T>
-    void toCppVar(std::vector<T> &var) const;
+    inline void toCppVar(std::vector<T> &var) const;
 
     // function template helps to access type[3]
     template <typename K, typename V>
-    void toCppVar(std::map<K, V> &var) const;
+    inline void toCppVar(std::map<K, V> &var) const;
 
     // function template helps to make json from type[1]
     template <typename T>
-    void fromCppVar(const T &var);
+    inline void fromCppVar(const T &var);
 
     // helps to make json from a char*
-    void fromCppVar(const char* var);
+    inline void fromCppVar(const char* var);
 
     // function template helps to make json from type[2]
     template <typename T>
-    void fromCppVar(const std::vector<T> &var);
+    inline void fromCppVar(const std::vector<T> &var);
 
     // function template helps to make json from type[3]
     template <typename K, typename V>
-    void fromCppVar(const std::map<K, V> &var);
+    inline void fromCppVar(const std::map<K, V> &var);
 
     // an inner class for any exception while json parsing
     class Exception : public std::exception
@@ -240,7 +240,7 @@ SniperJSON &SniperJSON::from(const T &var)
 }
 
 template <typename T>
-void SniperJSON::toCppVar(T &var) const
+inline void SniperJSON::toCppVar(T &var) const
 {
     if (m_type == 9)
     {
@@ -259,7 +259,7 @@ void SniperJSON::toCppVar(T &var) const
 }
 
 template <>
-void SniperJSON::toCppVar<bool>(bool &var) const
+inline void SniperJSON::toCppVar<bool>(bool &var) const
 {
     if (m_type == 9)
     {
@@ -279,7 +279,7 @@ void SniperJSON::toCppVar<bool>(bool &var) const
 }
 
 template <>
-void SniperJSON::toCppVar<std::string>(std::string &var) const
+inline void SniperJSON::toCppVar<std::string>(std::string &var) const
 {
     if (m_type == 3)
     {
@@ -291,7 +291,7 @@ void SniperJSON::toCppVar<std::string>(std::string &var) const
 }
 
 template <typename T>
-void SniperJSON::toCppVar(std::vector<T> &var) const
+inline void SniperJSON::toCppVar(std::vector<T> &var) const
 {
     if (m_type == 2)
     {
@@ -306,7 +306,7 @@ void SniperJSON::toCppVar(std::vector<T> &var) const
 }
 
 template <typename K, typename V>
-void SniperJSON::toCppVar(std::map<K, V> &var) const
+inline void SniperJSON::toCppVar(std::map<K, V> &var) const
 {
     if (m_type == 1)
     {
@@ -325,7 +325,7 @@ void SniperJSON::toCppVar(std::map<K, V> &var) const
 }
 
 template <typename T>
-void SniperJSON::fromCppVar(const T &var)
+inline void SniperJSON::fromCppVar(const T &var)
 {
     std::stringstream ss;
     ss << var;
@@ -334,27 +334,27 @@ void SniperJSON::fromCppVar(const T &var)
 }
 
 template <>
-void SniperJSON::fromCppVar<bool>(const bool &var)
+inline void SniperJSON::fromCppVar<bool>(const bool &var)
 {
     m_jvar = var ? "true" : "false";
     m_type = 9;
 }
 
 template <>
-void SniperJSON::fromCppVar<std::string>(const std::string &var)
+inline void SniperJSON::fromCppVar<std::string>(const std::string &var)
 {
     m_jvar = '"' + var + '"';
     m_type = 3;
 }
 
-void SniperJSON::fromCppVar(const char* var)
+inline void SniperJSON::fromCppVar(const char* var)
 {
     m_jvar = '"' + std::string(var) + '"';
     m_type = 3;
 }
 
 template <typename T>
-void SniperJSON::fromCppVar(const std::vector<T> &var)
+inline void SniperJSON::fromCppVar(const std::vector<T> &var)
 {
     for (const auto &it : var)
     {
@@ -364,7 +364,7 @@ void SniperJSON::fromCppVar(const std::vector<T> &var)
 }
 
 template <typename K, typename V>
-void SniperJSON::fromCppVar(const std::map<K, V> &var)
+inline void SniperJSON::fromCppVar(const std::map<K, V> &var)
 {
     for (const auto &it : var)
     {
