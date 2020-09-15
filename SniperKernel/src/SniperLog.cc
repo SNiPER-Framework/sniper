@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2020
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -17,6 +16,7 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/SniperLog.h"
+#include <atomic>
 
 namespace SniperLog{
     int           LogLevel  = 3;
@@ -42,9 +42,11 @@ const std::string& SniperLog::objName()
     return NonDLE;
 }
 
-using SniperLog::LogHelper;
+using SniperLog::Logger;
 
-static const char* _LogHelper_colors[] = {
+Logger Logger::Silencer;
+
+static const char* _Logger_colors[] = {
     "",
     0,
     "\033[36m",         // DEBUG: Cyan
@@ -54,7 +56,7 @@ static const char* _LogHelper_colors[] = {
     "\033[1m\033[31m"   // FATAL: Bold Red
 };
 
-static const char* _LogHelper_flags[] = {
+static const char* _Logger_flags[] = {
     "  TEST: ",
     0,
     " DEBUG: ",
@@ -64,10 +66,10 @@ static const char* _LogHelper_flags[] = {
     " FATAL: "
 };
 
-static std::atomic_flag _LogHelper_lock_log = ATOMIC_FLAG_INIT;
-static std::atomic_flag _LogHelper_lock_ctime = ATOMIC_FLAG_INIT;
+static std::atomic_flag _Logger_lock_log = ATOMIC_FLAG_INIT;
+static std::atomic_flag _Logger_lock_ctime = ATOMIC_FLAG_INIT;
 
-LogHelper::LogHelper(int flag,
+Logger::Logger(int flag,
                      int level,
                      const std::string& scope,
                      const std::string& objName,
@@ -80,14 +82,14 @@ LogHelper::LogHelper(int flag,
         prefix.reserve(71);
         int plen = 0;
         if ( (m_colored = (flag >= Colorful)) ) {
-            prefix = _LogHelper_colors[flag];
+            prefix = _Logger_colors[flag];
             plen = prefix.length();
         }
         if ( ShowTime ) {
             time_t t = time(0);
-            while(_LogHelper_lock_ctime.test_and_set());
+            while(_Logger_lock_ctime.test_and_set());
             prefix += ctime(&t);  // ctime() is not thread safe
-            _LogHelper_lock_ctime.clear();
+            _Logger_lock_ctime.clear();
             plen = prefix.length() - 1;
             prefix.replace(plen, 1, "  ");
         }
@@ -102,25 +104,19 @@ LogHelper::LogHelper(int flag,
             prefix.append(plen, ' ');
         }
 
-        prefix += _LogHelper_flags[flag];
+        prefix += _Logger_flags[flag];
 
-        while(_LogHelper_lock_log.test_and_set());
+        while(_Logger_lock_log.test_and_set());
         (*LogStream) << prefix;
     }
 }
 
-LogHelper::~LogHelper()
+Logger::~Logger()
 {
     if ( m_active ) {
         if ( m_colored ) {
             (*LogStream) << "\033[0m";
         }
-        _LogHelper_lock_log.clear();
+        _Logger_lock_log.clear();
     }
-}
-
-LogHelper& LogHelper::operator<<(std::ostream& (*_f)(std::ostream&))
-{
-    if ( m_active ) _f(*LogStream);
-    return *this;
 }

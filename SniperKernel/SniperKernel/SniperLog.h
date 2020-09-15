@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2020
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -21,8 +20,6 @@
 
 #include <string>
 #include <iostream>
-#include <iomanip>
-#include <atomic>
 
 namespace SniperLog
 {
@@ -36,23 +33,31 @@ namespace SniperLog
     //the stream for log output, std::cout by default
     extern std::ostream* LogStream;
 
-    class LogHelper
+    class Logger
     {
         public :
 
-            LogHelper(int flag,
-                      int level,
-                      const std::string& scope,
-                      const std::string& objName,
-                      const char* func
-                      );
+            static Logger  Silencer;
 
-            ~LogHelper();
+            Logger() : m_active(false) {}
 
-            LogHelper& operator<<(std::ostream& (*_f)(std::ostream&));
+            Logger(int flag,
+                    int level,
+                    const std::string& scope,
+                    const std::string& objName,
+                    const char* func
+                   );
+
+            ~Logger();
+
+            Logger& operator<<(std::ostream& (*_f)(std::ostream&))
+            {
+                if ( m_active ) _f(*LogStream);
+                return *this;
+            }
 
             template<typename T>
-            LogHelper& operator<<(const T& t)
+            Logger& operator<<(const T& t)
             {
                 if ( m_active ) (*LogStream) << t;
                 return *this;
@@ -72,7 +77,7 @@ using SniperLog::scope;
 using SniperLog::objName;
 
 
-#define SNIPERLOG(Flag)  SniperLog::LogHelper(\
+#define SNIPERLOG(Flag)  SniperLog::Logger(\
         Flag,\
         logLevel(),\
         scope(),\
@@ -80,11 +85,11 @@ using SniperLog::objName;
         __func__\
         )
 
-#define LogTest   SNIPERLOG(0)
-#define LogDebug  SNIPERLOG(2)
-#define LogInfo   SNIPERLOG(3)
-#define LogWarn   SNIPERLOG(4)
-#define LogError  SNIPERLOG(5)
-#define LogFatal  SNIPERLOG(6)
+#define LogTest   (logLevel()>0 ? SniperLog::Logger::Silencer : SNIPERLOG(0))
+#define LogDebug  (logLevel()>2 ? SniperLog::Logger::Silencer : SNIPERLOG(2))
+#define LogInfo   (logLevel()>3 ? SniperLog::Logger::Silencer : SNIPERLOG(3))
+#define LogWarn   (logLevel()>4 ? SniperLog::Logger::Silencer : SNIPERLOG(4))
+#define LogError  (logLevel()>5 ? SniperLog::Logger::Silencer : SNIPERLOG(5))
+#define LogFatal  (logLevel()>6 ? SniperLog::Logger::Silencer : SNIPERLOG(6))
 
 #endif
