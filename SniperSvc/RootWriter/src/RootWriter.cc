@@ -86,7 +86,7 @@ bool RootWriter::addFile(const std::string& fKey, const std::string& fname)
     std::map<std::string, TFile*>::iterator it = m_key2file.find(fKey);
     if ( it == m_key2file.end() ) {
 	const char* preDir = gDirectory->GetPath();
-	m_key2file[fKey] = new TFile(fname.c_str(), "RECREATE");
+	m_key2file[fKey] = TFile::Open(fname.c_str(), "RECREATE");
 	gDirectory->cd(preDir);
 	return true;
     }
