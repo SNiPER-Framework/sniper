@@ -26,6 +26,19 @@
 #include "NonUserIf/DLEFactory.h"
 #include <iostream>
 #include <fstream>
+#include <signal.h>
+
+void sniper_sig_handler(int signum)
+{
+    switch(signum) {
+        case SIGINT:
+            sniper_context.reg_msg("SNiPER is stopped by Ctrl+C");
+            std::cout << "SNiPER is stopped by Ctrl+C" << std::endl;
+            exit(0);
+        default:
+            ; //pass
+    }
+}
 
 void Sniper::python_capsul()
 {
@@ -37,6 +50,7 @@ void Sniper::python_capsul()
                       << "**************************************************\n"
                       << "Running @ " << System::hostName()
                       << " on " << System::sysDate();
+            sigset(SIGINT, sniper_sig_handler);
         }
 
         ~PythonCapsul() {
