@@ -2,7 +2,7 @@ package SniperPolicy
 
 macro		cpp 		"g++"
 macro_remove	cppflags	"-ansi -pedantic "
-macro_prepend   cppflags        "-std=c++11 -fPIC "
+macro_prepend   cppflags        "-std=c++11 -fPIC -O2 "
 macro libraryshr_linkopts       "-fPIC -ldl -Wl,--as-needed "
 
 macro_append libraryshr_linkopts "" \
