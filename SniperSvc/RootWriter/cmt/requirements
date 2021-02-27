@@ -5,7 +5,8 @@ use ROOT  v* Externals
 
 use Boost v* Externals
 
-macro_append ROOT_linkopts " -lPyROOT "
+macro_append ROOT_linkopts " -lPyROOT " \
+             ROOT_NEW_TPYTHON " -lROOTTPython "
 
 apply_pattern install_more_includes more="RootWriter"
 apply_pattern install_python_modules

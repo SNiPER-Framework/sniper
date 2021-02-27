@@ -137,7 +137,13 @@ TDirectory* RootWriter::getDir(const std::string& fullPath)
 bool RootWriter::attach_py(const std::string& fullDirs, boost::python::object obj)
 {
     TDirectory* pDir = getDir(fullDirs);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,22,0)
+    // for the legacy TPython
     PyObject* dir = TPython::ObjectProxy_FromVoidPtr((void*)pDir, "TDirectory");
+#elif ROOT_VERSION_CODE >= ROOT_VERSION(6,22,0)
+    // for the new TPython
+    PyObject* dir = TPython::CPPInstance_FromVoidPtr((void*)pDir, "TDirectory");
+#endif
     boost::python::object o(boost::python::handle<>(boost::python::borrowed(dir)));
     obj.attr("SetDirectory")(o);
     return (pDir!=0);
