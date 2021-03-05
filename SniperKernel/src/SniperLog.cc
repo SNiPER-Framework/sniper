@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2020
+/* Copyright (C) 2018-2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -38,7 +38,7 @@ const std::string& SniperLog::scope()
 
 const std::string& SniperLog::objName()
 {
-    static const std::string NonDLE = "NonDLE";
+    static const std::string NonDLE = "Unknown";
     return NonDLE;
 }
 
@@ -67,48 +67,44 @@ static const char* _Logger_flags[] = {
 };
 
 static std::atomic_flag _Logger_lock_log = ATOMIC_FLAG_INIT;
-static std::atomic_flag _Logger_lock_ctime = ATOMIC_FLAG_INIT;
 
 Logger::Logger(int flag,
-                     int level,
                      const std::string& scope,
                      const std::string& objName,
                      const char* func
                      )
-    : m_active(flag >= level)
+    : m_active(true)
 {
-    if ( m_active ) {
-        std::string prefix;
-        prefix.reserve(71);
-        int plen = 0;
-        if ( (m_colored = (flag >= Colorful)) ) {
-            prefix = _Logger_colors[flag];
-            plen = prefix.length();
-        }
-        if ( ShowTime ) {
-            time_t t = time(0);
-            while(_Logger_lock_ctime.test_and_set());
-            prefix += ctime(&t);  // ctime() is not thread safe
-            _Logger_lock_ctime.clear();
-            plen = prefix.length() - 1;
-            prefix.replace(plen, 1, "  ");
-        }
-
-        prefix += scope;
-        prefix += objName;
-        prefix += '.';
-        prefix += func;
-
-        plen -= prefix.length() - 30;
-        if ( plen > 0 ) {
-            prefix.append(plen, ' ');
-        }
-
-        prefix += _Logger_flags[flag];
-
-        while(_Logger_lock_log.test_and_set());
-        (*LogStream) << prefix;
+    std::string prefix;
+    prefix.reserve(80);
+    int plen = 0;
+    if ( (m_colored = (flag >= Colorful)) ) {
+        prefix = _Logger_colors[flag];
+        plen = prefix.length();
     }
+    if ( ShowTime ) {
+        time_t t = time(0);
+        char buf[32];
+        ctime_r(&t, buf);
+        prefix += buf;
+        plen = prefix.length() - 1;
+        prefix.replace(plen, 1, "  ");
+    }
+
+    prefix += scope;
+    prefix += objName;
+    prefix += '.';
+    prefix += func;
+
+    plen -= prefix.length() - 30;
+    if ( plen > 0 ) {
+        prefix.append(plen, ' ');
+    }
+
+    prefix += _Logger_flags[flag];
+
+    while(_Logger_lock_log.test_and_set());
+    (*LogStream) << prefix;
 }
 
 Logger::~Logger()

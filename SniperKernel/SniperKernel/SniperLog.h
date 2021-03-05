@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2020
+/* Copyright (C) 2018-2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -42,7 +42,6 @@ namespace SniperLog
             Logger() : m_active(false) {}
 
             Logger(int flag,
-                    int level,
                     const std::string& scope,
                     const std::string& objName,
                     const char* func
@@ -79,7 +78,6 @@ using SniperLog::objName;
 
 #define SNIPERLOG(Flag)  SniperLog::Logger(\
         Flag,\
-        logLevel(),\
         scope(),\
         objName(),\
         __func__\
