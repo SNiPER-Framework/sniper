@@ -248,7 +248,7 @@ inline void SniperJSON::toCppVar(T &var) const
         ss << m_jvar;
         ss >> var;
 
-        if (ss.eof())
+        if ( ! ss.fail() )
         {
             return;
         }
