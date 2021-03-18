@@ -51,33 +51,26 @@ Property *DLElement::property(const std::string &key)
     return m_pmgr.property(key);
 }
 
-void DLElement::show()
+SniperJSON DLElement::json()
 {
-    this->show(0);
-}
+    SniperJSON j;
+    j["class"].from(m_tag);
+    j["name"].from(m_name);
 
-void DLElement::show(int indent)
-{
-    make_indent(indent);
-    std::cout << '[' << m_tag << ']';
-    if (indent == 0)
-        std::cout << m_scope;
-    std::cout << m_name << std::endl;
-
+    SniperJSON &jprop = j["properties"];
     for (auto &p : m_pmgr.properties())
     {
-        p.second->show(indent + 1);
+        auto jv = p.second->json();
+        if (jv.valid())
+        {
+            jprop.insert(p.first, jv.format(false));
+        }
     }
+
+    return j;
 }
 
-void DLElement::make_indent(int indent)
+void DLElement::show()
 {
-    if (indent != 0)
-    {
-        for (int i = 0; i < indent - 1; ++i)
-        {
-            std::cout << "   |  ";
-        }
-        std::cout << "   +--";
-    }
+    std::cout << json().str() << std::endl;
 }

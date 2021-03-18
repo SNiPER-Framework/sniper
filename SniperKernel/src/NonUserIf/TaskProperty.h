@@ -82,7 +82,9 @@ public:
         return (this->*padd)(obj);
     }
 
-    void show(int /*indent*/) {}
+    SniperJSON json() { return SniperJSON(); }
+
+    void show() {}
 
 private:
     bool createAlg(const std::string &name)

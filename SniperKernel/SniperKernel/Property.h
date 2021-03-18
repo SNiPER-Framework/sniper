@@ -38,16 +38,13 @@ public:
     //append var to vector/map property
     virtual bool append(const std::string &var);
 
-    //show the value of the property
-    void show() { show(0); }
+    //the json value of the associated variable
+    virtual SniperJSON json() = 0;
 
-    //print the value with indent
-    virtual void show(int indent) = 0;
+    //show the value of the property
+    virtual void show();
 
 protected:
-    // offer a better look for show()
-    void make_indent(int indent);
-
     const std::string m_key;
 };
 
@@ -64,12 +61,9 @@ public:
         return true;
     }
 
-    void show(int indent)
+    SniperJSON json()
     {
-        make_indent(indent);
-        std::cout << "[Var]"
-                  << m_key << " = " << SniperJSON().from(m_var).str()
-                  << std::endl;
+        return SniperJSON().from(m_var);
     }
 
 private:
@@ -104,12 +98,9 @@ public:
         return true;
     }
 
-    void show(int indent)
+    SniperJSON json()
     {
-        make_indent(indent);
-        std::cout << "[Var]"
-                  << m_key << " = " << SniperJSON().from(m_var).str()
-                  << std::endl;
+        return SniperJSON().from(m_var);
     }
 
 private:
@@ -136,12 +127,9 @@ public:
         return true;
     }
 
-    void show(int indent)
+    SniperJSON json()
     {
-        make_indent(indent);
-        std::cout << "[Var]"
-                  << m_key << " = " << SniperJSON().from(m_var).str()
-                  << std::endl;
+        return SniperJSON().from(m_var);
     }
 
 private:

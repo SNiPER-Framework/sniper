@@ -32,14 +32,9 @@ bool Property::append(const std::string & /*var*/)
     throw ContextMsgException(m_key + " : unable to append property");
 }
 
-void Property::make_indent(int indent)
+void Property::show()
 {
-    if (indent != 0)
-    {
-        for (int i = 0; i < indent - 1; ++i)
-        {
-            std::cout << "   |  ";
-        }
-        std::cout << "   +--";
-    }
+    SniperJSON j;
+    j.insert(m_key, json());
+    std::cout << j.str(-9) << std::endl;
 }

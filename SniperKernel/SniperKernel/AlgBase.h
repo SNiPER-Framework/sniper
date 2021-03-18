@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -28,37 +27,36 @@ class ToolBase;
 
 class AlgBase : public DLElement
 {
-    public :
+public:
+    AlgBase(const std::string &name);
 
-        AlgBase(const std::string& name);
+    virtual ~AlgBase();
 
-        virtual ~AlgBase();
+    virtual bool execute() = 0;
 
-        virtual bool execute() = 0;
+    //for handling tools if needed
+    ToolBase *createTool(const std::string &toolName);
+    ToolBase *findTool(const std::string &toolName);
 
-        //for handling tools if needed
-        ToolBase* createTool(const std::string& toolName);
-        ToolBase* findTool(const std::string& toolName);
+    //template version of retrieving a Tool instance
+    template <typename Type>
+    Type *tool(const std::string &toolName);
 
-        //template version of retrieving a Tool instance
-        template<typename Type>
-        Type* tool(const std::string& toolName);
+    //Declared in base class DLElement
+    //virtual bool initialize() = 0;
+    //virtual bool finalize() = 0;
 
-        //Declared in base class DLElement
-        //virtual bool initialize() = 0;
-        //virtual bool finalize() = 0;
+    //the json value of this object
+    virtual SniperJSON json();
 
-        virtual void show(int indent) override;
-
-    protected :
-
-        std::map<std::string, ToolBase*>  m_tools;
+protected:
+    std::map<std::string, ToolBase *> m_tools;
 };
 
-template<typename Type>
-Type* AlgBase::tool(const std::string& toolName)
+template <typename Type>
+Type *AlgBase::tool(const std::string &toolName)
 {
-    return dynamic_cast<Type*>(this->findTool(toolName));
+    return dynamic_cast<Type *>(this->findTool(toolName));
 }
 
 #endif

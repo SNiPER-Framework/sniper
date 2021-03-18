@@ -21,12 +21,14 @@ const std::string SniperJSON::SPACES(" \n\t\r");
 const std::string SniperJSON::DELIMITS(", \n]}\t\r");
 
 SniperJSON::SniperJSON()
-    : m_type(0)
+    : m_format(true),
+      m_type(0)
 {
 }
 
 SniperJSON::SniperJSON(const std::string &jstr)
-    : m_type(0)
+    : m_format(true),
+      m_type(0)
 {
     StrCursor cursor = 0;
     init(jstr, cursor);
@@ -39,7 +41,8 @@ SniperJSON::SniperJSON(const std::string &jstr)
 }
 
 SniperJSON::SniperJSON(const std::string &jstr, StrCursor &cursor)
-    : m_type(0)
+    : m_format(true),
+      m_type(0)
 {
     init(jstr, cursor);
 }
@@ -91,7 +94,8 @@ int SniperJSON::size() const
 
 SniperJSON &SniperJSON::operator[](const std::string &key)
 {
-    return m_jmap.at('"' + key + '"');
+    m_type = 1;
+    return m_jmap['"' + key + '"'];
 }
 
 const SniperJSON &SniperJSON::operator[](const std::string &key) const
@@ -99,31 +103,39 @@ const SniperJSON &SniperJSON::operator[](const std::string &key) const
     return m_jmap.at('"' + key + '"');
 }
 
+SniperJSON &SniperJSON::format(bool flag)
+{
+    m_format = flag;
+    return *this;
+}
+
 std::string SniperJSON::str(int indent, unsigned flags) const
 {
     static const unsigned int levelMask = 0xFF;
     static const unsigned int mapValueBit = 0x200;
 
-    std::ostringstream oss;
+    if (!m_format)
+    {
+        indent = -9;
+    }
 
     unsigned level = flags & levelMask;
     bool isMapValue = flags & mapValueBit;
     std::string prefix = (indent < 0) ? "" : std::string().assign(indent * level, ' ');
     std::string firstPrefix = isMapValue ? "" : prefix;
 
+    std::ostringstream oss;
+
     if (isScalar())
     {
         oss << firstPrefix << m_jvar;
-        return oss.str();
     }
-
-    std::string linefeed = (indent < 0) ? "" : "\n";
-
-    if (isVector())
+    else if (isVector())
     {
         oss << firstPrefix << "[";
         if (!m_jvec.empty())
         {
+            char linefeed = (indent < 0) ? ' ' : '\n';
             unsigned _level = level + 1;
             auto it = vec_begin();
             oss << linefeed << it->str(indent, _level);
@@ -140,15 +152,16 @@ std::string SniperJSON::str(int indent, unsigned flags) const
         oss << firstPrefix << "{";
         if (!m_jmap.empty())
         {
+            char linefeed = (indent < 0) ? ' ' : '\n';
             std::string fixedPrefix = (indent < 0) ? "" : std::string().assign(indent * level + indent, ' ');
             unsigned _level = (level + 1) | mapValueBit;
             auto it = map_begin();
             oss << linefeed << fixedPrefix << it->first
-                << ":" << it->second.str(indent, _level);
+                << ": " << it->second.str(indent, _level);
             while (++it != map_end())
             {
                 oss << "," << linefeed << fixedPrefix << it->first
-                    << ":" << it->second.str(indent, _level);
+                    << ": " << it->second.str(indent, _level);
             }
             oss << linefeed << prefix;
         }

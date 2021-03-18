@@ -37,6 +37,9 @@ public:
     // construct from a json string
     SniperJSON(const std::string &jstr);
 
+    // whether this is a valid json
+    bool valid() const { return m_type > 0; }
+
     // whether this is a scalar or string
     bool isScalar() const { return m_type > 2; }
 
@@ -68,6 +71,10 @@ public:
     // insert a key/value pair in case of a map
     bool insert(const std::string &key, const SniperJSON &val);
 
+    // erase one element in a vector or a map
+    vec_iterator erase(vec_iterator it) { return m_jvec.erase(it); }
+    map_iterator erase(map_iterator it) { return m_jmap.erase(it); }
+
     // clear all the contents of this element
     void reset();
 
@@ -96,6 +103,9 @@ public:
     // get the object in map via key
     const SniperJSON &operator[](const std::string &key) const;
 
+    // set the string format flag
+    SniperJSON &format(bool flag);
+
     // convert the json to a string
     std::string str(int indent = 4, unsigned flags = 0) const;
 
@@ -113,6 +123,9 @@ public:
 
 private:
     typedef std::string::size_type StrCursor;
+
+    // str() format -> true: in multi lines, false: in one line
+    bool m_format;
 
     // 0:invalid, 1:object/map, 2:array/vector, 3:string, 9:other scalars
     int m_type;
