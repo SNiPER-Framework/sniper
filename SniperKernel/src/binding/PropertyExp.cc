@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -21,22 +20,20 @@
 
 namespace bp = boost::python;
 
-struct PropertyWrap : Property, bp::wrapper<Property>
+namespace PropertyExp
 {
-    bool set(bp::object& var) {
-        return this->get_override("set")(var);
+    static auto json = bp::import("json").attr("dumps");
+
+    bool set(Property &prop, bp::object &var)
+    {
+        return prop.set(bp::extract<std::string>(json(var)));
     }
 
-    bool append(bp::object& var) {
-        if ( bp::override f = this->get_override("append") )
-            return f(var);
-        return Property::append(var);
+    bool append(Property &prop, bp::object &var)
+    {
+        return prop.append(bp::extract<std::string>(json(var)));
     }
-
-    bool default_append(bp::object& var) {
-        return this->Property::append(var);
-    }
-};
+}
 
 void export_Sniper_Property()
 {
@@ -44,9 +41,8 @@ void export_Sniper_Property()
 
     void (Property::*showf)() = &Property::show;
 
-    class_<PropertyWrap, boost::noncopyable>("Property", no_init)
-        .def("set",    pure_virtual(&Property::set))
-        .def("append", &Property::append, &PropertyWrap::default_append)
-        .def("show",   showf)
-        ;
+    class_<Property, boost::noncopyable>("Property", no_init)
+        .def("set", PropertyExp::set)
+        .def("append", PropertyExp::append)
+        .def("show", showf);
 }

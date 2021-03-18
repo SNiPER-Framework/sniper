@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -20,82 +19,76 @@
 #define SNIPER_PROPERTY_MGR_H
 
 #include "SniperKernel/Property.h"
-#include <vector>
-#include <map>
-#include <string>
-
-class DLElement;
 
 class PropertyMgr
 {
-    public :
+public:
+    typedef std::map<std::string, Property *> PropertyMap;
 
-        typedef std::map<std::string, Property*> PropertyMap;
+    PropertyMgr() = default;
 
-        PropertyMgr(DLElement* par);
+    //this class will not used for inheriting
+    ~PropertyMgr();
 
-        //this class will not used for inheriting
-        ~PropertyMgr();
+    //for SniperLog convenience
+    const char *objName() { return "PropertyMgr"; }
 
-        //for SniperLog convenience
-        const char* objName() { return "PropertyMgr"; }
+    //get property by key
+    Property *property(const std::string &key);
 
-        //get property by key
-        Property* property(const std::string& key);
+    //get all properties at one time
+    const PropertyMap &properties() { return m_dict; }
 
-        //get all properties at one time
-        const PropertyMap& properties() { return m_dict; }
+    //add a simple property
+    template <typename Type>
+    bool addProperty(const std::string &key, Type &var);
 
-        //add a simple property
-        template<typename Type>
-        bool addProperty(const std::string& key, Type& var);
+    //add a vector property
+    template <typename Type>
+    bool addProperty(const std::string &key, std::vector<Type> &var);
 
-        //add a vector property
-        template<typename Type>
-        bool addProperty(const std::string& key, std::vector<Type>& var);
+    //add a map property
+    template <typename K, typename V>
+    bool addProperty(const std::string &key, std::map<K, V> &var);
 
-        //add a map property
-        template<typename K, typename V>
-        bool addProperty(const std::string& key, std::map<K, V>& var);
+    //take over a property pointer
+    bool addProperty(Property *property);
 
-        //take over a property pointer
-        bool addProperty(Property* property);
-
-    private :
-
-        DLElement*  m_par;
-
-        std::map<std::string, Property*> m_dict;
+private:
+    std::map<std::string, Property *> m_dict;
 };
 
-template<typename Type>
-bool PropertyMgr::addProperty(const std::string& key, Type& var)
+template <typename Type>
+bool PropertyMgr::addProperty(const std::string &key, Type &var)
 {
-    std::map<std::string, Property*>::iterator it = m_dict.find(key);
-    if ( it == m_dict.end() ) {
+    std::map<std::string, Property *>::iterator it = m_dict.find(key);
+    if (it == m_dict.end())
+    {
         m_dict[key] = new SniperProperty<Type>(key, var);
         return true;
     }
     throw ContextMsgException(key + " : duplicated Property Key");
 }
 
-template<typename Type>
-bool PropertyMgr::addProperty(const std::string& key, std::vector<Type>& var)
+template <typename Type>
+bool PropertyMgr::addProperty(const std::string &key, std::vector<Type> &var)
 {
-    std::map<std::string, Property*>::iterator it = m_dict.find(key);
-    if ( it == m_dict.end() ) {
-        m_dict[key] = new SniperProperty<std::vector<Type> >(key, var);
+    std::map<std::string, Property *>::iterator it = m_dict.find(key);
+    if (it == m_dict.end())
+    {
+        m_dict[key] = new SniperProperty<std::vector<Type>>(key, var);
         return true;
     }
     throw ContextMsgException(key + " : duplicated Property Key");
 }
 
-template<typename K, typename V>
-bool PropertyMgr::addProperty(const std::string& key, std::map<K, V>& var)
+template <typename K, typename V>
+bool PropertyMgr::addProperty(const std::string &key, std::map<K, V> &var)
 {
-    std::map<std::string, Property*>::iterator it = m_dict.find(key);
-    if ( it == m_dict.end() ) {
-        m_dict[key] = new SniperProperty<std::map<K, V> >(key, var);
+    std::map<std::string, Property *>::iterator it = m_dict.find(key);
+    if (it == m_dict.end())
+    {
+        m_dict[key] = new SniperProperty<std::map<K, V>>(key, var);
         return true;
     }
     throw ContextMsgException(key + " : duplicated Property Key");

@@ -1,4 +1,4 @@
-/* Copyright (C) 2020
+/* Copyright (C) 2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -99,6 +99,65 @@ const SniperJSON &SniperJSON::operator[](const std::string &key) const
     return m_jmap.at('"' + key + '"');
 }
 
+std::string SniperJSON::str(int indent, unsigned flags) const
+{
+    static const unsigned int levelMask = 0xFF;
+    static const unsigned int mapValueBit = 0x200;
+
+    std::ostringstream oss;
+
+    unsigned level = flags & levelMask;
+    bool isMapValue = flags & mapValueBit;
+    std::string prefix = (indent < 0) ? "" : std::string().assign(indent * level, ' ');
+    std::string firstPrefix = isMapValue ? "" : prefix;
+
+    if (isScalar())
+    {
+        oss << firstPrefix << m_jvar;
+        return oss.str();
+    }
+
+    std::string linefeed = (indent < 0) ? "" : "\n";
+
+    if (isVector())
+    {
+        oss << firstPrefix << "[";
+        if (!m_jvec.empty())
+        {
+            unsigned _level = level + 1;
+            auto it = vec_begin();
+            oss << linefeed << it->str(indent, _level);
+            while (++it != vec_end())
+            {
+                oss << "," << linefeed << it->str(indent, _level);
+            }
+            oss << linefeed << prefix;
+        }
+        oss << "]";
+    }
+    else if (isMap())
+    {
+        oss << firstPrefix << "{";
+        if (!m_jmap.empty())
+        {
+            std::string fixedPrefix = (indent < 0) ? "" : std::string().assign(indent * level + indent, ' ');
+            unsigned _level = (level + 1) | mapValueBit;
+            auto it = map_begin();
+            oss << linefeed << fixedPrefix << it->first
+                << ":" << it->second.str(indent, _level);
+            while (++it != map_end())
+            {
+                oss << "," << linefeed << fixedPrefix << it->first
+                    << ":" << it->second.str(indent, _level);
+            }
+            oss << linefeed << prefix;
+        }
+        oss << "}";
+    }
+
+    return oss.str();
+}
+
 SniperJSON SniperJSON::load(std::istream &is)
 {
     std::ostringstream oss;
@@ -114,71 +173,12 @@ SniperJSON SniperJSON::loads(const std::string &jstr)
 
 void SniperJSON::dump(const SniperJSON &element, std::ostream &os, int indent, unsigned flags)
 {
-    static const unsigned int levelMask = 0xFF;
-    static const unsigned int mapValueBit = 0x200;
-
-    unsigned level = flags & levelMask;
-    bool isMapValue = flags & mapValueBit;
-    std::string prefix = (indent < 0) ? "" : std::string().assign(indent * level, ' ');
-    std::string firstPrefix = isMapValue ? "" : prefix;
-
-    if (element.isScalar())
-    {
-        os << firstPrefix << element.m_jvar;
-        return;
-    }
-
-    std::string linefeed = (indent < 0) ? "" : "\n";
-
-    if (element.isVector())
-    {
-        os << firstPrefix << "[";
-        if (!element.m_jvec.empty())
-        {
-            auto it = element.vec_begin();
-            os << linefeed;
-            dump(*it, os, indent, level + 1);
-            while (++it != element.vec_end())
-            {
-                os << ',' << linefeed;
-                dump(*it, os, indent, level + 1);
-            }
-            os << linefeed << prefix << "]";
-        }
-        else
-        {
-            os << "]";
-        }
-    }
-    else if (element.isMap())
-    {
-        os << firstPrefix << "{";
-        if (!element.m_jmap.empty())
-        {
-            std::string fixedPrefix = (indent < 0) ? "" : std::string().assign(indent * level + indent, ' ');
-            auto it = element.map_begin();
-            os << linefeed << fixedPrefix << it->first << ":";
-            dump(it->second, os, indent, (level + 1) | mapValueBit);
-            while (++it != element.map_end())
-            {
-                os << ',' << linefeed;
-                os << fixedPrefix << it->first << ":";
-                dump(it->second, os, indent, (level + 1) | mapValueBit);
-            }
-            os << linefeed << prefix << "}";
-        }
-        else
-        {
-            os << "}";
-        }
-    }
+    os << element.str(indent, flags);
 }
 
 std::string SniperJSON::dumps(const SniperJSON &element, int indent, unsigned flags)
 {
-    std::ostringstream oss;
-    dump(element, oss, indent, flags);
-    return oss.str();
+    return element.str(indent, flags);
 }
 
 void SniperJSON::init(const std::string &jstr, StrCursor &cursor)

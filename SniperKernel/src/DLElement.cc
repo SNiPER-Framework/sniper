@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -19,10 +18,9 @@
 #include "SniperKernel/DLElement.h"
 #include "SniperKernel/Task.h"
 
-DLElement::DLElement(const std::string& name)
+DLElement::DLElement(const std::string &name)
     : NamedElement(name),
-      m_par(nullptr),
-      m_pmgr(this)
+      m_par(nullptr)
 {
     declProp("LogLevel", m_logLevel);
 }
@@ -31,23 +29,24 @@ DLElement::~DLElement()
 {
 }
 
-Task* DLElement::getRoot()
+Task *DLElement::getRoot()
 {
-    DLElement* p = this;
-    while ( p->m_par != nullptr ) {
+    DLElement *p = this;
+    while (p->m_par != nullptr)
+    {
         p = p->m_par;
     }
-    return dynamic_cast<Task*>(p);
+    return dynamic_cast<Task *>(p);
 }
 
-void DLElement::setParent(Task* par)
+void DLElement::setParent(Task *par)
 {
     m_logLevel = par->logLevel();
     m_scope = par->scope() + par->objName() + ':';
-    m_par   = par;
+    m_par = par;
 }
 
-Property* DLElement::property(const std::string& key)
+Property *DLElement::property(const std::string &key)
 {
     return m_pmgr.property(key);
 }
@@ -61,18 +60,22 @@ void DLElement::show(int indent)
 {
     make_indent(indent);
     std::cout << '[' << m_tag << ']';
-    if ( indent == 0 ) std::cout << m_scope;
+    if (indent == 0)
+        std::cout << m_scope;
     std::cout << m_name << std::endl;
 
-    for ( auto& p : m_pmgr.properties() ) {
-        p.second->show(indent+1);
+    for (auto &p : m_pmgr.properties())
+    {
+        p.second->show(indent + 1);
     }
 }
 
 void DLElement::make_indent(int indent)
 {
-    if ( indent != 0 ) {
-        for ( int i = 0; i < indent-1; ++i ) {
+    if (indent != 0)
+    {
+        for (int i = 0; i < indent - 1; ++i)
+        {
             std::cout << "   |  ";
         }
         std::cout << "   +--";

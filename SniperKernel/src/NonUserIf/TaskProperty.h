@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -22,82 +21,93 @@
 #include "SniperKernel/Property.h"
 #include <iostream>
 
-class TaskProperty : public SniperProperty<std::vector<std::string> >
+class TaskProperty : public SniperProperty<std::vector<std::string>>
 {
-    public :
+public:
+    typedef SniperProperty<std::vector<std::string>> BaseType;
 
-        typedef SniperProperty<std::vector<std::string> > BaseType;
-
-        TaskProperty(const std::string& key_, Task* domain_)
-            : BaseType(key_, m_names), m_domain(domain_)
+    TaskProperty(const std::string &key_, Task *domain_)
+        : BaseType(key_, m_names), m_domain(domain_)
+    {
+        if (key_ == "algs")
         {
-            if ( key_ == "algs") {
-                pclear  = &Task::clearAlgs;
-                pcreate = &TaskProperty::createAlg;
-                padd    = &TaskProperty::addAlg;
-            }
-            else if ( key_ == "svcs" ) {
-                pclear  = &Task::clearSvcs;
-                pcreate = &TaskProperty::createSvc;
-                padd    = &TaskProperty::addSvc;
-            }
-            else {
-                throw ContextMsgException( key_ + " : invalid TaskProperty Key");
-            }
+            pclear = &Task::clearAlgs;
+            pcreate = &TaskProperty::createAlg;
+            padd = &TaskProperty::addAlg;
         }
-
-        bool set(bp::object& var) {
-            if ( ! m_names.empty() ) {
-                std::cout << "WARNING :: " << m_key
-                          << " is not empty, potential ERRORS"
-                          << std::endl;
-                m_names.clear();
-                (m_domain->*pclear)();
-            }
-            return this->append(var);
+        else if (key_ == "svcs")
+        {
+            pclear = &Task::clearSvcs;
+            pcreate = &TaskProperty::createSvc;
+            padd = &TaskProperty::addSvc;
         }
+        else
+        {
+            throw ContextMsgException(key_ + " : invalid TaskProperty Key");
+        }
+    }
 
-        bool append(bp::object& var) {
-            bp::extract<DLElement*> _var(var);
-            if ( _var.check() ) { //python alg/svc/task object
-                DLElement* obj = _var();
-                return (this->*padd)(obj);
-            }
-            unsigned int begin = m_names.size();
-            if ( !BaseType::append(var) ) {
+    bool set(const std::string &var)
+    {
+        if (!m_names.empty())
+        {
+            std::cout << "WARNING :: " << m_key
+                      << " is not empty, potential ERRORS"
+                      << std::endl;
+            m_names.clear();
+            (m_domain->*pclear)();
+        }
+        return this->append(var);
+    }
+
+    bool append(const std::string &var)
+    {
+        unsigned int begin = m_names.size();
+        if (!BaseType::append(var))
+        {
+            return false;
+        }
+        for (unsigned int i = begin; i < m_names.size(); ++i)
+        {
+            if (!(this->*pcreate)(m_names[i]))
+            {
                 return false;
             }
-            for (unsigned int i = begin; i < m_names.size(); ++i ) {
-                if ( ! (this->*pcreate)(m_names[i]) ) {
-                    return false;
-                }
-            }
-            return true;
         }
+        return true;
+    }
 
-        void show(int /*indent*/) {}
+    bool append(DLElement *obj)
+    {
+        return (this->*padd)(obj);
+    }
 
-    private :
+    void show(int /*indent*/) {}
 
-        bool createAlg(const std::string& name) {
-            return m_domain->createAlg(name) != 0;
-        }
-        bool createSvc(const std::string& name) {
-            return m_domain->createSvc(name) != 0;
-        }
-        bool addAlg(DLElement* alg) {
-            return m_domain->addAlg(dynamic_cast<AlgBase*>(alg)) != 0;
-        }
-        bool addSvc(DLElement* svc) {
-            return m_domain->addSvc(dynamic_cast<SvcBase*>(svc)) != 0;
-        }
+private:
+    bool createAlg(const std::string &name)
+    {
+        return m_domain->createAlg(name) != 0;
+    }
+    bool createSvc(const std::string &name)
+    {
+        return m_domain->createSvc(name) != 0;
+    }
+    bool addAlg(DLElement *alg)
+    {
+        return m_domain->addAlg(dynamic_cast<AlgBase *>(alg)) != 0;
+    }
+    bool addSvc(DLElement *svc)
+    {
+        return m_domain->addSvc(dynamic_cast<SvcBase *>(svc)) != 0;
+    }
 
-        void (Task::*pclear)();
-        bool (TaskProperty::*pcreate)(const std::string&);
-        bool (TaskProperty::*padd)(DLElement*);
+    void (Task::*pclear)();
+    bool (TaskProperty::*pcreate)(const std::string &);
+    bool (TaskProperty::*padd)(DLElement *);
 
-        Task*  m_domain;
-        std::vector<std::string>  m_names;
+    Task *m_domain;
+    std::vector<std::string> m_names;
 };
 
 #endif

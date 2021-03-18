@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -19,171 +18,134 @@
 #ifndef SNIPER_PROPERTY_H
 #define SNIPER_PROPERTY_H
 
-#include <boost/python.hpp>
-#include <boost/python/stl_iterator.hpp>
+#include "SniperKernel/SniperJSON.h"
 #include "SniperKernel/SniperException.h"
-#include <string>
-#include <vector>
-#include <map>
 #include <iostream>
-#include <iomanip>
-
-namespace bp = boost::python;
 
 class Property
 {
-    public :
+public:
+    Property(const std::string &key);
 
-        Property(const std::string& key);
+    virtual ~Property();
 
-        virtual ~Property();
+    //return the property key name
+    const std::string &key() { return m_key; }
 
-        //return the property key name
-        const std::string& key() {return m_key; }
+    //set property value as var
+    virtual bool set(const std::string &var) = 0;
 
-        //set property value as var
-        virtual bool set(bp::object& var) = 0;
+    //append var to vector/map property
+    virtual bool append(const std::string &var);
 
-        //append var to vector/map property
-        virtual bool append(bp::object& var);
+    //show the value of the property
+    void show() { show(0); }
 
-        //show the value of the property
-        void show() { show(0); }
+    //print the value with indent
+    virtual void show(int indent) = 0;
 
-        //print the value with indent
-        virtual void show(int indent) = 0;
+protected:
+    // offer a better look for show()
+    void make_indent(int indent);
 
-    protected :
-
-        // offer a better look for show()
-        void make_indent(int indent);
-
-        const std::string  m_key;
+    const std::string m_key;
 };
 
-template<typename T>
+template <typename T>
 class SniperProperty : public Property
 {
-    public :
+public:
+    SniperProperty(const std::string &key_, T &var_)
+        : Property(key_), m_var(var_) {}
 
-        SniperProperty(const std::string& key_, T& var_)
-            : Property(key_), m_var(var_) {}
+    bool set(const std::string &var)
+    {
+        m_var = SniperJSON(var).get<T>();
+        return true;
+    }
 
-        bool set(bp::object& var)
+    void show(int indent)
+    {
+        make_indent(indent);
+        std::cout << "[Var]"
+                  << m_key << " = " << SniperJSON().from(m_var).str()
+                  << std::endl;
+    }
+
+private:
+    T &m_var;
+};
+
+template <typename T>
+class SniperProperty<std::vector<T>> : public Property
+{
+public:
+    SniperProperty(const std::string &key_, std::vector<T> &var_)
+        : Property(key_), m_var(var_) {}
+
+    bool set(const std::string &var)
+    {
+        m_var.clear();
+        return this->append(var);
+    }
+
+    bool append(const std::string &var)
+    {
+        SniperJSON json(var);
+        try
         {
-            bp::extract<T> _var(var);
-            if ( _var.check() ) {
-                m_var = _var();
-                return true;
-            }
-            throw ContextMsgException(m_key + " : mismatched property type");
+            auto vCpp = json.get<std::vector<T>>();
+            m_var.insert(m_var.end(), vCpp.begin(), vCpp.end());
         }
-
-
-        void show(int indent) {
-            make_indent(indent);
-            std::cout  << "[Var]" << std::setiosflags(std::ios::left)
-                << std::setw(10) << m_key << " = " << m_var << std::endl;
+        catch (SniperJSON::Exception &)
+        {
+            m_var.push_back(json.get<T>());
         }
+        return true;
+    }
 
-    private :
+    void show(int indent)
+    {
+        make_indent(indent);
+        std::cout << "[Var]"
+                  << m_key << " = " << SniperJSON().from(m_var).str()
+                  << std::endl;
+    }
 
-        T& m_var;
+private:
+    std::vector<T> &m_var;
 };
 
-template<typename T>
-class SniperProperty<std::vector<T> > : public Property
+template <typename K, typename V>
+class SniperProperty<std::map<K, V>> : public Property
 {
-    public :
+public:
+    SniperProperty(const std::string &key_, std::map<K, V> &var_)
+        : Property(key_), m_var(var_) {}
 
-        SniperProperty(const std::string& key_, std::vector<T>& var_)
-            : Property(key_), m_var(var_) {}
+    bool set(const std::string &var)
+    {
+        m_var = SniperJSON(var).get<std::map<K, V>>();
+        return true;
+    }
 
-        bool set(bp::object& var) {
-            m_var.clear();
-            return this->append(var);
-        }
+    bool append(const std::string &var)
+    {
+        auto vCpp = SniperJSON(var).get<std::map<K, V>>();
+        m_var.insert(vCpp.begin(), vCpp.end());
+        return true;
+    }
 
-        bool append(bp::object& var) {
-            bp::extract<T> _var(var);
-            if ( _var.check() ) {
-                m_var.push_back(_var());
-                return true;
-            }
-            bp::stl_input_iterator<T> begin(var), end;
-            m_var.insert(m_var.end(), begin, end);
-            return true;
-        }
+    void show(int indent)
+    {
+        make_indent(indent);
+        std::cout << "[Var]"
+                  << m_key << " = " << SniperJSON().from(m_var).str()
+                  << std::endl;
+    }
 
-        void show(int indent) {
-            make_indent(indent);
-            std::cout << "[Var]" << std::setiosflags(std::ios::left)
-                << std::setw(10) << m_key << " = [";
-            if ( !m_var.empty() ) {
-                std::cout << m_var[0];
-                for (unsigned int i = 1; i < m_var.size(); ++i ) {
-                    std::cout << ", " << m_var[i];
-                }
-            }
-            std::cout << ']' << std::endl;
-        }
-
-    private :
-
-        std::vector<T>& m_var;
-};
-
-template<typename K, typename V>
-class SniperProperty<std::map<K, V> > : public Property
-{
-    public:
-
-        SniperProperty(const std::string& key_, std::map<K, V>& var_)
-            : Property(key_), m_var(var_) {}
-
-        bool set(bp::object& var) {
-            m_var.clear();
-            return this->append(var);
-        }
-
-        bool append(bp::object& var) {
-            bp::extract<bp::dict> dvar_(var);
-            if ( dvar_.check() ) {
-                bp::dict dvar = dvar_();
-# if PY_MAJOR_VERSION >= 3
-                bp::list iterkeys = dvar.keys();
-# else
-                bp::list iterkeys = (bp::list)dvar.iterkeys();
-# endif
-                bp::ssize_t dsize = bp::len(iterkeys);
-                for(bp::ssize_t i = 0; i < dsize; ++i) {
-                    bp::object kobj = iterkeys[i];
-                    bp::extract<K> kvar(kobj);
-                    bp::object vobj = dvar[kobj];
-                    bp::extract<V> vvar(vobj);
-                    m_var.insert(std::make_pair(kvar(), vvar()));
-                }
-            }
-            return true;
-        }
-
-        void show(int indent) {
-            make_indent(indent);
-            std::cout << "[Var]" << std::setiosflags(std::ios::left)
-                << std::setw(10) << m_key << " = {";
-            if ( ! m_var.empty() ) {
-                typename std::map<K, V>::iterator it = m_var.begin();
-                std::cout << it->first << ':' << it->second;
-                for ( ++it; it != m_var.end(); ++it ) {
-                    std::cout << ", " << it->first << ':' << it->second;
-                }
-            }
-            std::cout << '}' << std::endl;
-        }
-
-    private :
-
-        std::map<K, V>& m_var;
+private:
+    std::map<K, V> &m_var;
 };
 
 #endif
