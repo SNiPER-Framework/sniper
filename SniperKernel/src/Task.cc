@@ -313,6 +313,10 @@ SniperJSON Task::json()
         {
             jcomponents.push_back(obj->json());
         }
+        if (!jcomponents.valid())
+        {
+            jcomponents = SniperJSON::loads("[]");
+        }
     }
 
     return j;
