@@ -17,6 +17,8 @@
 
 #include <boost/python.hpp>
 
+auto BoostPyJsonModule = boost::python::import("json");
+
 void export_Sniper_Incident();
 void export_Sniper_IIncidentHandler();
 void export_Sniper_Property();

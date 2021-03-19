@@ -20,7 +20,6 @@
 
 #include "SniperKernel/SniperJSON.h"
 #include "SniperKernel/SniperException.h"
-#include <iostream>
 
 class Property
 {
@@ -57,7 +56,14 @@ public:
 
     bool set(const std::string &var)
     {
-        m_var = SniperJSON(var).get<T>();
+        try
+        {
+            m_var = SniperJSON(var).get<T>();
+        }
+        catch (SniperJSON::Exception &e)
+        {
+            throw ContextMsgException("set property '" + m_key + "' failed\n" + e.what());
+        }
         return true;
     }
 
@@ -86,14 +92,29 @@ public:
     bool append(const std::string &var)
     {
         SniperJSON json(var);
-        try
+        if (json.isVector())
         {
-            auto vCpp = json.get<std::vector<T>>();
+            std::vector<T> vCpp;
+            try
+            {
+                vCpp = json.get<std::vector<T>>();
+            }
+            catch (SniperJSON::Exception &e)
+            {
+                throw ContextMsgException("set property '" + m_key + "' failed\n" + e.what());
+            }
             m_var.insert(m_var.end(), vCpp.begin(), vCpp.end());
         }
-        catch (SniperJSON::Exception &)
+        else
         {
-            m_var.push_back(json.get<T>());
+            try
+            {
+                m_var.push_back(json.get<T>());
+            }
+            catch (SniperJSON::Exception &e)
+            {
+                throw ContextMsgException("set property '" + m_key + "' failed\n" + e.what());
+            }
         }
         return true;
     }
@@ -116,13 +137,28 @@ public:
 
     bool set(const std::string &var)
     {
-        m_var = SniperJSON(var).get<std::map<K, V>>();
+        try
+        {
+            m_var = SniperJSON(var).get<std::map<K, V>>();
+        }
+        catch (SniperJSON::Exception &e)
+        {
+            throw ContextMsgException("set property '" + m_key + "' failed\n" + e.what());
+        }
         return true;
     }
 
     bool append(const std::string &var)
     {
-        auto vCpp = SniperJSON(var).get<std::map<K, V>>();
+        std::map<K, V> vCpp;
+        try
+        {
+            vCpp = SniperJSON(var).get<std::map<K, V>>();
+        }
+        catch (SniperJSON::Exception &e)
+        {
+            throw ContextMsgException("set property '" + m_key + "' failed\n" + e.what());
+        }
         m_var.insert(vCpp.begin(), vCpp.end());
         return true;
     }

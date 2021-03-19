@@ -213,6 +213,35 @@ std::string SniperJSON::dumps(const SniperJSON &element, int indent, unsigned fl
     return element.str(indent, flags);
 }
 
+std::string SniperJSON::typestr(const std::type_info &tid)
+{
+    static std::map<std::size_t, std::string> typeid2str{
+        {typeid(bool).hash_code(), "bool"},
+        {typeid(char).hash_code(), "char"},
+        {typeid(signed char).hash_code(), "signed char"},
+        {typeid(short).hash_code(), "short"},
+        {typeid(int).hash_code(), "int"},
+        {typeid(long).hash_code(), "long"},
+        {typeid(long long).hash_code(), "long long"},
+        {typeid(unsigned short).hash_code(), "unsigned short"},
+        {typeid(unsigned int).hash_code(), "unsigned int"},
+        {typeid(unsigned long).hash_code(), "unsigned long"},
+        {typeid(unsigned long long).hash_code(), "unsigned long long"},
+        {typeid(float).hash_code(), "float"},
+        {typeid(double).hash_code(), "double"},
+        {typeid(long double).hash_code(), "long double"},
+        {typeid(std::string).hash_code(), "std::string"}
+    };
+
+    auto it = typeid2str.find(tid.hash_code());
+    if (it != typeid2str.end())
+    {
+        return it->second;
+    }
+
+    return tid.name();
+}
+
 void SniperJSON::init(const std::string &jstr, StrCursor &cursor)
 {
     switch (getValidChar(jstr, cursor))

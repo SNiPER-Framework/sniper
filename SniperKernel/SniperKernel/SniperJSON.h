@@ -124,6 +124,9 @@ public:
     // dump the json as a string
     static std::string dumps(const SniperJSON &element, int indent = 4, unsigned flags = 0);
 
+    // get a friendly type string from a typeid
+    static std::string typestr(const std::type_info &tid);
+
 private:
     typedef std::string::size_type StrCursor;
 
@@ -245,7 +248,7 @@ inline void SniperJSON::toCppVar(T &var) const
     }
 
     throw Exception(
-        std::string("cannot set <") + typeid(T).name() + "> with '" + m_jvar + "'");
+        std::string("cannot set <") + typestr(typeid(T)) + "> with <" + m_jvar + '>');
 }
 
 template <>
@@ -265,7 +268,7 @@ inline void SniperJSON::toCppVar<bool>(bool &var) const
         }
     }
 
-    throw Exception(std::string("cannot set <bool> with '") + m_jvar + "'");
+    throw Exception(std::string("cannot set <bool> with <") + m_jvar + '>');
 }
 
 template <>
@@ -277,7 +280,7 @@ inline void SniperJSON::toCppVar<std::string>(std::string &var) const
         return;
     }
 
-    throw Exception(std::string("cannot set <std::string> with '") + m_jvar + "'");
+    throw Exception(std::string("cannot set <std::string> with <") + m_jvar + '>');
 }
 
 template <typename T>
