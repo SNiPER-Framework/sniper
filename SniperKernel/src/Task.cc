@@ -35,7 +35,7 @@ Task::Task(const std::string &name)
       m_done(0),
       m_snoopy(this),
       m_svcs(name, "services"),
-      m_algs(name, "xalgorithms"), //'x'algs presents after svcs in json.str()
+      m_algs(name, "algorithms"),
       m_limited(false),
       m_beginEvt("BeginEvent"),
       m_endEvt("EndEvent"),

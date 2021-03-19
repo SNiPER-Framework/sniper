@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -16,15 +15,29 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
+//We can construct a complex tree of nested tasks for particular utilities.
+//For example:
+//                 TopTask      (only TopTask can has nested tasks)
+//                 /  |   \.
+//           TopTask Task TopTask
+//           /  |  \       /    \.
+//    TopTask Task Task  Task  TopTask
+//     /   \                      |
+//  Task   Task                  Task
+//
+//However, this is not encouraged.
+//Do not use nested tasks more than 2 layers unless it's indeed necessary.
+
 #include "SniperKernel/TopTask.h"
 #include "SniperKernel/SniperLog.h"
 #include "NonUserIf/DLEFactory.h"
+#include "SniperKernel/DeclareDLE.h"
 
-//to encourage flattened task topology, TopTask is not registed in DLEFactory
+SNIPER_DECLARE_DLE(TopTask);
 
-TopTask::TopTask(const std::string& name)
+TopTask::TopTask(const std::string &name)
     : Task(name),
-      m_tasks("SNiPER:Supervisor")
+      m_tasks(name, "subtasks")
 {
     m_tag = "TopTask";
     queue(&m_tasks);
@@ -34,18 +47,22 @@ TopTask::~TopTask()
 {
 }
 
-Task* TopTask::createTask(const std::string& taskName)
+Task *TopTask::createTask(const std::string &taskName)
 {
-    DLElement* obj = DLEFactory::instance().create(taskName);
-    if ( obj != nullptr ) {
-        Task* result = dynamic_cast<Task*>(obj);
-        if ( result != nullptr ) {
-            if ( m_tasks.append(result, true) ) {
+    DLElement *obj = DLEFactory::instance().create(taskName);
+    if (obj != nullptr)
+    {
+        Task *result = dynamic_cast<Task *>(obj);
+        if (result != nullptr)
+        {
+            if (m_tasks.append(result, true))
+            {
                 result->setParent(this);
                 return result;
             }
         }
-        else {
+        else
+        {
             LogFatal << obj->objName() << " cannot cast to Task." << std::endl;
         }
         delete obj;
@@ -53,9 +70,10 @@ Task* TopTask::createTask(const std::string& taskName)
     return nullptr;
 }
 
-Task* TopTask::addTask(Task* task)
+Task *TopTask::addTask(Task *task)
 {
-    if ( m_tasks.append(task, false) ) {
+    if (m_tasks.append(task, false))
+    {
         task->setParent(this);
         return task;
     }
@@ -66,9 +84,11 @@ bool TopTask::config()
 {
     bool stat = Task::config();
 
-    for ( auto obj : m_tasks.list() ) {
-        Task* task = dynamic_cast<Task*>(obj);
-        if ( ! task->Snoopy().config() ) return false;
+    for (auto obj : m_tasks.list())
+    {
+        Task *task = dynamic_cast<Task *>(obj);
+        if (!task->Snoopy().config())
+            return false;
     }
 
     return stat;
@@ -78,11 +98,14 @@ bool TopTask::initialize()
 {
     bool stat = true;
 
-    if ( ! Task::initialize() ) stat = false;
+    if (!Task::initialize())
+        stat = false;
 
-    for ( auto obj : m_tasks.list() ) {
-        Task* task = dynamic_cast<Task*>(obj);
-        if ( ! task->Snoopy().initialize() ) stat = false;
+    for (auto obj : m_tasks.list())
+    {
+        Task *task = dynamic_cast<Task *>(obj);
+        if (!task->Snoopy().initialize())
+            stat = false;
     }
 
     return stat;
@@ -92,43 +115,50 @@ bool TopTask::finalize()
 {
     bool stat = true;
 
-    auto& tasks = m_tasks.list();
-    for ( auto it = tasks.rbegin(); it != tasks.rend(); ++it ) {
-        Task* task = dynamic_cast<Task*>(*it);
-        if ( ! task->Snoopy().finalize() ) stat = false;
+    auto &tasks = m_tasks.list();
+    for (auto it = tasks.rbegin(); it != tasks.rend(); ++it)
+    {
+        Task *task = dynamic_cast<Task *>(*it);
+        if (!task->Snoopy().finalize())
+            stat = false;
     }
 
-    if ( ! Task::finalize() ) stat = false;
+    if (!Task::finalize())
+        stat = false;
 
     return stat;
 }
 
-DLElement* TopTask::find(const std::string& name)
+DLElement *TopTask::find(const std::string &name)
 {
     std::string::size_type pseg = name.find(":");
-    if ( pseg == std::string::npos ) {
+    if (pseg == std::string::npos)
+    {
         return Task::find(name);
     }
 
-    Task* obj = dynamic_cast<Task*>(m_tasks.find(name.substr(0, pseg)));
-    if ( obj != nullptr ) {
-        return obj->find(name.substr(pseg+1, std::string::npos));
+    Task *obj = dynamic_cast<Task *>(m_tasks.find(name.substr(0, pseg)));
+    if (obj != nullptr)
+    {
+        return obj->find(name.substr(pseg + 1, std::string::npos));
     }
 
     LogWarn << "Cann't find Object " << name << std::endl;
     return nullptr;
 }
 
-void TopTask::remove(const std::string& name)
+void TopTask::remove(const std::string &name)
 {
     std::string::size_type pseg = name.find(":");
-    if ( pseg == std::string::npos ) {
+    if (pseg == std::string::npos)
+    {
         return Task::remove(name);
     }
 
-    Task* obj = dynamic_cast<Task*>(m_tasks.find(name.substr(0, pseg)));
-    if ( obj != nullptr ) {
-        return obj->remove(name.substr(pseg+1, std::string::npos));
+    Task *obj = dynamic_cast<Task *>(m_tasks.find(name.substr(0, pseg)));
+    if (obj != nullptr)
+    {
+        return obj->remove(name.substr(pseg + 1, std::string::npos));
     }
 
     LogWarn << "Cannot remove, no such element " << name << std::endl;
