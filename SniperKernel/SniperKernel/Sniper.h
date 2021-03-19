@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -21,22 +20,28 @@
 
 #include <string>
 
-namespace Sniper {
-
+namespace Sniper
+{
     void setLogLevel(int level);
     void setColorful(int level);
     void setShowTime(bool flag);
-    void setLogFile(char* fname, bool append);
+    void setLogFile(char *fname, bool append);
+    void setLogStdout();
 
-    void loadDll(char* dll);
+    void loadDll(char *dll);
 
     namespace System
     {
         ///
-        const std::string& hostName();
+        const std::string &hostName();
 
         ///
         std::string sysDate();
+    }
+
+    namespace Config
+    {
+        std::string json_str();
     }
 }
 

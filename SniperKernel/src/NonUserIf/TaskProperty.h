@@ -1,4 +1,4 @@
-/* Copyright (C) 2021
+/* Copyright (C) 2018-2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -51,11 +51,7 @@ public:
     {
         if (!m_names.empty())
         {
-            std::cout << "WARNING :: " << m_key
-                      << " is not empty, potential ERRORS"
-                      << std::endl;
-            m_names.clear();
-            (m_domain->*pclear)();
+            throw ContextMsgException("ERROR: set a non-empty TaskProperty");
         }
         return this->append(var);
     }

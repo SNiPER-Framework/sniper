@@ -1,4 +1,4 @@
-/* Copyright (C) 2021
+/* Copyright (C) 2018-2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -155,13 +155,32 @@ std::string SniperJSON::str(int indent, unsigned flags) const
             char linefeed = (indent < 0) ? ' ' : '\n';
             std::string fixedPrefix = (indent < 0) ? "" : std::string().assign(indent * level + indent, ' ');
             unsigned _level = (level + 1) | mapValueBit;
-            auto it = map_begin();
-            oss << linefeed << fixedPrefix << it->first
-                << ": " << it->second.str(indent, _level);
-            while (++it != map_end())
+
+            if (m_jmap.find("\"ordered_keys\"") == m_jmap.end())
             {
-                oss << "," << linefeed << fixedPrefix << it->first
+                auto it = map_begin();
+                oss << linefeed << fixedPrefix << it->first
                     << ": " << it->second.str(indent, _level);
+                while (++it != map_end())
+                {
+                    oss << "," << linefeed << fixedPrefix << it->first
+                        << ": " << it->second.str(indent, _level);
+                }
+            }
+            else
+            {
+                std::string separator{""};
+                auto keys = m_jmap.at("\"ordered_keys\"").get<std::vector<std::string>>();
+                for (auto &key : keys)
+                {
+                    auto it = m_jmap.find(key);
+                    if (it != m_jmap.end())
+                    {
+                        oss << separator << linefeed << fixedPrefix << it->first
+                            << ": " << it->second.str(indent, _level);
+                        separator = ",";
+                    }
+                }
             }
             oss << linefeed << prefix;
         }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2021
+/* Copyright (C) 2018-2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  

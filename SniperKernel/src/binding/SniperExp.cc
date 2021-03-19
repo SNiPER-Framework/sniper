@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -27,6 +26,7 @@ void export_Sniper_Sniper()
     def("setLogLevel", &Sniper::setLogLevel);
     def("setColorful", &Sniper::setColorful);
     def("setShowTime", &Sniper::setShowTime);
-    def("setLogFile",  &Sniper::setLogFile);
-    def("loadDll",     &Sniper::loadDll);
+    def("setLogFile", &Sniper::setLogFile);
+    def("setLogStdout", &Sniper::setLogStdout);
+    def("loadDll", &Sniper::loadDll);
 }

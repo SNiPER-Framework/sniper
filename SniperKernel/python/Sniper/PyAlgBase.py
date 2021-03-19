@@ -9,6 +9,7 @@ class PyAlgBase(AlgBase):
         self.setTag(self.__class__.__name__)
 
     def _log(self, level, flag, msgs):
+        #TODO: Colorful and ShowTime
         if ( self.logLevel() <= level):
             prefix = self.scope() + self.objName() + '.' + sys._getframe(2).f_code.co_name
             print("%-30s" % prefix, flag, end='')

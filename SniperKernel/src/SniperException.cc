@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -19,7 +18,7 @@
 #include "SniperKernel/SniperException.h"
 #include "SniperKernel/SniperContext.h"
 
-SniperException::SniperException(const std::string& msg)
+SniperException::SniperException(const std::string &msg)
     : m_msg(msg)
 {
 }
@@ -28,13 +27,13 @@ SniperException::~SniperException() throw()
 {
 }
 
-const char* SniperException::what() const throw()
+const char *SniperException::what() const throw()
 {
     return m_msg.c_str();
 }
 
-ContextMsgException::ContextMsgException(const std::string& msg)
+ContextMsgException::ContextMsgException(const std::string &msg)
     : SniperException(msg)
 {
-    sniper_context.reg_msg(msg);
+    sniper_context->reg_msg(msg);
 }

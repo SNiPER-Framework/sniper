@@ -1,4 +1,4 @@
-/* Copyright (C) 2021
+/* Copyright (C) 2018-2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -23,6 +23,7 @@
 #include "SniperKernel/SniperLog.h"
 #include "SniperKernel/SniperException.h"
 #include "SniperKernel/DeclareDLE.h"
+#include "SniperKernel/Sniper.h"
 #include "NonUserIf/TaskProperty.h"
 #include "NonUserIf/WhiteBoard.h"
 #include "NonUserIf/DLEFactory.h"
@@ -59,7 +60,7 @@ Task::~Task()
 
 bool Task::run()
 {
-    if (sniper_context.check(Sniper::SysMode::MT))
+    if (sniper_context->check(Sniper::SysMode::MT))
     {
         LogWarn << "please use Muster::run() instead" << std::endl;
         return true;
@@ -305,6 +306,20 @@ void Task::remove(const std::string &name)
 SniperJSON Task::json()
 {
     SniperJSON j = DLElement::json();
+
+    if (isRoot())
+    {
+        j.insert("sniper", SniperJSON(Sniper::Config::json_str()));
+
+        static SniperJSON keys = SniperJSON().from(std::vector<std::string>{
+            "\"sniper\"",
+            "\"identifier\"",
+            "\"properties\"",
+            "\"services\"",
+            "\"algorithms\"",
+            "\"subtasks\""});
+        j.insert("ordered_keys", keys);
+    }
 
     for (auto target : m_targets)
     {

@@ -1,4 +1,4 @@
-/* Copyright (C) 2021
+/* Copyright (C) 2018-2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -75,6 +75,9 @@ public:
     vec_iterator erase(vec_iterator it) { return m_jvec.erase(it); }
     map_iterator erase(map_iterator it) { return m_jmap.erase(it); }
 
+    // erase the element by key in a map
+    int erase(const std::string &key) { return m_jmap.erase(key); }
+
     // clear all the contents of this element
     void reset();
 
@@ -95,7 +98,7 @@ public:
     map_iterator map_begin() const { return m_jmap.cbegin(); }
     // get the map end iterator
     map_iterator map_end() const { return m_jmap.cend(); }
-    // find the iterator via key
+    // find the iterator via key (note that the key has double quotes like "\"key\"")
     map_iterator find(const std::string &key) const { return m_jmap.find(key); }
 
     // get the object in map via key

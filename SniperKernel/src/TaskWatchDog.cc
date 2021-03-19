@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -53,8 +52,7 @@ static std::map<RunState, const char*> snoopy_o2str{
     LogWarn << "invalid state tranform " << snoopy_o2str[ real_state() ] \
         << " => " << snoopy_o2str[StateX] << std::endl
 
-
-TaskWatchDog::TaskWatchDog(Task* task)
+TaskWatchDog::TaskWatchDog(Task *task)
     : m_stat(RunState::Invalid),
       m_task(*task)
 {
@@ -62,18 +60,20 @@ TaskWatchDog::TaskWatchDog(Task* task)
 
 TaskWatchDog::~TaskWatchDog()
 {
-    if ( isErr() ) {
+    if (isErr())
+    {
         std::string msg = " ** ";
         msg += m_task.scope();
         msg += m_task.objName();
         msg += " **  Terminated with Error";
-        sniper_context.reg_msg(msg);
+        sniper_context->reg_msg(msg);
     }
 }
 
 bool TaskWatchDog::config()
 {
-    if ( m_stat == RunState::Invalid ) {
+    if (m_stat == RunState::Invalid)
+    {
         m_stat = RunState::StartUp;
         return m_task.config();
     }
@@ -86,7 +86,8 @@ bool TaskWatchDog::config()
 
 bool TaskWatchDog::initialize()
 {
-    if ( m_stat == RunState::StartUp ) {
+    if (m_stat == RunState::StartUp)
+    {
         m_stat = RunState::Ready;
         return m_task.initialize();
     }
@@ -99,16 +100,21 @@ bool TaskWatchDog::initialize()
 
 bool TaskWatchDog::run()
 {
-    if ( m_stat == RunState::Ready ) {
+    if (m_stat == RunState::Ready)
+    {
         m_stat = RunState::Running;
         bool res = true;
-        try {
-            while ( res && m_stat == RunState::Running ) {
+        try
+        {
+            while (res && m_stat == RunState::Running)
+            {
                 res = m_task.execute();
             }
         }
-        catch (StopRunProcess& e) {
-            if ( ! m_task.isRoot() ) throw e;
+        catch (StopRunProcess &e)
+        {
+            if (!m_task.isRoot())
+                throw e;
         }
         return res;
     }
@@ -121,7 +127,8 @@ bool TaskWatchDog::run()
 
 bool TaskWatchDog::pause()
 {
-    if ( m_stat == RunState::Running ) {
+    if (m_stat == RunState::Running)
+    {
         m_stat = RunState::Ready;
         return true;
     }
@@ -134,18 +141,21 @@ bool TaskWatchDog::pause()
 
 bool TaskWatchDog::stop(StopRun mode)
 {
-    if ( m_stat == RunState::Running || m_stat == RunState::Ready ) {
-        if ( mode == StopRun::ThisEvent ) {
+    if (m_stat == RunState::Running || m_stat == RunState::Ready)
+    {
+        if (mode == StopRun::ThisEvent)
+        {
             throw StopRunThisEvent();
         }
 
         m_stat = RunState::Stopped;
 
-        if ( mode == StopRun::Promptly ) {
+        if (mode == StopRun::Promptly)
+        {
             throw StopRunProcess();
         }
 
-        return true;  // mode == StopRun::Peacefully
+        return true; // mode == StopRun::Peacefully
     }
 
     SNOOPY_PASS_AWAY(RunState::Stopped);
@@ -158,17 +168,20 @@ bool TaskWatchDog::stop(StopRun mode)
 bool TaskWatchDog::finalize()
 {
     const RunState real_stat = real_state();
-    if ( real_stat == RunState::Stopped || real_stat == RunState::Ready ) {
+    if (real_stat == RunState::Stopped || real_stat == RunState::Ready)
+    {
         bool errFlag = isErr();
         m_stat = RunState::Finalized;
-        if ( errFlag ) {
+        if (errFlag)
+        {
             this->setErr();
             LogWarn << "try to finalize within error" << std::endl;
         }
         m_task.finalize();
         return isErr();
     }
-    else if ( real_stat == RunState::Finalized ) {
+    else if (real_stat == RunState::Finalized)
+    {
         LogInfo << "already in state " << snoopy_o2str[RunState::Finalized] << std::endl;
         return isErr();
     }
@@ -181,20 +194,24 @@ bool TaskWatchDog::finalize()
 bool TaskWatchDog::terminate()
 {
     const RunState real_stat = real_state();
-    if ( real_stat == RunState::Running || real_stat == RunState::Ready ) {
+    if (real_stat == RunState::Running || real_stat == RunState::Ready)
+    {
         LogDebug << "try to finalize before terminate" << std::endl;
         this->finalize();
     }
-    else if ( real_stat == RunState::EndUp ) {
+    else if (real_stat == RunState::EndUp)
+    {
         return isErr();
     }
 
     typedef Sniper::RunStateInt S_Int;
-    if ( (S_Int)(m_stat) & (S_Int)(RunState::Finalized) ) {
+    if ((S_Int)(m_stat) & (S_Int)(RunState::Finalized))
+    {
         bool errFlag = isErr();
         m_stat = RunState::EndUp;
         m_task.reset();
-        if ( errFlag ) {
+        if (errFlag)
+        {
             this->setErr();
         }
         return isErr();
@@ -207,14 +224,16 @@ bool TaskWatchDog::terminate()
 
 bool TaskWatchDog::run_once()
 {
-    if ( m_stat == RunState::Ready ) {
+    if (m_stat == RunState::Ready)
+    {
         //m_stat = RunState::Running;
         return m_task.execute();
         //m_stat = RunState::Ready;
     }
 
     SNOOPY_PASS_AWAY(RunState::Running);
-    if ( m_stat == RunState::Stopped ) {
+    if (m_stat == RunState::Stopped)
+    {
         return false;
     }
     SNOOPY_CHECK_ERR();
@@ -231,7 +250,7 @@ void TaskWatchDog::reset()
 void TaskWatchDog::setErr()
 {
     typedef Sniper::RunStateInt S_Int;
-    m_stat = (RunState)((S_Int)(RunState::Error) | (S_Int)(m_stat) );
+    m_stat = (RunState)((S_Int)(RunState::Error) | (S_Int)(m_stat));
 }
 
 bool TaskWatchDog::isErr()
@@ -243,10 +262,12 @@ bool TaskWatchDog::isErr()
 Sniper::RunState TaskWatchDog::real_state()
 {
     typedef Sniper::RunStateInt S_Int;
-    if ( isErr() ) {
+    if (isErr())
+    {
         return (RunState)((S_Int)(RunState::Error) ^ (S_Int)(m_stat));
     }
-    else {
+    else
+    {
         return m_stat;
     }
 }
@@ -256,12 +277,12 @@ int TaskWatchDog::logLevel()
     return m_task.logLevel();
 }
 
-const std::string& TaskWatchDog::scope()
+const std::string &TaskWatchDog::scope()
 {
     return m_task.scope();
 }
 
-const std::string& TaskWatchDog::objName()
+const std::string &TaskWatchDog::objName()
 {
     return m_task.objName();
 }

@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -17,9 +16,7 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/SniperContext.h"
-#include <iostream>
-
-Sniper::Context sniper_context;
+#include <sstream>
 
 Sniper::Context::Context()
     : m_mode(static_cast<SysModeInt>(SysMode::BASIC)),
@@ -27,9 +24,9 @@ Sniper::Context::Context()
 {
 }
 
-void Sniper::Context::set(const Sniper::SysMode& mode)
+void Sniper::Context::set(const Sniper::SysMode &mode)
 {
-    if ( mode == SysMode::MT )  //BASIC and MT conflict
+    if (mode == SysMode::MT) //BASIC and MT conflict
         m_mode &= 0xFE;
     m_mode |= static_cast<SysModeInt>(mode);
 }
@@ -40,36 +37,46 @@ void Sniper::Context::set_threads(short nt)
     set(SysMode::MT);
 }
 
-bool Sniper::Context::check(const Sniper::SysMode& mode)
+bool Sniper::Context::check(const Sniper::SysMode &mode)
 {
-    return (m_mode&static_cast<SysModeInt>(mode)) == static_cast<SysModeInt>(mode);
+    return (m_mode & static_cast<SysModeInt>(mode)) == static_cast<SysModeInt>(mode);
 }
 
-void Sniper::Context::sys_info()
+std::string Sniper::Context::sys_info()
 {
     std::string mode = "BASIC";
-    if ( check(SysMode::MT) ) mode = "-Threads";  //BASIC and MT conflict
-    if ( check(SysMode::GPU) ) mode += " + GPU";
-    if ( check(SysMode::MPI) ) mode += " + MPI";
+    if (check(SysMode::MT))
+        mode = "-Threads"; //BASIC and MT conflict
+    if (check(SysMode::GPU))
+        mode += " + GPU";
+    if (check(SysMode::MPI))
+        mode += " + MPI";
 
-    std::cout << "SNiPER::Context Running Mode = { ";
-    if ( check(SysMode::MT) ) std::cout << m_nt;
-    std::cout << mode << " }"<< std::endl;
+    std::ostringstream oss;
+    oss << "SNiPER::Context Running Mode = { ";
+    if (check(SysMode::MT))
+        oss << m_nt;
+    oss << mode << " }";
+
+    return oss.str();
 }
 
-void Sniper::Context::summary()
+std::string Sniper::Context::summary()
 {
-    if ( m_msg.empty() ) {
-        std::cout << "SNiPER::Context Terminated Successfully" << std::endl;
-        return;
+    if (m_msg.empty())
+    {
+        return "SNiPER::Context Terminated Successfully";
     }
 
-    for ( auto& msg : m_msg ) {
-        std::cout << msg << std::endl;
+    std::ostringstream oss;
+    for (auto &msg : m_msg)
+    {
+        oss << msg << std::endl;
     }
+    return oss.str();
 }
 
-void Sniper::Context::reg_msg(const std::string& msg)
+void Sniper::Context::reg_msg(const std::string &msg)
 {
     m_msg.push_back(std::string("SNiPER::Context ") + msg);
 }

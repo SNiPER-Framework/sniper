@@ -1,4 +1,4 @@
-/* Copyright (C) 2021
+/* Copyright (C) 2018-2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -54,8 +54,7 @@ Property *DLElement::property(const std::string &key)
 SniperJSON DLElement::json()
 {
     SniperJSON j;
-    j["class"].from(m_tag);
-    j["name"].from(m_name);
+    j["identifier"].from(m_tag + '/' + m_name);
 
     SniperJSON &jprop = j["properties"];
     for (auto &p : m_pmgr.properties())
@@ -72,5 +71,5 @@ SniperJSON DLElement::json()
 
 void DLElement::show()
 {
-    std::cout << json().str() << std::endl;
+    std::cout << json().str(2) << std::endl;
 }

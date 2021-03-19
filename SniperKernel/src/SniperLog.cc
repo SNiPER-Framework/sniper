@@ -30,13 +30,13 @@ int SniperLog::logLevel()
     return LogLevel;
 }
 
-const std::string& SniperLog::scope()
+const std::string &SniperLog::scope()
 {
     static const std::string NonScope = "SNiPER:";
     return NonScope;
 }
 
-const std::string& SniperLog::objName()
+const std::string &SniperLog::objName()
 {
     static const std::string NonDLE = "Unknown";
     return NonDLE;
@@ -46,17 +46,17 @@ using SniperLog::Logger;
 
 Logger Logger::Silencer;
 
-static const char* _Logger_colors[] = {
+static const char *_Logger_colors[]{
     "",
     0,
-    "\033[36m",         // DEBUG: Cyan
-    "\033[32m",         // INFO:  Green
-    "\033[33m",         // WARN:  Yellow
-    "\033[31m",         // ERROR: Red
-    "\033[1m\033[31m"   // FATAL: Bold Red
+    "\033[36m",       // DEBUG: Cyan
+    "\033[32m",       // INFO:  Green
+    "\033[33m",       // WARN:  Yellow
+    "\033[31m",       // ERROR: Red
+    "\033[1m\033[31m" // FATAL: Bold Red
 };
 
-static const char* _Logger_flags[] = {
+static const char *_Logger_flags[]{
     "  TEST: ",
     0,
     " DEBUG: ",
@@ -68,21 +68,32 @@ static const char* _Logger_flags[] = {
 
 static std::atomic_flag _Logger_lock_log = ATOMIC_FLAG_INIT;
 
+void Logger::lock()
+{
+    while(_Logger_lock_log.test_and_set());
+}
+
+void Logger::unlock()
+{
+    _Logger_lock_log.clear();
+}
+
 Logger::Logger(int flag,
-                     const std::string& scope,
-                     const std::string& objName,
-                     const char* func
-                     )
+               const std::string &scope,
+               const std::string &objName,
+               const char *func)
     : m_active(true)
 {
     std::string prefix;
     prefix.reserve(80);
     int plen = 0;
-    if ( (m_colored = (flag >= Colorful)) ) {
+    if ((m_colored = (flag >= Colorful)))
+    {
         prefix = _Logger_colors[flag];
         plen = prefix.length();
     }
-    if ( ShowTime ) {
+    if (ShowTime)
+    {
         time_t t = time(0);
         char buf[32];
         ctime_r(&t, buf);
@@ -97,7 +108,8 @@ Logger::Logger(int flag,
     prefix += func;
 
     plen -= prefix.length() - 30;
-    if ( plen > 0 ) {
+    if (plen > 0)
+    {
         prefix.append(plen, ' ');
     }
 
@@ -109,8 +121,10 @@ Logger::Logger(int flag,
 
 Logger::~Logger()
 {
-    if ( m_active ) {
-        if ( m_colored ) {
+    if (m_active)
+    {
+        if (m_colored)
+        {
             (*LogStream) << "\033[0m";
         }
         _Logger_lock_log.clear();
