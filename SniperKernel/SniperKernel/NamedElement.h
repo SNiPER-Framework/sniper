@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -19,37 +18,34 @@
 #ifndef SNIPER_NAMED_ELEMENT_H
 #define SNIPER_NAMED_ELEMENT_H
 
+#include "SniperKernel/SniperLog.h"
 #include <string>
 
 class NamedElement
 {
-    public :
+public:
+    NamedElement(const std::string &name);
+    NamedElement(const std::string &scope, const std::string &name);
+    virtual ~NamedElement() = default;
 
-        NamedElement(const std::string& name);
-        NamedElement(const std::string& scope, const std::string& name);
-        virtual ~NamedElement() = default;
+    // get log level
+    int logLevel() { return m_logLevel; }
 
-        // get log level
-        int  logLevel() { return m_logLevel; }
+    // scope name (empty in case of in top task)
+    const std::string &scope() { return m_scope; }
 
-        // scope name (empty in case of in top task)
-        const std::string& scope() { return m_scope; }
+    // return the name of dynamically loadable object
+    const std::string &objName() { return m_name; }
 
-        // return the name of dynamically loadable object
-        const std::string& objName() { return m_name; }
+    // set log level
+    virtual void setLogLevel(int level) { m_logLevel = level; }
 
-        // set log level
-        virtual void setLogLevel(int level) { m_logLevel = level; }
+protected:
+    int m_logLevel;
+    std::string m_scope;
+    std::string m_name;
 
-
-    protected :
-
-        int           m_logLevel;
-        std::string   m_scope;
-        std::string   m_name;
-
-
-        NamedElement() = delete;
+    NamedElement() = delete;
 };
 
 #endif

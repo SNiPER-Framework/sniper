@@ -27,46 +27,47 @@ namespace SniperLog
     int logLevel();
 
     //return the global scope and objName string
-    const std::string& scope();
-    const std::string& objName();
+    const std::string &scope();
+    const std::string &objName();
 
     //the stream for log output, std::cout by default
-    extern std::ostream* LogStream;
+    extern std::ostream *LogStream;
 
     class Logger
     {
-        public :
+    public:
+        static Logger Silencer;
 
-            static Logger  Silencer;
+        static void lock();
+        static void unlock();
 
-            Logger() : m_active(false) {}
+        Logger() : m_active(false) {}
 
-            Logger(int flag,
-                    const std::string& scope,
-                    const std::string& objName,
-                    const char* func
-                   );
+        Logger(int flag,
+               const std::string &scope,
+               const std::string &objName,
+               const char *func);
 
-            ~Logger();
+        ~Logger();
 
-            Logger& operator<<(std::ostream& (*_f)(std::ostream&))
-            {
-                if ( m_active ) _f(*LogStream);
-                return *this;
-            }
+        Logger &operator<<(std::ostream &(*_f)(std::ostream &))
+        {
+            if (m_active)
+                _f(*LogStream);
+            return *this;
+        }
 
-            template<typename T>
-            Logger& operator<<(const T& t)
-            {
-                if ( m_active ) (*LogStream) << t;
-                return *this;
-            }
+        template <typename T>
+        Logger &operator<<(const T &t)
+        {
+            if (m_active)
+                (*LogStream) << t;
+            return *this;
+        }
 
-
-        private :
-
-            const bool m_active;
-            bool       m_colored;
+    private:
+        const bool m_active;
+        bool m_colored;
     };
 
 }
@@ -74,7 +75,6 @@ namespace SniperLog
 using SniperLog::logLevel;
 using SniperLog::scope;
 using SniperLog::objName;
-
 
 #define SNIPERLOG(Flag)  SniperLog::Logger(\
         Flag,\

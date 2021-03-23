@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -24,22 +23,24 @@
 #include <algorithm>
 #include <map>
 
-static std::map<long, IncidentMgr*> s_mgrMap;
+static auto ps_mgrMap = new std::map<long, IncidentMgr *>();
 
-IncidentMgr& IncidentMgr::instance(Task& root)
+IncidentMgr &IncidentMgr::instance(Task &root)
 {
-    return *s_mgrMap[long(&root)];
+    return *(*ps_mgrMap)[long(&root)];
 }
 
-IncidentMgr& IncidentMgr::instance(long id)
+IncidentMgr &IncidentMgr::instance(long id)
 {
-    return *s_mgrMap[id];
+    return *(*ps_mgrMap)[id];
 }
 
-void IncidentMgr::create(Task& root)
+void IncidentMgr::create(Task &root)
 {
+    auto &s_mgrMap = *ps_mgrMap;
     long id = long(&root);
-    if ( s_mgrMap[id] == nullptr ) {
+    if (s_mgrMap[id] == nullptr)
+    {
         s_mgrMap[id] = new IncidentMgr;
         s_mgrMap[id]->m_scope = root.scope();
     }
@@ -47,21 +48,26 @@ void IncidentMgr::create(Task& root)
 
 void IncidentMgr::release()
 {
-    for ( auto i : s_mgrMap ) {
+    for (auto i : *ps_mgrMap)
+    {
         delete i.second;
     }
-    s_mgrMap.clear();
+    ps_mgrMap->clear();
+    delete ps_mgrMap;
 }
 
-int IncidentMgr::handle(Incident& incident)
+int IncidentMgr::handle(Incident &incident)
 {
     //LogTest << "Processing incident " << incident.name() << std::endl;
     int count = 0;
     IncidentMap::iterator ii = m_map.find(incident.name());
-    if ( ii != m_map.end() ) {
-        HandlerList& handlers = ii->second;
-        for ( auto& ih : handlers ) {
-            if ( ! ih->handle(incident) ) {
+    if (ii != m_map.end())
+    {
+        HandlerList &handlers = ii->second;
+        for (auto &ih : handlers)
+        {
+            if (!ih->handle(incident))
+            {
                 return -1;
             }
         }
@@ -70,21 +76,24 @@ int IncidentMgr::handle(Incident& incident)
     return count;
 }
 
-void IncidentMgr::regist(const std::string& incident, IIncidentHandler* handler)
+void IncidentMgr::regist(const std::string &incident, IIncidentHandler *handler)
 {
     m_map[incident].push_back(handler);
 }
 
-void IncidentMgr::unregist(const std::string& incident, IIncidentHandler* handler)
+void IncidentMgr::unregist(const std::string &incident, IIncidentHandler *handler)
 {
     IncidentMap::iterator ii = m_map.find(incident);
-    if ( ii != m_map.end() ) {
-        HandlerList& handlers = ii->second;
+    if (ii != m_map.end())
+    {
+        HandlerList &handlers = ii->second;
         auto ih = std::find(handlers.begin(), handlers.end(), handler);
-        if ( ih != handlers.end() ) {
+        if (ih != handlers.end())
+        {
             handlers.erase(ih);
         }
-        if ( handlers.empty() ) {
+        if (handlers.empty())
+        {
             m_map.erase(ii);
         }
     }

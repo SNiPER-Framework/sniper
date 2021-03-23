@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -16,8 +15,9 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "NonUserIf/PythonCapsul.h"
 #include <boost/python.hpp>
+
+auto BoostPyJsonModule = boost::python::import("json");
 
 void export_Sniper_Incident();
 void export_Sniper_IIncidentHandler();
@@ -50,6 +50,4 @@ BOOST_PYTHON_MODULE(libSniperPython)
     export_Sniper_TaskWatchDog();
     export_Sniper_RunState();
     export_Sniper_Sniper();
-
-    Sniper::python_capsul();
 }

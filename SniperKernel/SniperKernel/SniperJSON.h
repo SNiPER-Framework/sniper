@@ -1,4 +1,4 @@
-/* Copyright (C) 2020
+/* Copyright (C) 2018-2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -37,6 +37,9 @@ public:
     // construct from a json string
     SniperJSON(const std::string &jstr);
 
+    // whether this is a valid json
+    bool valid() const { return m_type > 0; }
+
     // whether this is a scalar or string
     bool isScalar() const { return m_type > 2; }
 
@@ -58,12 +61,6 @@ public:
     template <typename T>
     void set(const T &var);
 
-    /* TODO
-     * append this element from a C++ object
-     */
-    template <typename T>
-    void append(const T &var);
-
     // construct from a cpp variable
     template <typename T>
     SniperJSON &from(const T &var);
@@ -73,6 +70,13 @@ public:
 
     // insert a key/value pair in case of a map
     bool insert(const std::string &key, const SniperJSON &val);
+
+    // erase one element in a vector or a map
+    vec_iterator erase(vec_iterator it) { return m_jvec.erase(it); }
+    map_iterator erase(map_iterator it) { return m_jmap.erase(it); }
+
+    // erase the element by key in a map
+    int erase(const std::string &key) { return m_jmap.erase(key); }
 
     // clear all the contents of this element
     void reset();
@@ -94,13 +98,19 @@ public:
     map_iterator map_begin() const { return m_jmap.cbegin(); }
     // get the map end iterator
     map_iterator map_end() const { return m_jmap.cend(); }
-    // find the iterator via key
+    // find the iterator via key (note that the key has double quotes like "\"key\"")
     map_iterator find(const std::string &key) const { return m_jmap.find(key); }
 
     // get the object in map via key
     SniperJSON &operator[](const std::string &key);
     // get the object in map via key
     const SniperJSON &operator[](const std::string &key) const;
+
+    // set the string format flag
+    SniperJSON &format(bool flag);
+
+    // convert the json to a string
+    std::string str(int indent = 4, unsigned flags = 0) const;
 
     // load json from an input stream
     static SniperJSON load(std::istream &is);
@@ -109,13 +119,19 @@ public:
     static SniperJSON loads(const std::string &jstr);
 
     // dump the json as a string to an output stream
-    static void dump(const SniperJSON &element, std::ostream &os, int indent = 3, unsigned flags = 0);
+    static void dump(const SniperJSON &element, std::ostream &os, int indent = 4, unsigned flags = 0);
 
     // dump the json as a string
-    static std::string dumps(const SniperJSON &element, int indent = 3, unsigned flags = 0);
+    static std::string dumps(const SniperJSON &element, int indent = 4, unsigned flags = 0);
+
+    // get a friendly type string from a typeid
+    static std::string typestr(const std::type_info &tid);
 
 private:
     typedef std::string::size_type StrCursor;
+
+    // str() format -> true: in multi lines, false: in one line
+    bool m_format;
 
     // 0:invalid, 1:object/map, 2:array/vector, 3:string, 9:other scalars
     int m_type;
@@ -169,7 +185,7 @@ private:
     inline void fromCppVar(const T &var);
 
     // helps to make json from a char*
-    inline void fromCppVar(const char* var);
+    inline void fromCppVar(const char *var);
 
     // function template helps to make json from type[2]
     template <typename T>
@@ -191,24 +207,6 @@ private:
     private:
         std::string m_msg;
     };
-
-public:
-    // assistant for SniperJSON -> CppVar
-    template <typename T>
-    struct Extract
-    {
-        T value;
-        Extract(const SniperJSON &json);
-    };
-
-    // assistant for the association of CppVar and SniperJSON
-    template <typename T>
-    struct Associate
-    {
-        SniperJSON &json;
-        T &value;
-        Associate(const SniperJSON &_json, T &_value);
-    };
 };
 
 template <typename T>
@@ -224,11 +222,6 @@ void SniperJSON::set(const T &var)
 {
     reset();
     fromCppVar(var);
-}
-
-template <typename T>
-void SniperJSON::append(const T &var)
-{
 }
 
 template <typename T>
@@ -248,14 +241,14 @@ inline void SniperJSON::toCppVar(T &var) const
         ss << m_jvar;
         ss >> var;
 
-        if ( ! ss.fail() )
+        if (!ss.fail())
         {
             return;
         }
     }
 
     throw Exception(
-        std::string("cannot set <") + typeid(T).name() + "> with '" + m_jvar + "'");
+        std::string("cannot set <") + typestr(typeid(T)) + "> with <" + m_jvar + '>');
 }
 
 template <>
@@ -275,7 +268,7 @@ inline void SniperJSON::toCppVar<bool>(bool &var) const
         }
     }
 
-    throw Exception(std::string("cannot set <bool> with '") + m_jvar + "'");
+    throw Exception(std::string("cannot set <bool> with <") + m_jvar + '>');
 }
 
 template <>
@@ -287,7 +280,7 @@ inline void SniperJSON::toCppVar<std::string>(std::string &var) const
         return;
     }
 
-    throw Exception(std::string("cannot set <std::string> with '") + m_jvar + "'");
+    throw Exception(std::string("cannot set <std::string> with <") + m_jvar + '>');
 }
 
 template <typename T>
@@ -302,7 +295,7 @@ inline void SniperJSON::toCppVar(std::vector<T> &var) const
         return;
     }
 
-    throw Exception(std::string("not a valid vector\n") + SniperJSON::dumps(*this));
+    throw Exception(std::string("not a valid vector\n") + this->str());
 }
 
 template <typename K, typename V>
@@ -321,7 +314,7 @@ inline void SniperJSON::toCppVar(std::map<K, V> &var) const
         return;
     }
 
-    throw Exception(std::string("not a valid map\n") + SniperJSON::dumps(*this));
+    throw Exception(std::string("not a valid map\n") + this->str());
 }
 
 template <typename T>
@@ -347,7 +340,7 @@ inline void SniperJSON::fromCppVar<std::string>(const std::string &var)
     m_type = 3;
 }
 
-inline void SniperJSON::fromCppVar(const char* var)
+inline void SniperJSON::fromCppVar(const char *var)
 {
     m_jvar = '"' + std::string(var) + '"';
     m_type = 3;
@@ -374,18 +367,5 @@ inline void SniperJSON::fromCppVar(const std::map<K, V> &var)
     }
     m_type = 1;
 }
-
-template <typename T>
-SniperJSON::Extract<T>::Extract(const SniperJSON &json)
-{
-    json.toCppVar(value);
-}
-
-template <typename T>
-SniperJSON::Associate<T>::Associate(const SniperJSON &_json, T &_value)
-    : json(_json),
-      value(_value){}
-
-; // use this ';' to suppress a **strange** warning: header stop not at file scope.
 
 #endif

@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -27,40 +26,39 @@ namespace Sniper
     typedef unsigned short SysModeInt;
 
     // platform (hardware & system software) related environment
-    enum class SysMode : SysModeInt {
-        BASIC    = 0x01,  //classical serialized mode
-        MT       = 0x02,  //multi-threads
-        MPI      = 0x04,
-        GPU      = 0x08   //and more...
+    enum class SysMode : SysModeInt
+    {
+        BASIC = 0x01, //classical serialized mode
+        MT = 0x02,    //multi-threads
+        MPI = 0x04,
+        GPU = 0x08 //and more...
     };
 
     class Context final
     {
-        public :
+    public:
+        Context();
+        ~Context() = default;
 
-            Context();
-            ~Context() = default;
+        void set(const SysMode &mode);
+        void set_threads(short nt);
+        bool check(const SysMode &mode);
 
-            void set(const SysMode& mode);
-            void set_threads(short nt);
-            bool check(const SysMode& mode);
+        std::string sys_info();
+        std::string summary();
 
-            void sys_info();
-            void summary();
+        void reg_msg(const std::string &msg);
 
-            void reg_msg(const std::string& msg);
+    private:
+        SysModeInt m_mode;
+        short m_nt;
+        std::list<std::string> m_msg;
 
-        private :
-
-            SysModeInt              m_mode;
-            short                   m_nt;
-            std::list<std::string>  m_msg;
-
-            Context(const Context&) = delete;
-            Context& operator=(const Context&) = delete;
+        Context(const Context &) = delete;
+        Context &operator=(const Context &) = delete;
     };
 }
 
-extern Sniper::Context sniper_context;
+extern Sniper::Context *sniper_context;
 
 #endif

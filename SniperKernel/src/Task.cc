@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -24,25 +23,27 @@
 #include "SniperKernel/SniperLog.h"
 #include "SniperKernel/SniperException.h"
 #include "SniperKernel/DeclareDLE.h"
+#include "SniperKernel/Sniper.h"
 #include "NonUserIf/TaskProperty.h"
 #include "NonUserIf/WhiteBoard.h"
 #include "NonUserIf/DLEFactory.h"
 
 SNIPER_DECLARE_DLE(Task);
 
-Task::Task(const std::string& name)
+Task::Task(const std::string &name)
     : DLElement(name),
       m_evtMax(-1),
       m_done(0),
       m_snoopy(this),
-      m_svcs("SNiPER:Supervisor"),
-      m_algs("SNiPER:Supervisor"),
+      m_svcs(name, "services"),
+      m_algs(name, "algorithms"),
       m_limited(false),
       m_beginEvt("BeginEvent"),
       m_endEvt("EndEvent"),
       m_targets{&m_svcs, &m_algs}
 {
-    if ( m_tag.empty() ) m_tag = "Task";  //protection for derived classes
+    if (m_tag.empty())
+        m_tag = "Task"; //protection for derived classes
 
     declProp("EvtMax", m_evtMax);
     m_pmgr.addProperty(new TaskProperty("svcs", this));
@@ -59,21 +60,25 @@ Task::~Task()
 
 bool Task::run()
 {
-    if ( sniper_context.check(Sniper::SysMode::MT) ) {
+    if (sniper_context->check(Sniper::SysMode::MT))
+    {
         LogWarn << "please use Muster::run() instead" << std::endl;
         return true;
     }
 
-    if ( m_snoopy.config() ) {
-        if ( m_snoopy.initialize() ) {
-            if ( ! m_snoopy.run() ) {
+    if (m_snoopy.config())
+    {
+        if (m_snoopy.initialize())
+        {
+            if (!m_snoopy.run())
+            {
                 //LogError << "Failed to execute algorithms" << std::endl;
             }
             m_snoopy.finalize();
         }
     }
 
-    return ! m_snoopy.isErr();
+    return !m_snoopy.isErr();
 }
 
 bool Task::stop(Sniper::StopRun mode)
@@ -90,13 +95,17 @@ bool Task::config()
 bool Task::initialize()
 {
     bool stat = true;
-    if ( ! m_svcs.initialize() ) stat = false;
-    if ( ! m_algs.initialize() ) stat = false;
+    if (!m_svcs.initialize())
+        stat = false;
+    if (!m_algs.initialize())
+        stat = false;
 
-    if ( stat ) {
+    if (stat)
+    {
         LogInfo << "initialized" << std::endl;
     }
-    else {
+    else
+    {
         m_snoopy.setErr();
     }
 
@@ -106,12 +115,15 @@ bool Task::initialize()
 bool Task::finalize()
 {
     bool stat = true;
-    if ( ! m_algs.finalize() ) stat = false;
-    if ( ! m_svcs.finalize() ) stat = false;
+    if (!m_algs.finalize())
+        stat = false;
+    if (!m_svcs.finalize())
+        stat = false;
 
     LogInfo << "events processed " << m_done << std::endl;
 
-    if ( ! stat ) {
+    if (!stat)
+    {
         m_snoopy.setErr();
     }
 
@@ -120,39 +132,51 @@ bool Task::finalize()
 
 bool Task::execute()
 {
-    if ( m_limited && m_done >= m_evtMax ) {
+    if (m_limited && m_done >= m_evtMax)
+    {
         m_snoopy.stop();
         return true;
     }
 
-    try {
+    try
+    {
         m_beginEvt.fire(*this);
-        if ( m_snoopy.state() == Sniper::RunState::Stopped ) return true;
-        if ( m_snoopy.isErr() ) return false;
-        for ( auto alg : m_algs.list() ) {
-            if ( dynamic_cast<AlgBase*>(alg)->execute() ) continue;
-            throw SniperException(alg->scope()+alg->objName()+" execute failed");
+        if (m_snoopy.state() == Sniper::RunState::Stopped)
+            return true;
+        if (m_snoopy.isErr())
+            return false;
+        for (auto alg : m_algs.list())
+        {
+            if (dynamic_cast<AlgBase *>(alg)->execute())
+                continue;
+            throw SniperException(alg->scope() + alg->objName() + " execute failed");
         }
         m_endEvt.fire(*this);
-        if ( m_snoopy.isErr() ) return false;
+        if (m_snoopy.isErr())
+            return false;
     }
-    catch (StopRunThisEvent& e) {
+    catch (StopRunThisEvent &e)
+    {
         LogDebug << "stop current event and continue next one" << std::endl;
     }
-    catch (StopRunProcess& e) {
+    catch (StopRunProcess &e)
+    {
         LogInfo << "stop run promtly." << std::endl;
         throw e;
     }
-    catch (std::exception& e) {
+    catch (std::exception &e)
+    {
         m_snoopy.setErr();
         LogError << e.what() << std::endl;
     }
-    catch (...) {
+    catch (...)
+    {
         m_snoopy.setErr();
         LogError << "catch an unknown exception" << std::endl;
     }
 
-    if ( ! m_snoopy.isErr() ) {
+    if (!m_snoopy.isErr())
+    {
         ++m_done;
         return true;
     }
@@ -165,7 +189,8 @@ void Task::reset()
     m_done = 0;
     m_limited = false;
 
-    for ( auto it = m_targets.rbegin(); it != m_targets.rend(); ++it ) {
+    for (auto it = m_targets.rbegin(); it != m_targets.rend(); ++it)
+    {
         (*it)->clear();
     }
     m_targets.clear();
@@ -175,7 +200,8 @@ void Task::setLogLevel(int level)
 {
     DLElement::setLogLevel(level);
 
-    for ( auto target : m_targets ) {
+    for (auto target : m_targets)
+    {
         target->setLogLevel(level);
     }
 }
@@ -186,18 +212,22 @@ void Task::setEvtMax(int evtMax_)
     m_limited = (m_evtMax >= 0);
 }
 
-SvcBase* Task::createSvc(const std::string& svcName)
+SvcBase *Task::createSvc(const std::string &svcName)
 {
-    DLElement* obj = DLEFactory::instance().create(svcName);
-    if ( obj != nullptr ) {
-        SvcBase* result = dynamic_cast<SvcBase*>(obj);
-        if ( result != nullptr ) {
-            if ( m_svcs.append(result, true) ) {
+    DLElement *obj = DLEFactory::instance().create(svcName);
+    if (obj != nullptr)
+    {
+        SvcBase *result = dynamic_cast<SvcBase *>(obj);
+        if (result != nullptr)
+        {
+            if (m_svcs.append(result, true))
+            {
                 result->setParent(this);
                 return result;
             }
         }
-        else {
+        else
+        {
             LogFatal << obj->objName() << " cannot cast to SvcBase."
                      << std::endl;
         }
@@ -206,18 +236,22 @@ SvcBase* Task::createSvc(const std::string& svcName)
     return nullptr;
 }
 
-AlgBase* Task::createAlg(const std::string& algName)
+AlgBase *Task::createAlg(const std::string &algName)
 {
-    DLElement* obj = DLEFactory::instance().create(algName);
-    if ( obj != nullptr ) {
-        AlgBase* result = dynamic_cast<AlgBase*>(obj);
-        if ( result != nullptr ) {
-            if ( m_algs.append(result, true) ) {
+    DLElement *obj = DLEFactory::instance().create(algName);
+    if (obj != nullptr)
+    {
+        AlgBase *result = dynamic_cast<AlgBase *>(obj);
+        if (result != nullptr)
+        {
+            if (m_algs.append(result, true))
+            {
                 result->setParent(this);
                 return result;
             }
         }
-        else {
+        else
+        {
             LogFatal << obj->objName() << " cannot cast to AlgBase."
                      << std::endl;
         }
@@ -226,55 +260,84 @@ AlgBase* Task::createAlg(const std::string& algName)
     return nullptr;
 }
 
-SvcBase* Task::addSvc(SvcBase* svc)
+SvcBase *Task::addSvc(SvcBase *svc)
 {
-    if ( m_svcs.append(svc, false) ) {
+    if (m_svcs.append(svc, false))
+    {
         svc->setParent(this);
         return svc;
     }
     return nullptr;
 }
 
-AlgBase* Task::addAlg(AlgBase* alg)
+AlgBase *Task::addAlg(AlgBase *alg)
 {
-    if ( m_algs.append(alg, false) ) {
+    if (m_algs.append(alg, false))
+    {
         alg->setParent(this);
         return alg;
     }
     return nullptr;
 }
 
-DLElement* Task::find(const std::string& name)
+DLElement *Task::find(const std::string &name)
 {
-    for ( auto target : m_targets ) {
-        if ( auto res = target->find(name) ) return res;
+    for (auto target : m_targets)
+    {
+        if (auto res = target->find(name))
+            return res;
     }
 
     LogWarn << "Cann't find Object " << name << std::endl;
     return nullptr;
 }
 
-void Task::remove(const std::string& name)
+void Task::remove(const std::string &name)
 {
-    for ( auto target : m_targets ) {
-        if ( target->remove(name) ) return;
+    for (auto target : m_targets)
+    {
+        if (target->remove(name))
+            return;
     }
 
     LogWarn << "Cannot remove, no such element " << name << std::endl;
 }
 
-void Task::show(int indent)
+SniperJSON Task::json()
 {
-    DLElement::show(indent);
+    static SniperJSON keys = SniperJSON().from(std::vector<std::string>{
+        "\"sniper\"",
+        "\"identifier\"",
+        "\"properties\"",
+        "\"services\"",
+        "\"algorithms\"",
+        "\"subtasks\""});
 
-    for ( auto target : m_targets ) {
-        for ( auto obj : target->list() ) {
-            obj->show(indent+1);
+    SniperJSON j = DLElement::json();
+    if (isRoot())
+    {
+        j.insert("sniper", SniperJSON(Sniper::Config::json_str()));
+    }
+
+    for (auto target : m_targets)
+    {
+        SniperJSON &jcomponents = j[target->objName()];
+        for (auto obj : target->list())
+        {
+            jcomponents.push_back(obj->json());
+        }
+        if (!jcomponents.valid())
+        {
+            jcomponents = SniperJSON::loads("[]");
         }
     }
+
+    j.insert("ordered_keys", keys);
+
+    return j;
 }
 
-void Task::queue(DleSupervisor* target)
+void Task::queue(DleSupervisor *target)
 {
     m_targets.push_back(target);
 }

@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -19,33 +18,31 @@
 #include "SniperKernel/PropertyMgr.h"
 #include "SniperKernel/Property.h"
 
-PropertyMgr::PropertyMgr(DLElement* par)
-    : m_par(par)
-{
-}
-
 PropertyMgr::~PropertyMgr()
 {
-    std::map<std::string, Property*>::iterator it = m_dict.end();
-    while ( it != m_dict.begin() ) {
+    std::map<std::string, Property *>::iterator it = m_dict.end();
+    while (it != m_dict.begin())
+    {
         delete (--it)->second;
     }
 }
 
-Property* PropertyMgr::property(const std::string& key)
+Property *PropertyMgr::property(const std::string &key)
 {
-    std::map<std::string, Property*>::iterator it = m_dict.find(key);
-    if ( it != m_dict.end() ) {
+    std::map<std::string, Property *>::iterator it = m_dict.find(key);
+    if (it != m_dict.end())
+    {
         return it->second;
     }
     throw ContextMsgException(key + " : invalid Property Key");
 }
 
-bool PropertyMgr::addProperty(Property* property_)
+bool PropertyMgr::addProperty(Property *property_)
 {
     std::string key = property_->key();
-    std::map<std::string, Property*>::iterator it = m_dict.find(key);
-    if ( it == m_dict.end() ) {
+    std::map<std::string, Property *>::iterator it = m_dict.find(key);
+    if (it == m_dict.end())
+    {
         m_dict[key] = property_;
         return true;
     }

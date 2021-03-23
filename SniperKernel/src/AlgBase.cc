@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -20,36 +19,42 @@
 #include "SniperKernel/ToolBase.h"
 #include "NonUserIf/DLEFactory.h"
 
-AlgBase::AlgBase(const std::string& name)
+AlgBase::AlgBase(const std::string &name)
     : DLElement(name)
 {
 }
 
 AlgBase::~AlgBase()
 {
-    for ( auto& t : m_tools ) {
+    for (auto &t : m_tools)
+    {
         delete t.second;
     }
     m_tools.clear();
 }
 
-ToolBase* AlgBase::createTool(const std::string& toolName)
+ToolBase *AlgBase::createTool(const std::string &toolName)
 {
-    DLElement* obj = DLEFactory::instance().create(toolName);
-    if ( obj != 0 ) {
-        ToolBase* result = dynamic_cast<ToolBase*>(obj);
-        if ( result != 0 ) {
-            if ( 0 == this->findTool( result->objName() ) ) {
+    DLElement *obj = DLEFactory::instance().create(toolName);
+    if (obj != 0)
+    {
+        ToolBase *result = dynamic_cast<ToolBase *>(obj);
+        if (result != 0)
+        {
+            if (0 == this->findTool(result->objName()))
+            {
                 result->setParent(this->getParent());
                 m_tools.insert(std::make_pair(result->objName(), result));
                 return result;
             }
-            else {
+            else
+            {
                 LogError << "already exist tool: " << result->objName()
                          << std::endl;
             }
         }
-        else {
+        else
+        {
             LogFatal << obj->objName() << " cannot cast to ToolBase."
                      << std::endl;
         }
@@ -58,21 +63,30 @@ ToolBase* AlgBase::createTool(const std::string& toolName)
     return nullptr;
 }
 
-ToolBase* AlgBase::findTool(const std::string& toolName)
+ToolBase *AlgBase::findTool(const std::string &toolName)
 {
     auto it = m_tools.find(toolName);
-    if ( it != m_tools.end() ) {
+    if (it != m_tools.end())
+    {
         return (*it).second;
     }
     //LogInfo << "cannot find tool: " << toolName << std::endl;
     return nullptr;
 }
 
-void AlgBase::show(int indent)
+SniperJSON AlgBase::json()
 {
-    DLElement::show(indent);
+    SniperJSON j = DLElement::json();
 
-    for ( auto& t : m_tools ) {
-        t.second->show(indent+1);
+    if (!m_tools.empty())
+    {
+        SniperJSON &jtools = j["tools"];
+
+        for (auto &t : m_tools)
+        {
+            jtools.push_back(t.second->json());
+        }
     }
+
+    return j;
 }

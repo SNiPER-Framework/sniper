@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -17,15 +16,14 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/NamedElement.h"
-#include "SniperKernel/SniperLog.h"
 
-NamedElement::NamedElement(const std::string& name)
+NamedElement::NamedElement(const std::string &name)
     : m_name(name)
 {
     m_logLevel = SniperLog::logLevel();
 }
 
-NamedElement::NamedElement(const std::string& scope_, const std::string& name_)
+NamedElement::NamedElement(const std::string &scope_, const std::string &name_)
     : m_scope(scope_), m_name(name_)
 {
     m_logLevel = SniperLog::logLevel();

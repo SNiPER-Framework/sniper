@@ -7,5 +7,6 @@ install.history
 amd64*
 Linux*
 *.pyc
+.vscode
 build
 install
