@@ -71,8 +71,7 @@ public:
     // insert a key/value pair in case of a map
     bool insert(const std::string &key, const SniperJSON &val);
 
-    // erase one element in a vector or a map
-    vec_iterator erase(vec_iterator it) { return m_jvec.erase(it); }
+    // erase one element in a map
     map_iterator erase(map_iterator it) { return m_jmap.erase(it); }
 
     // erase the element by key in a map
