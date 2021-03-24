@@ -17,11 +17,23 @@
 
 #include "SniperKernel/SniperContext.h"
 #include <sstream>
+#include <unistd.h>
 
 Sniper::Context::Context()
     : m_mode(static_cast<SysModeInt>(SysMode::BASIC)),
       m_nt(0)
 {
+}
+
+const std::string &Sniper::Context::hostName()
+{
+    if (m_hostName.empty())
+    {
+        char name[128];
+        int status = gethostname(name, 128);
+        m_hostName = status ? "?" : name;
+    }
+    return m_hostName;
 }
 
 void Sniper::Context::set(const Sniper::SysMode &mode)

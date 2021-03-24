@@ -20,11 +20,11 @@
 
 namespace bp = boost::python;
 
-extern bp::object BoostPyJsonModule;
+extern bp::object &BoostPyJsonModule();
 
 namespace PropertyExp
 {
-    static auto json = BoostPyJsonModule.attr("dumps");
+    static auto json = BoostPyJsonModule().attr("dumps");
 
     bool set(Property &prop, bp::object &var)
     {

@@ -40,6 +40,8 @@ namespace Sniper
         Context();
         ~Context() = default;
 
+        const std::string &hostName();
+
         void set(const SysMode &mode);
         void set_threads(short nt);
         bool check(const SysMode &mode);
@@ -52,6 +54,7 @@ namespace Sniper
     private:
         SysModeInt m_mode;
         short m_nt;
+        std::string m_hostName;
         std::list<std::string> m_msg;
 
         Context(const Context &) = delete;

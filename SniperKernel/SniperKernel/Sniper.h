@@ -33,9 +33,6 @@ namespace Sniper
     namespace System
     {
         ///
-        const std::string &hostName();
-
-        ///
         std::string sysDate();
     }
 

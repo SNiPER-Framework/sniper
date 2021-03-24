@@ -9,7 +9,7 @@ include_directories(${PROJECT_SOURCE_DIR}/SniperKernel)
 include_directories(${PROJECT_SOURCE_DIR}/SniperUtil/PyDataStore)
 file(GLOB sources src/*.cc)
 add_library(PyDataStore SHARED ${sources})
-target_link_libraries(PyDataStore SniperKernel)
+target_link_libraries(PyDataStore SniperPython)
 
 # install
 install(TARGETS PyDataStore DESTINATION ${CMAKE_INSTALL_LIBDIR})

@@ -21,7 +21,6 @@
 #include "SniperKernel/SniperException.h"
 #include <fstream>
 #include <dlfcn.h>
-#include <unistd.h>
 #include <time.h>
 
 namespace SniperLog
@@ -103,18 +102,6 @@ void Sniper::loadDll(char *dll)
         LogFatal << dlerror() << std::endl;
         throw ContextMsgException(std::string("Can't load DLL ") + dll);
     }
-}
-
-const std::string &Sniper::System::hostName()
-{
-    static std::string hName;
-    if (hName.empty())
-    {
-        char name[128];
-        int status = gethostname(name, 128);
-        hName = status ? "?" : name;
-    }
-    return hName;
 }
 
 std::string Sniper::System::sysDate()

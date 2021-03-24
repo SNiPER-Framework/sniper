@@ -41,7 +41,7 @@ void sniper_kernel_initialize()
     std::cout << "**************************************************\n"
               << "***             Welcome to SNiPER              ***\n"
               << "**************************************************\n"
-              << "Running @ " << Sniper::System::hostName()
+              << "Running @ " << sniper_context->hostName()
               << " on " << Sniper::System::sysDate();
 
     sigset(SIGINT, sniper_sig_handler);
@@ -54,7 +54,7 @@ void sniper_kernel_finalize()
     DLEFactory::release();
     std::cout << std::endl
               << "**************************************************\n"
-              << "Terminating @ " << Sniper::System::hostName()
+              << "Terminating @ " << sniper_context->hostName()
               << " on " << Sniper::System::sysDate()
               << sniper_context->sys_info() << std::endl
               << sniper_context->summary() << std::endl;
