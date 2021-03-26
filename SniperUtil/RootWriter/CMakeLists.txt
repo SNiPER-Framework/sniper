@@ -2,7 +2,8 @@
 file(GLOB sources lib/*.cc)
 add_library(RootWriterLib SHARED ${sources})
 target_include_directories(RootWriterLib PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR} ${ROOT_INCLUDE_DIRS}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}> ${ROOT_INCLUDE_DIRS}
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 target_link_libraries(RootWriterLib SniperKernel ${ROOT_LIBRARIES})
 
@@ -23,7 +24,9 @@ endif()
 target_link_libraries(RootWriter RootWriterLib ${PYTHON_LIBRARY} ${BOOST_PYTHON_LIBRARY} ${ROOT_PyROOT_LIBRARY})
 
 # install
-install(TARGETS RootWriterLib DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS RootWriterLib
+    EXPORT ${PROJECT_NAME}Targets
+    DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(TARGETS RootWriter DESTINATION ${CMAKE_INSTALL_PYTHONDIR}/RootWriter)
 install(DIRECTORY RootWriter DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(DIRECTORY python/RootWriter DESTINATION ${CMAKE_INSTALL_PYTHONDIR})

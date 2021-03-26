@@ -7,5 +7,7 @@ target_include_directories(SniperKernel PUBLIC
 target_link_libraries(SniperKernel dl)
 
 # install
-install(TARGETS SniperKernel DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS SniperKernel
+    EXPORT ${PROJECT_NAME}Targets
+    DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY SniperKernel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

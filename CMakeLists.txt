@@ -104,18 +104,8 @@ add_subdirectory(Examples)
 # Build Target Main Executable
 add_subdirectory(src)
 
-# Generate configure files
-string(TIMESTAMP CONFIG_DATE)
-set(CONFIG_DATE ${CONFIG_DATE} CACHE INTERNAL "Date when build was made")
-set(CONFIG_USER $ENV{USER} CACHE INTERNAL "Name who did the build")
-configure_file("${PROJECT_SOURCE_DIR}/cmake/sniper-config.in" "${PROJECT_BINARY_DIR}/sniper-config" @ONLY)
-configure_file("${PROJECT_SOURCE_DIR}/cmake/sniper-setup.sh.in" "${PROJECT_BINARY_DIR}/sniper-setup.sh" @ONLY)
-configure_file("${PROJECT_SOURCE_DIR}/cmake/sniper-modulefile.in" "${PROJECT_BINARY_DIR}/sniper-modulefile" @ONLY)
-
-# Install
-install(PROGRAMS "${PROJECT_BINARY_DIR}/sniper-config" DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(FILES "${PROJECT_BINARY_DIR}/sniper-setup.sh" DESTINATION ${CMAKE_INSTALL_DATADIR}/sniper RENAME setup.sh)
-install(FILES "${PROJECT_BINARY_DIR}/sniper-modulefile" DESTINATION ${CMAKE_INSTALL_DATADIR}/sniper/modulefiles RENAME sniper)
+# Generate and install configure files
+include(cmake/SNiPERCreateConfig.cmake)
 
 # Messages for DEBUG
 if(DEBUG)
