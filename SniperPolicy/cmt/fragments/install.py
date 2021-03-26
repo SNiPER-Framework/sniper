@@ -16,7 +16,7 @@ Command line:
 """
 # Needed to for the local copy of the function os.walk, introduced in Python 2.3
 # It must be removed when the support for Python 2.2 is dropped
-from __future__ import generators # should be at the first line to please Python 2.5
+ # should be at the first line to please Python 2.5
 _version = "$Id: install.py,v 1.15 2008/10/28 17:24:39 marcocle Exp $"
 
 def main():
@@ -65,10 +65,10 @@ def main():
   -u, --uninstall       do uninstall
   -s, --symlink         create symlinks instead of copy"""
             def error(self,msg=None):
-                print self.usage + "\n"
+                print(self.usage + "\n")
                 if not msg:
                     msg = self.help
-                print msg
+                print(msg)
                 exit(1)
         parser = _DummyParserClass()
         try:
@@ -118,7 +118,7 @@ def main():
             from os import remove
             try:
                 remove(opts.logfile)
-            except OSError, x:
+            except OSError as x:
                 if x.errno != 2 : raise
     else : # install mode
         if len(args) < 2:
@@ -161,7 +161,7 @@ except ImportError:
             # Note that listdir and error are globals in this module due
             # to earlier import-*.
             names = listdir(top)
-        except error, err:
+        except error as err:
             if onerror is not None:
                 onerror(err)
             return
@@ -200,7 +200,7 @@ class LogFile:
         self._installed_files[source] = dest
 
     def get_sources(self):
-        return self._installed_files.keys()
+        return list(self._installed_files.keys())
     
     def remove(self,source):
         try:
@@ -255,29 +255,29 @@ def remove(file, logdir):
     from os.path import normpath, splitext, exists
     file = normpath(join(logdir, file))
     try:
-        print "Remove '%s'"%file
+        print("Remove '%s'"%file)
         remove(file)
         # For python files, remove the compiled versions too 
         if splitext(file)[-1] == ".py":
             for c in ['c', 'o']:
                 if exists(file + c):
-                    print "Remove '%s'" % (file+c)
+                    print("Remove '%s'" % (file+c))
                     remove(file+c)
         file_path = split(file)[0]
         while file_path and (len(listdir(file_path)) == 0):
-            print "Remove empty dir '%s'"%file_path
+            print("Remove empty dir '%s'"%file_path)
             rmdir(file_path)
             file_path = split(file_path)[0]
-    except OSError, x: # ignore file-not-found errors
+    except OSError as x: # ignore file-not-found errors
         if x.errno in [2, 13] :
-            print "Previous removal ignored"
+            print("Previous removal ignored")
         else: 
             raise
         
 
 def getCommonPath(dirname, filename):
     from os import sep
-    from itertools import izip
+    
     from os.path import splitdrive
     # if the 2 components are on different drives (windows)
     if splitdrive(dirname)[0] != splitdrive(filename)[0]:
@@ -285,7 +285,7 @@ def getCommonPath(dirname, filename):
     dirl = dirname.split(sep)
     filel = filename.split(sep)
     commpth = []
-    for d, f in izip(dirl, filel):
+    for d, f in zip(dirl, filel):
         if d == f :
             commpth.append(d)
         else :
@@ -327,16 +327,16 @@ def update(src,dest,old_dest = None, syml = False, logdir = realpath(".")):
     realsrc = normpath(join(dest_path,src))
     if (not exists(realdest)) or (getmtime(realsrc) > getmtime(realdest)):
         if not isdir(dest_path):
-            print "Create dir '%s'"%(dest_path)
+            print("Create dir '%s'"%(dest_path))
             makedirs(dest_path)
         # the destination file is missing or older than the source
         if syml and platform != "win32" :
             if exists(realdest):
                 remove(realdest,logdir)
-            print "Create Link to '%s' in '%s'"%(src,dest_path)
+            print("Create Link to '%s' in '%s'"%(src,dest_path))
             symlink(src,realdest)
         else:
-            print "Copy '%s' -> '%s'"%(src,realdest)
+            print("Copy '%s' -> '%s'"%(src,realdest))
             copy2(realsrc,realdest) # do the copy (cp -p src dest)
     #if old_dest != dest: # the file was installed somewhere else
     #    # remove the old destination
@@ -380,7 +380,7 @@ def install(sources, destination, logfile, exclusions = [],
                     old_dest = None  
                 update(k,to_do[k],old_dest,syml,logdir)
             # remove files that were copied but are not anymore in the list 
-            for old_dest in last_done.values():
+            for old_dest in list(last_done.values()):
                 remove(old_dest,logdir)
             logfile.set_dest(src,to_do) # update log
 
@@ -397,7 +397,7 @@ def uninstall(logfile, destinations = [], logdir=realpath(".")):
                 remove(dest, logdir)
                 logfile.remove(s)
         else:
-            for subs in dest.keys():
+            for subs in list(dest.keys()):
                 subdest = dest[subs]
                 if filename_match(subdest,destinations,default=True):
                     remove(subdest,logdir)
