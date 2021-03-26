@@ -24,7 +24,7 @@ extern bp::object &BoostPyJsonModule();
 
 namespace PropertyExp
 {
-    auto json = BoostPyJsonModule().attr("dumps");
+    static auto json = BoostPyJsonModule().attr("dumps");
 
     bool set(Property &prop, bp::object &var)
     {

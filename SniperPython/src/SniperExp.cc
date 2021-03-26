@@ -24,7 +24,7 @@ extern boost::python::object &BoostPyJsonModule();
 
 namespace SniperExp
 {
-    auto json = BoostPyJsonModule().attr("dumps");
+    static auto json = BoostPyJsonModule().attr("dumps");
 
     void setLogLevel(boost::python::object &var)
     {

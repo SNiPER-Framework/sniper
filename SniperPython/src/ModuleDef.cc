@@ -19,12 +19,8 @@
 
 boost::python::object &BoostPyJsonModule()
 {
-    if (!Py_IsInitialized())
-    {
-        Py_Initialize();
-    }
-    static auto jmod = boost::python::import("json");
-    return jmod;
+    static auto jmod = new boost::python::object(boost::python::import("json"));
+    return *jmod;
 }
 
 void export_Sniper_Incident();
