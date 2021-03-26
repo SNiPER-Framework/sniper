@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -16,8 +15,8 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "NonUserIf/WhiteBoard.h"
-#include "NonUserIf/IncidentMgr.h"
+#include "SniperPrivate/WhiteBoard.h"
+#include "SniperPrivate/IncidentMgr.h"
 #include <mutex>
 
 static WhiteBoard s_wbObj;

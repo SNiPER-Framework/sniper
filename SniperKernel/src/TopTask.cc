@@ -30,7 +30,7 @@
 
 #include "SniperKernel/TopTask.h"
 #include "SniperKernel/SniperLog.h"
-#include "NonUserIf/DLEFactory.h"
+#include "SniperPrivate/DLEFactory.h"
 #include "SniperKernel/DeclareDLE.h"
 
 SNIPER_DECLARE_DLE(TopTask);

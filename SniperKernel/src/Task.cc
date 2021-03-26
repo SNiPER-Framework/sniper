@@ -24,9 +24,9 @@
 #include "SniperKernel/SniperException.h"
 #include "SniperKernel/DeclareDLE.h"
 #include "SniperKernel/Sniper.h"
-#include "NonUserIf/TaskProperty.h"
-#include "NonUserIf/WhiteBoard.h"
-#include "NonUserIf/DLEFactory.h"
+#include "SniperPrivate/TaskProperty.h"
+#include "SniperPrivate/WhiteBoard.h"
+#include "SniperPrivate/DLEFactory.h"
 
 SNIPER_DECLARE_DLE(Task);
 

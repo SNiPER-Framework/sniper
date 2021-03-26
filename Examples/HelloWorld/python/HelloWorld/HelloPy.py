@@ -24,14 +24,14 @@ class HelloPy(PyAlgBase):
             self.LogFatal("fatal message")
             return True
 
-        print self.data
+        print(self.data)
         self.data['aStr'] = "PY" + str(self.count)
         self.data['aVec'] = [ i+self.count for i in self.data['aVec'] ]
         self.data['newValue'] = 1.11 * self.count
 
         self.LogInfo("modify the data dict of PyDataStore to ...")
-        print self.data
-        print
+        print(self.data)
+        print()
 
         return True
 

@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -19,7 +18,7 @@
 #include "SniperKernel/IIncidentHandler.h"
 #include "SniperKernel/Task.h"
 #include "SniperKernel/SniperLog.h"
-#include "NonUserIf/IncidentMgr.h"
+#include "SniperPrivate/IncidentMgr.h"
 #include <algorithm>
 
 IIncidentHandler::IIncidentHandler(Task& domain)

@@ -15,22 +15,22 @@ if __name__ == "__main__":
     task = Sniper.Task("task")
     task.setEvtMax(3)
 
-    import PyDataStore
+    import SniperPython
     task.createSvc("PyDataStoreSvc/DataStore")
 
     import HelloWorld
     task.property("algs").append("HelloAlg/SetAlg")
 
     x = task.find("SetAlg")
-    print "Before setting properties"
+    print("Before setting properties")
     x.show()
 
-    print
+    print()
 
     x.property("VarString").set("GOD")
-    x.property("VectorInt").set(range(6))
-    x.property("MapStrInt").set( {"str%d"%v:v for v in range(6)} )
-    print "After setting properties"
+    x.property("VectorInt").set(list(range(6)))
+    x.property("MapStrInt").set( {"str%d"%v:v for v in list(range(6))} )
+    print("After setting properties")
     x.show()
 
     y = HelloWorld.HelloPy("PyAlg")

@@ -17,7 +17,7 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "Hello.h"
-#include "PyDataStore/PyDataStore.h"
+#include "SniperPython/PyDataStore.h"
 #include "SniperKernel/AlgFactory.h"
 #include "SniperKernel/SniperPtr.h"
 #include "SniperKernel/SniperLog.h"

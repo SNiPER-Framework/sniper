@@ -15,7 +15,7 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "NonUserIf/IncidentMgr.h"
+#include "SniperPrivate/IncidentMgr.h"
 #include "SniperKernel/Incident.h"
 #include "SniperKernel/IIncidentHandler.h"
 #include "SniperKernel/Task.h"

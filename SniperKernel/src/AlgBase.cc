@@ -17,7 +17,7 @@
 
 #include "SniperKernel/AlgBase.h"
 #include "SniperKernel/ToolBase.h"
-#include "NonUserIf/DLEFactory.h"
+#include "SniperPrivate/DLEFactory.h"
 
 AlgBase::AlgBase(const std::string &name)
     : DLElement(name)

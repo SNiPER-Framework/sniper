@@ -18,8 +18,8 @@
 #include "SniperKernel/Sniper.h"
 #include "SniperKernel/SniperContext.h"
 #include "SniperKernel/SniperLog.h"
-#include "NonUserIf/IncidentMgr.h"
-#include "NonUserIf/DLEFactory.h"
+#include "SniperPrivate/IncidentMgr.h"
+#include "SniperPrivate/DLEFactory.h"
 #include <fstream>
 #include <signal.h>
 

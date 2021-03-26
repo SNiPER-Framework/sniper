@@ -19,6 +19,7 @@
 #include "SniperKernel/Task.h"
 #include "SniperKernel/SniperLog.h"
 #include "SniperKernel/SniperException.h"
+#include <algorithm>
 #include <fstream>
 #include <dlfcn.h>
 #include <time.h>
@@ -95,7 +96,11 @@ void Sniper::loadDll(char *dll)
     void *dl_handler = dlopen(dll, RTLD_LAZY | RTLD_GLOBAL);
     if (dl_handler)
     {
-        Sniper::UseDlls.push_back(dll);
+        auto &dlls = Sniper::UseDlls;
+        if (std::find(dlls.begin(), dlls.end(), dll) == dlls.end())
+        {
+            dlls.push_back(dll);
+        }
     }
     else
     {

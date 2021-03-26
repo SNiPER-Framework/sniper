@@ -1,8 +1,0 @@
-project sniper
-
-use ExternalInterface
-
-build_strategy with_installarea
-setup_strategy no_config
-setup_strategy root
-structure_strategy without_version_directory
