@@ -1,8 +1,40 @@
-# SNiPER Release Notes
+# SNiPER v1.x Release Notes
 
 This is the release notes for the SNiPER project.
 
-## Unreleased
+## v1.7
+
+- Changes
+    - migrate from Python 2 to Python 3
+
+## v1.6
+
+- Fixes
+    - Handle the new TPython since ROOT 6.22
+
+- Changes
+    - Use "-O2" by default while building
+
+## v1.5
+
+- Fixes
+    - Using TFile::Open instead of new TFile
+
+- New feature
+    - Now we can stop the application by Ctrl+C
+    - JSON support in Sniper
+
+## v1.4
+
+- Fixes
+    - finalize() can be invoked twice when there is an error
+    - using dict to set property value in Python3 
+
+- Changes
+    - stop the initialization when there is any error
+
+- Improvements
+    - better CMake supports
 
 - New features
     - Now we can write algorithms in Python. An example: Examples/HelloWorld/python/HelloWorld/HelloPy.py

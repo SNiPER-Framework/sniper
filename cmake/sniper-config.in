@@ -79,7 +79,7 @@ while test $# -gt 0; do
         ;;
 
     --cflags)
-        echo "-std=c++11 -fPIC -I$includedir -I@Boost_INCLUDE_DIR@ -I@PYTHON_INCLUDE_DIR@"
+        echo "-std=c++11 -fPIC -I$includedir -I@Boost_INCLUDE_DIR@ -I@PYTHON_INCLUDE_DIRS@"
         ;;
 
     --libdir)
@@ -87,7 +87,7 @@ while test $# -gt 0; do
         ;;
 
     --libs)
-        echo "-fPIC -Wl,--as-needed -Wl,--no-undefined $libdir/@SniperKernel_LIB_NAME@ @Boost_PYTHON_LIBRARY@ @PYTHON_LIBRARY@"
+        echo "-fPIC -Wl,--as-needed -Wl,--no-undefined $libdir/@CMAKE_SHARED_LIBRARY_PREFIX@SniperKernel@CMAKE_SHARED_LIBRARY_SUFFIX@ @BOOST_PYTHON_LIBRARY@ @PYTHON_LIBRARY@"
         ;;
 
     *)
