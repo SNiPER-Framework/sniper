@@ -10,7 +10,7 @@ Required packages:
 * cmake (3.12 or later) - build the project;
 * Compiler with C++11 support (GCC 4.8 or LLVM 3.4 or other);
 
-Recommented packages:
+Recommended packages:
 * Boost (1.53 or later, with Boost.Python) - portable C++ source libraries, used for interface with python scripts;
 * Python (2.7 or later) - interpreted, interactive, object-oriented programming language, used as main script engine for SNiPER modules.
 
@@ -49,3 +49,7 @@ $ cmake --build . --target install
 ```
 
 Your build is now installed to the directory you provided to CMake. For the best experience one needs to set the proper environment. This can be done with the help of shell script `share/sniper/setup.sh`, or, a modern solution, using an Environment Modules file `share/sniper/modulefiles/sniper`.
+
+## Contributing
+
+Contributions and bug reports are welcome!
