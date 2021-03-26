@@ -14,6 +14,12 @@ target_include_directories(RootWriter PUBLIC
 if(NOT ROOT_PyROOT_LIBRARY)
     string(REPLACE Core PyROOT ROOT_PyROOT_LIBRARY ${ROOT_Core_LIBRARY})
 endif()
+if(NOT EXISTS ${ROOT_PyROOT_LIBRARY} )
+    string(REPLACE Core ROOTTPython ROOT_PyROOT_LIBRARY ${ROOT_Core_LIBRARY})
+endif()
+if(NOT EXISTS ${ROOT_PyROOT_LIBRARY} )
+    message(FATAL_ERROR "missing PyROOT/ROOTTPython library")
+endif()
 target_link_libraries(RootWriter RootWriterLib ${PYTHON_LIBRARY} ${BOOST_PYTHON_LIBRARY} ${ROOT_PyROOT_LIBRARY})
 
 # install

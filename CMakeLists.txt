@@ -63,7 +63,7 @@ if(USE_PYTHON)
     message(STATUS "python version ${${PyPkgName}_VERSION}")
     set(PYTHON_VERSION "${${PyPkgName}_VERSION}")
     set(PYTHON_INCLUDE_DIRS "${${PyPkgName}_INCLUDE_DIRS}")
-    set(PYTHON_LIBRARY "${${PyPkgName}_LIBRARY}")
+    set(PYTHON_LIBRARY "${${PyPkgName}_LIBRARIES}")
     #boost.python
     set(Boost_USE_MULTITHREADED OFF)
     if(USE_PYTHON2)
@@ -84,6 +84,9 @@ endif()
 
 # Config for Option USE_ROOT
 if(USE_ROOT)
+    if(NOT USE_PYTHON)
+        message(FATAL_ERROR "must set USE_PYTHON=ON when USE_ROOT=ON")
+    endif()
     find_package(ROOT 5.18 REQUIRED)
     message(STATUS "ROOT version ${ROOT_VERSION}")
 endif()
