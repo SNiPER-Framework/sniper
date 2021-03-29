@@ -22,27 +22,25 @@
 
 class TopTask final : public Task
 {
-    public:
+public:
+    TopTask(const std::string &name);
+    virtual ~TopTask();
 
-        TopTask(const std::string& name);
-        virtual ~TopTask();
+    // interfaces for sub-tasks
+    Task *createTask(const std::string &taskName);
+    Task *addTask(Task *task);
+    void clearTasks() { m_tasks.clear(); }
 
-        // interfaces for sub-tasks
-        Task* createTask(const std::string& taskName);
-        Task* addTask(Task* task);
-        void  clearTasks() { m_tasks.clear(); }
+protected:
+    // override of base class
+    bool config() override;
+    bool initialize() override;
+    bool finalize() override;
+    DLElement *find(const std::string &name) override;
+    void remove(const std::string &name) override;
 
-        // override of base class
-        bool config() override;
-        bool initialize() override;
-        bool finalize() override;
-        DLElement* find(const std::string& name) override;
-        void remove(const std::string& name) override;
-
-
-    private:
-
-        DleSupervisor           m_tasks;
+private:
+    DleSupervisor m_tasks;
 };
 
 #endif
