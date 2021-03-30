@@ -1,25 +1,16 @@
 {
   "sniper": {
     "Colorful": 3,
+    "LoadDlls": [ "libSniperCoreUsages.so" ],
     "LogLevel": 2,
-    "ShowTime": false,
-    "UseDlls": [
-      "libSniperCoreUsages.so"
-    ]
+    "ShowTime": false
   },
   "identifier": "Task/task",
   "properties": {
     "EvtMax": 5,
     "LogLevel": 2
   },
-  "services": [
-    {
-      "identifier": "DataMemSvc/DataMemSvc",
-      "properties": {
-        "LogLevel": 2
-      }
-    }
-  ],
+  "services": [],
   "algorithms": [
     {
       "identifier": "HelloWorld/HelloWorld",

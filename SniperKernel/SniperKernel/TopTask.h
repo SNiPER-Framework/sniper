@@ -31,6 +31,9 @@ public:
     Task *addTask(Task *task);
     void clearTasks() { m_tasks.clear(); }
 
+    // eval this Task from json
+    virtual void eval(const SniperJSON &json) override;
+
 protected:
     // override of base class
     bool config() override;

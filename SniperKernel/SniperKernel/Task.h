@@ -89,6 +89,8 @@ public:
 
     //the json value of this object
     virtual SniperJSON json();
+    // eval this Task from json
+    virtual void eval(const SniperJSON &json) override;
 
 protected:
     void queue(DleSupervisor *target);

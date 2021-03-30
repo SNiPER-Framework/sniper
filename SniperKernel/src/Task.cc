@@ -317,6 +317,9 @@ SniperJSON Task::json()
     if (isRoot())
     {
         j.insert("sniper", SniperJSON(Sniper::Config::json_str()));
+        auto &jsniper = j["sniper"];
+        if (jsniper.find("\"LoadDlls\"") != jsniper.map_end())
+            jsniper["LoadDlls"].format(false);
     }
 
     for (auto target : m_targets)
@@ -324,7 +327,10 @@ SniperJSON Task::json()
         SniperJSON &jcomponents = j[target->objName()];
         for (auto obj : target->list())
         {
-            jcomponents.push_back(obj->json());
+            if (obj->tag() != "DataMemSvc")
+            {
+                jcomponents.push_back(obj->json());
+            }
         }
         if (!jcomponents.valid())
         {
@@ -335,6 +341,29 @@ SniperJSON Task::json()
     j.insert("ordered_keys", keys);
 
     return j;
+}
+
+void Task::eval(const SniperJSON &json)
+{
+    //eval for base class
+    DLElement::eval(json);
+    m_limited = (m_evtMax >= 0);
+
+    //eval the services
+    auto &svcs = json["services"];
+    for (auto it = svcs.vec_begin(); it != svcs.vec_end(); ++it)
+    {
+        SvcBase *svc = this->createSvc((*it)["identifier"].get<std::string>());
+        svc->eval(*it);
+    }
+
+    //eval the algorithms
+    auto &algs = json["algorithms"];
+    for (auto it = algs.vec_begin(); it != algs.vec_end(); ++it)
+    {
+        AlgBase* alg = this->createAlg((*it)["identifier"].get<std::string>());
+        alg->eval(*it);
+    }
 }
 
 void Task::queue(DleSupervisor *target)

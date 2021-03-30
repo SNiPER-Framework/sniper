@@ -44,12 +44,12 @@ namespace SniperExp
         Sniper::setShowTime(SniperJSON(jstr).get<bool>());
     }
 
-    void setLogFile1(char *fname)
+    void setLogFile1(const char *fname)
     {
         Sniper::setLogFile(fname);
     }
 
-    void setLogFile2(char *fname, boost::python::object &var)
+    void setLogFile2(const char *fname, boost::python::object &var)
     {
         auto jstr = boost::python::extract<std::string>(json(var))();
         Sniper::setLogFile(fname, SniperJSON(jstr).get<bool>());
@@ -60,6 +60,7 @@ void export_Sniper_Sniper()
 {
     using namespace boost::python;
 
+    def("eval", &Sniper::eval, return_value_policy<reference_existing_object>());
     def("setLogLevel", SniperExp::setLogLevel);
     def("setColorful", SniperExp::setColorful);
     def("setShowTime", SniperExp::setShowTime);

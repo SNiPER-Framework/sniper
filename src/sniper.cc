@@ -20,6 +20,7 @@
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
+#include <dlfcn.h>
 
 int exe_python(const std::string &script)
 {
@@ -44,9 +45,17 @@ int exe_json(const std::string &jfile)
         return 20;
     }
 
-    std::cout << "run json: " << jfile << std::endl;
-    //TODO: config and run a job according to the json
-    std::cout << "this feature will be implemented soon" << std::endl;
+    void *handle = dlopen("libSniperKernel.so", RTLD_LAZY);
+    if (handle)
+    {
+        typedef bool (*sniper_pfun)(const char *);
+        sniper_pfun run_from_json = (sniper_pfun)dlsym(handle, "run_from_json");
+        if (!run_from_json(jfile.c_str()))
+        {
+            return 21;
+        }
+    }
+    dlclose(handle);
 
     return 0;
 }

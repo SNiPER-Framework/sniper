@@ -59,6 +59,11 @@ std::string DLElementExp_json(DLElement &obj)
     return obj.json().str();
 }
 
+void DLElementExp_eval(DLElement &obj, const std::string &str)
+{
+    obj.eval(SniperJSON(str));
+}
+
 void export_Sniper_DLElement()
 {
     using namespace boost::python;
@@ -86,5 +91,6 @@ void export_Sniper_DLElement()
         .def("property", &DLElement::property,
              return_value_policy<reference_existing_object>())
         .def("json", DLElementExp_json)
+        .def("eval", DLElementExp_eval)
         .def("show", showf);
 }

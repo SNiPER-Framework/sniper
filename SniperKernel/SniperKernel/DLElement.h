@@ -53,8 +53,11 @@ public:
     // get a property via its key-name
     Property *property(const std::string &key);
 
-    //the json value of this object
+    // the json value of this object
     virtual SniperJSON json();
+
+    // eval this object from json
+    virtual void eval(const SniperJSON &json);
 
     // show its information
     void show();

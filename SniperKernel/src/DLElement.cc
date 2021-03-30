@@ -69,6 +69,27 @@ SniperJSON DLElement::json()
     return j;
 }
 
+void DLElement::eval(const SniperJSON &json)
+{
+    std::string jid = json["identifier"].get<std::string>();
+    std::string::size_type jsep = jid.find('/');
+    std::string type = (jsep == std::string::npos) ? jid : jid.substr(0, jsep);
+    if (type != m_tag)
+    {
+        static const char *_errmsg = "mismatched types while eval json";
+        LogFatal << type << " and " << m_tag << ": " << _errmsg << std::endl;
+        throw ContextMsgException(_errmsg);
+    }
+
+    const SniperJSON &jprop = json["properties"];
+    for (auto it = jprop.map_begin(); it != jprop.map_end(); ++it)
+    {
+        // get "key" from "\"key\""
+        std::string key = (it->first.substr(1, it->first.size()-2));
+        property(key)->set(it->second.str(-1));
+    }
+}
+
 void DLElement::show()
 {
     std::cout << json().str(2) << std::endl;

@@ -48,6 +48,8 @@ public:
 
     //the json value of this object
     virtual SniperJSON json();
+    // eval this Algorithm from json
+    virtual void eval(const SniperJSON &json) override;
 
 protected:
     std::map<std::string, ToolBase *> m_tools;

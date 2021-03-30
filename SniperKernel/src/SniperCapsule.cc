@@ -16,6 +16,7 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/Sniper.h"
+#include "SniperKernel/Task.h"
 #include "SniperKernel/SniperContext.h"
 #include "SniperKernel/SniperLog.h"
 #include "SniperPrivate/IncidentMgr.h"
@@ -77,5 +78,22 @@ void sniper_sig_handler(int signum)
         std::cout << "SNiPER is stopped by Ctrl+C" << std::endl;
         exit(0);
     default:; //pass
+    }
+}
+
+extern "C"
+{
+    bool run_from_json(const char *filename)
+    {
+        auto pobj = Sniper::eval(filename);
+
+        //try Task
+        auto pTask = dynamic_cast<Task *>(pobj);
+        if (pTask != nullptr)
+        {
+            return pTask->run();
+        }
+
+        return false;
     }
 }

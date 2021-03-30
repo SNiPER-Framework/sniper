@@ -19,6 +19,7 @@
 #include "SniperKernel/Task.h"
 #include "SniperKernel/SniperLog.h"
 #include "SniperKernel/SniperException.h"
+#include "SniperPrivate/DLEFactory.h"
 #include <algorithm>
 #include <fstream>
 #include <dlfcn.h>
@@ -34,7 +35,20 @@ namespace SniperLog
 
 namespace Sniper
 {
-    std::vector<std::string> UseDlls;
+    std::vector<std::string> LoadDlls;
+}
+
+DLElement *Sniper::eval(const char *fname)
+{
+    std::ifstream ifs(fname);
+    auto json = SniperJSON::load(ifs);
+
+    Sniper::Config::eval(json["sniper"].str(-1));
+
+    DLElement *pobj = DLEFactory::instance().create(json["identifier"].get<std::string>());
+    pobj->eval(json);
+
+    return pobj;
 }
 
 void Sniper::setLogLevel(int level)
@@ -52,7 +66,7 @@ void Sniper::setShowTime(bool flag)
     SniperLog::ShowTime = flag;
 }
 
-void Sniper::setLogFile(char *fname, bool append)
+void Sniper::setLogFile(const char *fname, bool append)
 {
     std::ios_base::openmode mode = std::ios_base::out;
     if (append)
@@ -91,12 +105,12 @@ void Sniper::setLogStdout()
     SniperLog::LogFile.clear();
 }
 
-void Sniper::loadDll(char *dll)
+void Sniper::loadDll(const char *dll)
 {
     void *dl_handler = dlopen(dll, RTLD_LAZY | RTLD_GLOBAL);
     if (dl_handler)
     {
-        auto &dlls = Sniper::UseDlls;
+        auto &dlls = Sniper::LoadDlls;
         if (std::find(dlls.begin(), dlls.end(), dll) == dlls.end())
         {
             dlls.push_back(dll);
@@ -125,10 +139,43 @@ std::string Sniper::Config::json_str()
     {
         j["LogFile"].from(SniperLog::LogFile);
     }
-    if (!Sniper::UseDlls.empty())
+    if (!Sniper::LoadDlls.empty())
     {
-        j["UseDlls"].from(Sniper::UseDlls);
+        j["LoadDlls"].from(Sniper::LoadDlls);
     }
 
     return j.str(-9);
+}
+
+void Sniper::Config::eval(const std::string &json_str)
+{
+    SniperJSON j(json_str);
+    if (j.find("\"LogLevel\"") != j.map_end())
+    {
+        Sniper::setLogLevel(j["LogLevel"].get<int>());
+    }
+    if (j.find("\"Colorful\"") != j.map_end())
+    {
+        Sniper::setColorful(j["Colorful"].get<int>());
+    }
+    if (j.find("\"ShowTime\"") != j.map_end())
+    {
+        Sniper::setShowTime(j["ShowTime"].get<bool>());
+    }
+    if (j.find("\"LogFile\"") != j.map_end())
+    {
+        auto fn = j["LogFile"].get<std::string>();
+        if (!fn.empty())
+        {
+            Sniper::setLogFile(fn.c_str());
+        }
+    }
+    if (j.find("\"LoadDlls\"") != j.map_end())
+    {
+        auto &dlls = j["LoadDlls"];
+        for (auto it = dlls.vec_begin(); it != dlls.vec_end(); ++it)
+        {
+            Sniper::loadDll(it->get<std::string>().c_str());
+        }
+    }
 }

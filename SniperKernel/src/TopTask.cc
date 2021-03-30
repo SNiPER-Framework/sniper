@@ -80,6 +80,20 @@ Task *TopTask::addTask(Task *task)
     return nullptr;
 }
 
+void TopTask::eval(const SniperJSON &json)
+{
+    //eval for base class
+    Task::eval(json);
+
+    //eval the sub-tasks
+    auto &tasks = json["subtasks"];
+    for (auto it = tasks.vec_begin(); it != tasks.vec_end(); ++it)
+    {
+        Task* task = this->createTask((*it)["identifier"].get<std::string>());
+        task->eval(*it);
+    }
+}
+
 bool TopTask::config()
 {
     bool stat = Task::config();
