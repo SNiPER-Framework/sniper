@@ -17,8 +17,8 @@
 
 #include "SniperKernel/SniperJSON.h"
 
-const std::string SniperJSON::SPACES(" \n\t\r");
-const std::string SniperJSON::DELIMITS(", \n]}\t\r");
+#define JsonSpaces " \n\t\r"
+#define JsonDelimits ", \n]}\t\r"
 
 SniperJSON::SniperJSON()
     : m_format(true),
@@ -33,7 +33,7 @@ SniperJSON::SniperJSON(const std::string &jstr)
     StrCursor cursor = 0;
     init(jstr, cursor);
 
-    cursor = jstr.find_first_not_of(SniperJSON::SPACES, cursor);
+    cursor = jstr.find_first_not_of(JsonSpaces, cursor);
     if (cursor != std::string::npos)
     {
         throw Exception(jstr, cursor);
@@ -266,7 +266,7 @@ void SniperJSON::init(const std::string &jstr, StrCursor &cursor)
 
 char SniperJSON::getValidChar(const std::string &jstr, StrCursor &cursor)
 {
-    cursor = jstr.find_first_not_of(SPACES, cursor);
+    cursor = jstr.find_first_not_of(JsonSpaces, cursor);
     if (cursor != std::string::npos)
     {
         return jstr.at(cursor);
@@ -345,7 +345,7 @@ void SniperJSON::readStringStr(const std::string &jstr, StrCursor &cursor)
 void SniperJSON::readScalarStr(const std::string &jstr, StrCursor &cursor)
 {
     StrCursor pstart = cursor;
-    cursor = jstr.find_first_of(DELIMITS, pstart + 1);
+    cursor = jstr.find_first_of(JsonDelimits, pstart + 1);
     if (cursor != std::string::npos || pstart == 0)
     {
         m_jvar = jstr.substr(pstart, cursor - pstart);

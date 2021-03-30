@@ -141,11 +141,6 @@ private:
     // object/map element holder
     std::map<std::string, SniperJSON> m_jmap;
 
-    // control string for space charactors
-    static const std::string SPACES;
-    // control string for delimit charactors
-    static const std::string DELIMITS;
-
     // construct a sub-element from a json string
     SniperJSON(const std::string &jstr, StrCursor &cursor);
 
