@@ -37,6 +37,7 @@ void export_Sniper_TopTask();
 void export_Sniper_TaskWatchDog();
 void export_Sniper_RunState();
 void export_Sniper_Sniper();
+void export_Sniper_SniperLog();
 void export_SniperPython_PyDataStore();
 
 BOOST_PYTHON_MODULE(libSniperPython)
@@ -55,5 +56,6 @@ BOOST_PYTHON_MODULE(libSniperPython)
     export_Sniper_TaskWatchDog();
     export_Sniper_RunState();
     export_Sniper_Sniper();
+    export_Sniper_SniperLog();
     export_SniperPython_PyDataStore();
 }
