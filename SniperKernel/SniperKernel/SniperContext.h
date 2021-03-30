@@ -38,7 +38,7 @@ namespace Sniper
     {
     public:
         Context();
-        ~Context() = default;
+        ~Context();
 
         const std::string &hostName();
 
@@ -52,6 +52,7 @@ namespace Sniper
         void reg_msg(const std::string &msg);
 
     private:
+        bool m_greeting;
         SysModeInt m_mode;
         short m_nt;
         std::string m_hostName;

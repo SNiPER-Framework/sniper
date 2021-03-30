@@ -16,7 +16,8 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/Sniper.h"
-#include "SniperKernel/Task.h"
+#include "SniperKernel/DLElement.h"
+#include "SniperKernel/JSONParser.h"
 #include "SniperKernel/SniperLog.h"
 #include "SniperKernel/SniperException.h"
 #include "SniperPrivate/DLEFactory.h"
@@ -149,33 +150,36 @@ std::string Sniper::Config::json_str()
 
 void Sniper::Config::eval(const std::string &json_str)
 {
-    SniperJSON j(json_str);
-    if (j.find("\"LogLevel\"") != j.map_end())
+    static const std::vector<std::string> keys{
+        "\"LogLevel\"",
+        "\"Colorful\"",
+        "\"ShowTime\"",
+        "\"LogFile\"",
+        "\"LoadDlls\""};
+
+    SniperJSON json(json_str);
+    JSONParser jp(json);
+    if (!jp.check(keys))
     {
-        Sniper::setLogLevel(j["LogLevel"].get<int>());
+        LogFatal << "JSON Error with " << jp.err() << std::endl;
+        throw ContextMsgException(jp.err());
     }
-    if (j.find("\"Colorful\"") != j.map_end())
+
+    jp.exefunc_if_exist(keys[0], Sniper::setLogLevel);
+    jp.exefunc_if_exist(keys[1], Sniper::setColorful);
+    jp.exefunc_if_exist(keys[2], Sniper::setShowTime);
+
+    std::string _log;
+    jp.assign_if_exist(keys[3], _log);
+    if (!_log.empty())
     {
-        Sniper::setColorful(j["Colorful"].get<int>());
+        Sniper::setLogFile(_log.c_str());
     }
-    if (j.find("\"ShowTime\"") != j.map_end())
+
+    std::vector<std::string> _dlls;
+    jp.assign_if_exist(keys[4], _dlls);
+    for (auto &dll : _dlls)
     {
-        Sniper::setShowTime(j["ShowTime"].get<bool>());
-    }
-    if (j.find("\"LogFile\"") != j.map_end())
-    {
-        auto fn = j["LogFile"].get<std::string>();
-        if (!fn.empty())
-        {
-            Sniper::setLogFile(fn.c_str());
-        }
-    }
-    if (j.find("\"LoadDlls\"") != j.map_end())
-    {
-        auto &dlls = j["LoadDlls"];
-        for (auto it = dlls.vec_begin(); it != dlls.vec_end(); ++it)
-        {
-            Sniper::loadDll(it->get<std::string>().c_str());
-        }
+        Sniper::loadDll(dll.c_str());
     }
 }

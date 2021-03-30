@@ -18,9 +18,6 @@
 #include "SniperKernel/Sniper.h"
 #include "SniperKernel/Task.h"
 #include "SniperKernel/SniperContext.h"
-#include "SniperKernel/SniperLog.h"
-#include "SniperPrivate/IncidentMgr.h"
-#include "SniperPrivate/DLEFactory.h"
 #include <fstream>
 #include <signal.h>
 
@@ -38,33 +35,12 @@ void sniper_sig_handler(int signum);
 void sniper_kernel_initialize()
 {
     sniper_context = new Sniper::Context();
-    //TODO: set SniperLog::LogStream, and do not use std::cout directly anymore
-    std::cout << "**************************************************\n"
-              << "***             Welcome to SNiPER              ***\n"
-              << "**************************************************\n"
-              << "Running @ " << sniper_context->hostName()
-              << " on " << Sniper::System::sysDate();
-
     sigset(SIGINT, sniper_sig_handler);
 }
 
 //definition of sniper_kernel_finalize
 void sniper_kernel_finalize()
 {
-    IncidentMgr::release();
-    DLEFactory::release();
-    std::cout << std::endl
-              << "**************************************************\n"
-              << "Terminating @ " << sniper_context->hostName()
-              << " on " << Sniper::System::sysDate()
-              << sniper_context->sys_info() << std::endl
-              << sniper_context->summary() << std::endl;
-
-    if (dynamic_cast<std::ofstream *>(SniperLog::LogStream))
-    {
-        delete SniperLog::LogStream;
-        SniperLog::LogStream = &std::cout;
-    }
     delete sniper_context;
 }
 

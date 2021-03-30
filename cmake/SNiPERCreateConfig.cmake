@@ -3,11 +3,13 @@ string(TIMESTAMP CONFIG_DATE)
 set(CONFIG_DATE ${CONFIG_DATE} CACHE INTERNAL "Date when build was made")
 set(CONFIG_USER $ENV{USER} CACHE INTERNAL "Name who did the build")
 configure_file("${PROJECT_SOURCE_DIR}/cmake/sniper-config.in" "${PROJECT_BINARY_DIR}/sniper-config" @ONLY)
+configure_file("${PROJECT_SOURCE_DIR}/cmake/sniper-init.json.in" "${PROJECT_BINARY_DIR}/sniper-init.json" @ONLY)
 configure_file("${PROJECT_SOURCE_DIR}/cmake/sniper-setup.sh.in" "${PROJECT_BINARY_DIR}/sniper-setup.sh" @ONLY)
 configure_file("${PROJECT_SOURCE_DIR}/cmake/sniper-modulefile.in" "${PROJECT_BINARY_DIR}/sniper-modulefile" @ONLY)
 
 ## install
 install(PROGRAMS "${PROJECT_BINARY_DIR}/sniper-config" DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES "${PROJECT_BINARY_DIR}/sniper-init.json" DESTINATION ${CMAKE_INSTALL_DATADIR}/sniper RENAME .init.json)
 install(FILES "${PROJECT_BINARY_DIR}/sniper-setup.sh" DESTINATION ${CMAKE_INSTALL_DATADIR}/sniper RENAME setup.sh)
 install(FILES "${PROJECT_BINARY_DIR}/sniper-modulefile" DESTINATION ${CMAKE_INSTALL_DATADIR}/sniper/modulefiles RENAME sniper)
 

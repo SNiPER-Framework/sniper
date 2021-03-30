@@ -16,13 +16,73 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/SniperContext.h"
+#include "SniperKernel/JSONParser.h"
+#include "SniperKernel/SniperLog.h"
+#include "SniperKernel/Sniper.h"
+#include "SniperPrivate/IncidentMgr.h"
+#include "SniperPrivate/DLEFactory.h"
 #include <sstream>
+#include <fstream>
 #include <unistd.h>
+#include <stdlib.h>
 
 Sniper::Context::Context()
-    : m_mode(static_cast<SysModeInt>(SysMode::BASIC)),
+    : m_greeting(true),
+      m_mode(static_cast<SysModeInt>(SysMode::BASIC)),
       m_nt(0)
 {
+    const char *finit = getenv("SNIPER_INIT_FILE");
+    std::string welcome{"Welcome to SNiPER"};
+    if (finit != nullptr)
+    {
+        std::vector<std::string> keys{
+            "\"ShowGreeting\"",
+            "\"WelcomeMsg\""};
+
+        std::ifstream ifs(finit);
+        auto json = SniperJSON::load(ifs);
+        Sniper::JSONParser jp(json);
+        if (!jp.check(keys))
+        {
+            std::cerr << "Error in init file: " << finit << '\n'
+                      << jp.err() << std::endl;
+            exit(-1);
+        }
+
+        jp.assign_if_exist(keys[0], m_greeting);
+        jp.assign_if_exist(keys[1], welcome);
+    }
+
+    if (m_greeting)
+    {
+        std::cout << "**************************************************\n"
+                  << welcome << '\n'
+                  << "**************************************************\n"
+                  << "Running @ " << hostName()
+                  << " on " << Sniper::System::sysDate();
+    }
+}
+
+Sniper::Context::~Context()
+{
+    IncidentMgr::release();
+    DLEFactory::release();
+
+    if (m_greeting)
+    {
+        std::cout << std::endl
+                  << "**************************************************\n"
+                  << "Terminating @ " << hostName()
+                  << " on " << Sniper::System::sysDate()
+                  << sys_info() << '\n';
+    }
+    std::cout << summary() << std::endl;
+
+    if (dynamic_cast<std::ofstream *>(SniperLog::LogStream))
+    {
+        delete SniperLog::LogStream;
+        SniperLog::LogStream = &std::cout;
+    }
 }
 
 const std::string &Sniper::Context::hostName()
