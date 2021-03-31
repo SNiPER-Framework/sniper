@@ -13,7 +13,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 endif()
 
 # Project and Build Options
-project(SNiPER VERSION 2.0)
+project(SNiPER VERSION 2.0 LANGUAGES CXX)
 
 option(DEBUG       "Turn debug options on" OFF)
 option(BUILD_TESTS "Whether to build the examples and enable testing" ON)
@@ -35,7 +35,7 @@ endif()
 # Compiler and Linker Settings
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fPIC")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -47,7 +47,7 @@ endif()
 # Config for Option DEBUG
 if(DEBUG)
     set(CMAKE_VERBOSE_MAKEFILE ON)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb3")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -ggdb3")
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 endif()
@@ -85,9 +85,6 @@ endif()
 
 # Config for Option USE_ROOT
 if(USE_ROOT)
-    if(NOT USE_PYTHON)
-        message(FATAL_ERROR "must set USE_PYTHON=ON when USE_ROOT=ON")
-    endif()
     find_package(ROOT 5.18 REQUIRED)
     message(STATUS "ROOT version ${ROOT_VERSION}")
 endif()

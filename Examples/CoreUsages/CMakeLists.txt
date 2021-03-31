@@ -1,9 +1,9 @@
 # build
-file(GLOB sources src/*.cc)
+file(GLOB sources CONFIGURE_DEPENDS src/*.cc)
 add_library(SniperCoreUsages SHARED ${sources})
 target_include_directories(SniperCoreUsages PRIVATE
     ${CMAKE_CURRENT_LIST_DIR})
-target_link_libraries(SniperCoreUsages SniperKernel)
+target_link_libraries(SniperCoreUsages PRIVATE SniperKernel)
 
 # install
 install(TARGETS SniperCoreUsages DESTINATION ${CMAKE_INSTALL_LIBDIR})

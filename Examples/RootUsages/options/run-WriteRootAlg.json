@@ -1,0 +1,24 @@
+{
+  "sniper": {
+    "LoadDlls": [ "libRootWriterLib.so", "libSniperRootUsages.so" ]
+  },
+  "identifier": "Task/task",
+  "properties": {
+    "EvtMax": 5,
+    "LogLevel": 2
+  },
+  "services": [
+    {
+      "identifier": "RootWriter/RootWriter",
+      "properties": {
+        "Output": { "FILE1": "output1.root", "FILE2": "output2.root" }
+      }
+    }
+  ],
+  "algorithms": [
+    {
+      "identifier": "WriteRootAlg/WriteRootAlg",
+      "properties": {}
+    }
+  ]
+}
