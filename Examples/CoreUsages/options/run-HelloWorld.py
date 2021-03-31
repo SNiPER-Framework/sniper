@@ -13,6 +13,7 @@ if __name__ == "__main__":
 
     import SniperCoreUsages
     alg = task.createAlg("HelloWorld")
+    alg.setDescription("an example to use SniperLog and Properties")
     alg.property("VarBool").set(True)
     alg.property("VecFloat").set([0.01])
     alg.property("MapIntStr").set({1: 'str1'})

@@ -47,6 +47,9 @@ public:
     // set the tag
     void setTag(const std::string &tag_) { m_tag = tag_; }
 
+    // set the description
+    void setDescription(const std::string &desc) { m_description = desc; }
+
     // set the parent (Task) pointer
     void setParent(Task *parent);
 
@@ -69,6 +72,7 @@ protected:
     //data members
     Task *m_par; //parent
     std::string m_tag;
+    std::string m_description;
     PropertyMgr m_pmgr;
 
     // following interfaces are not supported

@@ -83,6 +83,7 @@ void export_Sniper_DLElement()
         .def("tag", &DLElement::tag,
              return_value_policy<reference_existing_object>())
         .def("setTag", &DLElement::setTag)
+        .def("setDescription", &DLElement::setDescription)
         .def("getParent", &DLElement::getParent,
              return_value_policy<reference_existing_object>())
         //.def("setParent",     &DLElement::setParent)

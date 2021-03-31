@@ -13,9 +13,9 @@
   "services": [],
   "algorithms": [
     {
+      "description": "an example to use SniperLog and Properties",
       "identifier": "HelloWorld/HelloWorld",
       "properties": {
-        "LogLevel": 2,
         "MapIntStr": { "1": "str1" },
         "VarBool": true,
         "VecFloat": [ 0.01 ]

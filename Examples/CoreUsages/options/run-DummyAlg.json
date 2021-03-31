@@ -9,32 +9,28 @@
   },
   "services": [
     {
-      "identifier": "DummySvc/SharedSvc",
-      "properties": {}
+      "description": "a service instance that can be share by all algorithms",
+      "identifier": "DummySvc/SharedSvc"
     }
   ],
   "algorithms": [
     {
+      "description": "the 1st DummyAlg instance named as alg1",
       "identifier": "DummyAlg/alg1",
-      "properties": {
-        "LogLevel": 2
-      },
       "tools": [
         {
-          "identifier": "DummyTool/OwnedTool",
-          "properties": {}
+          "description": "a DummyTool instance owned by alg1",
+          "identifier": "DummyTool/OwnedTool"
         }
       ]
     },
     {
+      "description": "the 2nd DummyAlg instance named as alg2",
       "identifier": "DummyAlg/alg2",
-      "properties": {
-        "LogLevel": 2
-      },
       "tools": [
         {
-          "identifier": "DummyTool/OwnedTool",
-          "properties": {}
+          "description": "a DummyTool instance owned by alg2",
+          "identifier": "DummyTool/OwnedTool"
         }
       ]
     }
