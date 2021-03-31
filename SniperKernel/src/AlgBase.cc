@@ -43,7 +43,7 @@ ToolBase *AlgBase::createTool(const std::string &toolName)
         {
             if (0 == this->findTool(result->objName()))
             {
-                result->setParent(this->getParent());
+                result->setParentAlg(this);
                 m_tools.insert(std::make_pair(result->objName(), result));
                 return result;
             }

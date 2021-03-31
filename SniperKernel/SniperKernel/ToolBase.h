@@ -21,6 +21,8 @@
 #include "SniperKernel/DLElement.h"
 #include "SniperKernel/SniperLog.h"
 
+class AlgBase;
+
 class ToolBase : public DLElement
 {
     public :
@@ -31,6 +33,8 @@ class ToolBase : public DLElement
 
         virtual bool initialize();
         virtual bool finalize();
+
+        void setParentAlg(AlgBase* alg);
 };
 
 #endif

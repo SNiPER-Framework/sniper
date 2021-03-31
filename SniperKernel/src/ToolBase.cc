@@ -16,6 +16,7 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/ToolBase.h"
+#include "SniperKernel/AlgBase.h"
 
 ToolBase::ToolBase(const std::string& name)
     : DLElement(name)
@@ -30,4 +31,11 @@ bool ToolBase::initialize()
 bool ToolBase::finalize()
 {
     return true;
+}
+
+void ToolBase::setParentAlg(AlgBase* par)
+{
+    m_logLevel = par->logLevel();
+    m_scope = par->scope() + par->objName() + ':';
+    m_par = par->getParent();
 }
