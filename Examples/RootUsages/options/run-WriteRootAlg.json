@@ -2,6 +2,7 @@
   "sniper": {
     "LoadDlls": [ "libRootWriterLib.so", "libSniperRootUsages.so" ]
   },
+  "description": "an example to fill ROOT Trees in an algorithm",
   "identifier": "Task/task",
   "properties": {
     "EvtMax": 5,

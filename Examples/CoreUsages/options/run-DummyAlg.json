@@ -2,6 +2,7 @@
   "sniper": {
     "LoadDlls": [ "libSniperCoreUsages.so" ]
   },
+  "description": "an example to use services and tools",
   "identifier": "Task/task",
   "properties": {
     "EvtMax": 5,

@@ -10,10 +10,10 @@ if __name__ == "__main__":
 
     task = Sniper.Task("task")
     task.setEvtMax(5)
+    task.setDescription("an example to use SniperLog and Properties")
 
     import SniperCoreUsages
     alg = task.createAlg("HelloWorld")
-    alg.setDescription("an example to use SniperLog and Properties")
     alg.property("VarBool").set(True)
     alg.property("VecFloat").set([0.01])
     alg.property("MapIntStr").set({1: 'str1'})

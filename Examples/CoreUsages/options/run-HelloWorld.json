@@ -5,6 +5,7 @@
     "LogLevel": 2,
     "ShowTime": false
   },
+  "description": "an example to use SniperLog and Properties",
   "identifier": "Task/task",
   "properties": {
     "EvtMax": 5,
@@ -13,7 +14,6 @@
   "services": [],
   "algorithms": [
     {
-      "description": "an example to use SniperLog and Properties",
       "identifier": "HelloWorld/HelloWorld",
       "properties": {
         "MapIntStr": { "1": "str1" },

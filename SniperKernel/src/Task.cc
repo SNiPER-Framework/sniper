@@ -307,6 +307,7 @@ SniperJSON Task::json()
 {
     static SniperJSON keys = SniperJSON().from(std::vector<std::string>{
         "\"sniper\"",
+        "\"description\"",
         "\"identifier\"",
         "\"properties\"",
         "\"services\"",
