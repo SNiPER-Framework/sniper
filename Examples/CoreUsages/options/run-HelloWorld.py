@@ -17,8 +17,5 @@ if __name__ == "__main__":
     alg.property("VecFloat").set([0.01])
     alg.property("MapIntStr").set({1: 'str1'})
 
-    tool = alg.createTool("DummyTool/HelloTool")
-    tool.property("Parameter").set(10)
-
     task.show()
     task.run()

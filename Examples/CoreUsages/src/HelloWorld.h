@@ -22,8 +22,6 @@
 #include <vector>
 #include <map>
 
-class DummyTool;
-
 class HelloWorld: public AlgBase
 {
 public:
@@ -36,7 +34,6 @@ public:
 
 private:
     int m_count;
-    DummyTool* m_tool;
 
     bool m_bool;
     std::vector<float> m_vector_float;

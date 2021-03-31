@@ -16,6 +16,7 @@ endif()
 project(SNiPER VERSION 2.0)
 
 option(DEBUG       "Turn debug options on" OFF)
+option(BUILD_TESTS "Whether to build the examples and enable testing" ON)
 option(USE_PYTHON  "Whether to bind the project to Python" ON)
 option(USE_ROOT    "Whether to build the components that depend on ROOT" ON)
 
@@ -97,12 +98,15 @@ add_subdirectory(SniperKernel)
 if(USE_PYTHON)
     add_subdirectory(SniperPython)
 endif()
-# Build Target Utilities
+# Build Target Utilities (Optional Plugins)
 add_subdirectory(SniperUtil)
-# Build Target Examples
-add_subdirectory(Examples)
 # Build Target Main Executable
 add_subdirectory(src)
+# Build Target Examples
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(Examples)
+endif()
 
 # Generate and install configure files
 include(cmake/SNiPERCreateConfig.cmake)

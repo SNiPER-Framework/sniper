@@ -1,0 +1,42 @@
+{
+  "sniper": {
+    "LoadDlls": [ "libSniperCoreUsages.so" ]
+  },
+  "identifier": "Task/task",
+  "properties": {
+    "EvtMax": 5,
+    "LogLevel": 2
+  },
+  "services": [
+    {
+      "identifier": "DummySvc/SharedSvc",
+      "properties": {}
+    }
+  ],
+  "algorithms": [
+    {
+      "identifier": "DummyAlg/alg1",
+      "properties": {
+        "LogLevel": 2
+      },
+      "tools": [
+        {
+          "identifier": "DummyTool/OwnedTool",
+          "properties": {}
+        }
+      ]
+    },
+    {
+      "identifier": "DummyAlg/alg2",
+      "properties": {
+        "LogLevel": 2
+      },
+      "tools": [
+        {
+          "identifier": "DummyTool/OwnedTool",
+          "properties": {}
+        }
+      ]
+    }
+  ]
+}

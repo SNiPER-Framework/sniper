@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -15,21 +15,29 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef DUMMY_TOOL_H
-#define DUMMY_TOOL_H
+#ifndef SNIPER_DUMMY_ALG_H
+#define SNIPER_DUMMY_ALG_H
 
-#include "SniperKernel/ToolBase.h"
+#include "SniperKernel/AlgBase.h"
 
-class DummyTool : public ToolBase
+class DummySvc;
+class DummyTool;
+
+class DummyAlg: public AlgBase
 {
 public:
-    DummyTool(const std::string &name);
-    virtual ~DummyTool();
+    DummyAlg(const std::string &name);
+    ~DummyAlg();
 
-    void doSomeThing();
+    bool initialize();
+    bool execute();
+    bool finalize();
 
 private:
     int m_count;
+
+    DummySvc *m_svc;
+    DummyTool *m_tool;
 };
 
 #endif

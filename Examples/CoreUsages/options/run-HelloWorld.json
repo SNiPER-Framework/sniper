@@ -19,16 +19,7 @@
         "MapIntStr": { "1": "str1" },
         "VarBool": true,
         "VecFloat": [ 0.01 ]
-      },
-      "tools": [
-        {
-          "identifier": "DummyTool/HelloTool",
-          "properties": {
-            "LogLevel": 2,
-            "Parameter": 10
-          }
-        }
-      ]
+      }
     }
   ]
 }

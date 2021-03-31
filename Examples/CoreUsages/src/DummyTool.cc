@@ -21,28 +21,18 @@
 DECLARE_TOOL(DummyTool);
 
 DummyTool::DummyTool(const std::string &name)
-    : ToolBase(name)
+    : ToolBase(name),
+      m_count(0)
 {
-    declProp("Parameter", m_param);
+    LogInfo << "this is a tool owned by an algorithm" << std::endl;
 }
 
 DummyTool::~DummyTool()
 {
 }
 
-void DummyTool::doSomeThing(bool &var)
+void DummyTool::doSomeThing()
 {
-    var = !var;
-}
-
-void DummyTool::doSomeThing(std::vector<float> &var)
-{
-    var.push_back(m_param * 1.01);
-    ++m_param;
-}
-
-void DummyTool::doSomeThing(std::map<int, std::string> &var)
-{
-    var.insert(std::make_pair(m_param, "StrByTool"));
-    ++m_param;
+    ++m_count;
+    LogInfo << m_count << " times are invoked" << std::endl;
 }

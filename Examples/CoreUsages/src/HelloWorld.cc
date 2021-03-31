@@ -51,9 +51,6 @@ bool HelloWorld::initialize()
     LogDebug << "VecFloat: " << SniperJSON().from(m_vector_float).str(-1) << std::endl;
     LogDebug << "MapIntStr: " << SniperJSON().from(m_int_str).str(-1) << std::endl;
 
-    // get the tool
-    m_tool = dynamic_cast<DummyTool*>(m_tools["HelloTool"]);
-
     LogInfo << "initialized successfully" << std::endl;
     return true;
 }
@@ -62,12 +59,15 @@ bool HelloWorld::execute()
 {
     LogDebug << "Begin Event " << m_count++ << std::endl;
 
-    // test tools
-    m_tool->doSomeThing(m_bool);
+    // calculations
+    m_bool = !m_bool;
+    m_vector_float.push_back(m_count * 1.01);
+    std::string _str{"Str0"};
+    _str[3] += m_count;
+    m_int_str.insert(std::make_pair(m_count, _str));
+
     LogDebug << "VarBool: " << SniperJSON().from(m_bool).str() << std::endl;
-    m_tool->doSomeThing(m_vector_float);
     LogDebug << "VecFloat: " << SniperJSON().from(m_vector_float).str(-1) << std::endl;
-    m_tool->doSomeThing(m_int_str);
     LogDebug << "MapIntStr: " << SniperJSON().from(m_int_str).str() << std::endl;
 
     return true;
