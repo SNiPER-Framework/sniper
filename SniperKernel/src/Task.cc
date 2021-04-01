@@ -40,6 +40,8 @@ Task::Task(const std::string &name)
       m_limited(false),
       m_beginEvt("BeginEvent"),
       m_endEvt("EndEvent"),
+      m_beginAlg("BeginAlg"),
+      m_endAlg("EndAlg"),
       m_targets{&m_svcs, &m_algs}
 {
     if (m_tag.empty())
@@ -140,20 +142,24 @@ bool Task::execute()
 
     try
     {
-        m_beginEvt.fire(*this);
         if (m_snoopy.state() == Sniper::RunState::Stopped)
             return true;
         if (m_snoopy.isErr())
             return false;
+        //BeginEvent is fired
+        m_beginEvt.load(m_done).fire(*this);
         for (auto alg : m_algs.list())
         {
-            if (dynamic_cast<AlgBase *>(alg)->execute())
+            auto _alg = dynamic_cast<AlgBase *>(alg);
+            //BeginAlg is fired
+            ScopedIncidentsPair sis{m_beginAlg.load(_alg), m_endAlg.load(_alg), *this};
+            if (_alg->execute())
                 continue;
             throw SniperException(alg->scope() + alg->objName() + " execute failed");
+            //EndAlg is fired even there is an exception
         }
-        m_endEvt.fire(*this);
-        if (m_snoopy.isErr())
-            return false;
+        //EndEvent is fired except there is an exception
+        m_endEvt.load(m_done).fire(*this);
     }
     catch (StopRunThisEvent &e)
     {
@@ -175,12 +181,12 @@ bool Task::execute()
         LogError << "catch an unknown exception" << std::endl;
     }
 
-    if (!m_snoopy.isErr())
+    bool stat = !m_snoopy.isErr();
+    if (stat)
     {
         ++m_done;
-        return true;
     }
-    return false;
+    return stat;
 }
 
 void Task::reset()
