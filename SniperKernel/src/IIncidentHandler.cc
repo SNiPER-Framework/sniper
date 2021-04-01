@@ -21,14 +21,18 @@
 #include "SniperPrivate/IncidentMgr.h"
 #include <algorithm>
 
-IIncidentHandler::IIncidentHandler(Task& domain)
+IIncidentHandler::IIncidentHandler(Task &domain)
     : m_domain(domain),
+      m_name("IncidentHandler"),
+      m_scope(domain.scope() + domain.objName() + ':'),
       m_id(long(domain.getRoot()))
 {
 }
 
 IIncidentHandler::IIncidentHandler(Task* domain)
     : m_domain(*domain),
+      m_name("IncidentHandler"),
+      m_scope(domain->scope() + domain->objName() + ':'),
       m_id(long(domain->getRoot()))
 {
 }

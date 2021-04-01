@@ -26,29 +26,31 @@ class Incident;
 
 class IIncidentHandler
 {
-    public :
+public:
+    IIncidentHandler(Task &domain);
+    IIncidentHandler(Task *domain);
 
-        IIncidentHandler(Task& domain);
-        IIncidentHandler(Task* domain);
+    virtual ~IIncidentHandler();
 
-        virtual ~IIncidentHandler();
+    virtual bool handle(Incident &incident) = 0;
 
-        virtual bool handle(Incident& incident) = 0;
+    bool regist(const std::string &incident);
 
-        bool regist(const std::string& incident);
+    void unregist(const std::string &incident);
 
-        void unregist(const std::string& incident);
+    void listening();
 
-        void listening();
+    const std::string &objName() { return m_name; }
+    const std::string &scope() { return m_scope; }
 
-    protected :
+protected:
+    Task &m_domain;
+    std::string m_name;
 
-        Task&                   m_domain;
-
-    private :
-
-        long                    m_id;
-        std::list<std::string>  m_msg;
+private:
+    std::string m_scope;
+    long m_id;
+    std::list<std::string> m_msg;
 };
 
 #endif

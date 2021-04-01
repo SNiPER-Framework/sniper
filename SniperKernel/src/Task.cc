@@ -51,7 +51,6 @@ Task::Task(const std::string &name)
     m_pmgr.addProperty(new TaskProperty("svcs", this));
     m_pmgr.addProperty(new TaskProperty("algs", this));
 
-    //TODO: should be optimized
     this->createSvc("DataMemSvc");
 }
 
