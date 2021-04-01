@@ -1,0 +1,59 @@
+{
+  "sniper": {
+    "LoadDlls": [ "libSniperCoreUsages.so" ],
+    "LogLevel": 3
+  },
+  "description": "an example to use sub-tasks",
+  "identifier": "TopTask/TopT",
+  "properties": {
+    "EvtMax": 5,
+    "LogLevel": 2
+  },
+  "services": [],
+  "algorithms": [
+    {
+      "description": "fire SubT1 for odd events and SubT2 for even events",
+      "identifier": "SubTasksAlg/SubTasksAlg"
+    }
+  ],
+  "subtasks": [
+    {
+      "identifier": "Task/SubT1",
+      "properties": {
+        "EvtMax": -1
+      },
+      "services": [
+        {
+          "identifier": "DataIOSvc/DataIOSvc"
+        }
+      ],
+      "algorithms": [
+        {
+          "identifier": "DummyAlg/DummyAlg",
+          "properties": {
+            "INFO": "SubT1 execute "
+          }
+        }
+      ]
+    },
+    {
+      "identifier": "Task/SubT2",
+      "properties": {
+        "EvtMax": -1
+      },
+      "services": [
+        {
+          "identifier": "DataIOSvc/DataIOSvc"
+        }
+      ],
+      "algorithms": [
+        {
+          "identifier": "DummyAlg/DummyAlg",
+          "properties": {
+            "INFO": "SubT2 execute "
+          }
+        }
+      ]
+    }
+  ]
+}

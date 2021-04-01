@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -23,27 +22,28 @@
 
 class TopTask final : public Task
 {
-    public:
+public:
+    TopTask(const std::string &name);
+    virtual ~TopTask();
 
-        TopTask(const std::string& name);
-        virtual ~TopTask();
+    // interfaces for sub-tasks
+    Task *createTask(const std::string &taskName);
+    Task *addTask(Task *task);
+    void clearTasks() { m_tasks.clear(); }
 
-        // interfaces for sub-tasks
-        Task* createTask(const std::string& taskName);
-        Task* addTask(Task* task);
-        void  clearTasks() { m_tasks.clear(); }
+    // eval this Task from json
+    virtual void eval(const SniperJSON &json) override;
 
-        // override of base class
-        bool config() override;
-        bool initialize() override;
-        bool finalize() override;
-        DLElement* find(const std::string& name) override;
-        void remove(const std::string& name) override;
+protected:
+    // override of base class
+    bool config() override;
+    bool initialize() override;
+    bool finalize() override;
+    DLElement *find(const std::string &name) override;
+    void remove(const std::string &name) override;
 
-
-    private:
-
-        DleSupervisor           m_tasks;
+private:
+    DleSupervisor m_tasks;
 };
 
 #endif

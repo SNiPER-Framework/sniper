@@ -1,0 +1,36 @@
+{
+  "sniper": {
+    "LoadDlls": [ "libSniperCoreUsages.so" ]
+  },
+  "identifier": "Task/task",
+  "properties": {
+    "EvtMax": 5,
+    "LogLevel": 2
+  },
+  "services": [
+    {
+      "description": "a dummy service for data I/O",
+      "identifier": "DataIOSvc/DataIOSvc"
+    }
+  ],
+  "algorithms": [
+    {
+      "identifier": "DummyAlg/alg1",
+      "properties": {
+        "INFO": "The beginning of event "
+      }
+    },
+    {
+      "identifier": "StopRunAlg/alg2",
+      "properties": {
+        "StopMode": "ThisEvent"
+      }
+    },
+    {
+      "identifier": "DummyAlg/alg3",
+      "properties": {
+        "INFO": "The ending of event "
+      }
+    }
+  ]
+}

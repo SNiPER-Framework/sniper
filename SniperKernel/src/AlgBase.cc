@@ -17,7 +17,7 @@
 
 #include "SniperKernel/AlgBase.h"
 #include "SniperKernel/ToolBase.h"
-#include "NonUserIf/DLEFactory.h"
+#include "SniperPrivate/DLEFactory.h"
 
 AlgBase::AlgBase(const std::string &name)
     : DLElement(name)
@@ -43,7 +43,7 @@ ToolBase *AlgBase::createTool(const std::string &toolName)
         {
             if (0 == this->findTool(result->objName()))
             {
-                result->setParent(this->getParent());
+                result->setParentAlg(this);
                 m_tools.insert(std::make_pair(result->objName(), result));
                 return result;
             }
@@ -89,4 +89,21 @@ SniperJSON AlgBase::json()
     }
 
     return j;
+}
+
+void AlgBase::eval(const SniperJSON &json)
+{
+    //eval for base class
+    DLElement::eval(json);
+
+    //eval the tools
+    if (json.find("\"tools\"") != json.map_end())
+    {
+        auto &tools = json["tools"];
+        for (auto it = tools.vec_begin(); it != tools.vec_end(); ++it)
+        {
+            ToolBase *tool = this->createTool((*it)["identifier"].get<std::string>());
+            tool->eval(*it);
+        }
+    }
 }

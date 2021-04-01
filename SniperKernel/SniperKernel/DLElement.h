@@ -47,14 +47,20 @@ public:
     // set the tag
     void setTag(const std::string &tag_) { m_tag = tag_; }
 
+    // set the description
+    void setDescription(const std::string &desc) { m_description = desc; }
+
     // set the parent (Task) pointer
     void setParent(Task *parent);
 
     // get a property via its key-name
     Property *property(const std::string &key);
 
-    //the json value of this object
+    // the json value of this object
     virtual SniperJSON json();
+
+    // eval this object from json
+    virtual void eval(const SniperJSON &json);
 
     // show its information
     void show();
@@ -66,6 +72,7 @@ protected:
     //data members
     Task *m_par; //parent
     std::string m_tag;
+    std::string m_description;
     PropertyMgr m_pmgr;
 
     // following interfaces are not supported

@@ -24,9 +24,9 @@
 #include "SniperKernel/SniperException.h"
 #include "SniperKernel/DeclareDLE.h"
 #include "SniperKernel/Sniper.h"
-#include "NonUserIf/TaskProperty.h"
-#include "NonUserIf/WhiteBoard.h"
-#include "NonUserIf/DLEFactory.h"
+#include "SniperPrivate/TaskProperty.h"
+#include "SniperPrivate/WhiteBoard.h"
+#include "SniperPrivate/DLEFactory.h"
 
 SNIPER_DECLARE_DLE(Task);
 
@@ -40,6 +40,8 @@ Task::Task(const std::string &name)
       m_limited(false),
       m_beginEvt("BeginEvent"),
       m_endEvt("EndEvent"),
+      m_beginAlg("BeginAlg"),
+      m_endAlg("EndAlg"),
       m_targets{&m_svcs, &m_algs}
 {
     if (m_tag.empty())
@@ -49,7 +51,6 @@ Task::Task(const std::string &name)
     m_pmgr.addProperty(new TaskProperty("svcs", this));
     m_pmgr.addProperty(new TaskProperty("algs", this));
 
-    //TODO: should be optimized
     this->createSvc("DataMemSvc");
 }
 
@@ -140,20 +141,24 @@ bool Task::execute()
 
     try
     {
-        m_beginEvt.fire(*this);
         if (m_snoopy.state() == Sniper::RunState::Stopped)
             return true;
         if (m_snoopy.isErr())
             return false;
+        //BeginEvent is fired
+        m_beginEvt.load(m_done).fire(*this);
         for (auto alg : m_algs.list())
         {
-            if (dynamic_cast<AlgBase *>(alg)->execute())
+            auto _alg = dynamic_cast<AlgBase *>(alg);
+            //BeginAlg is fired
+            ScopedIncidentsPair sis{m_beginAlg.load(_alg), m_endAlg.load(_alg), *this};
+            if (_alg->execute())
                 continue;
             throw SniperException(alg->scope() + alg->objName() + " execute failed");
+            //EndAlg is fired even there is an exception
         }
-        m_endEvt.fire(*this);
-        if (m_snoopy.isErr())
-            return false;
+        //EndEvent is fired except there is an exception
+        m_endEvt.load(m_done).fire(*this);
     }
     catch (StopRunThisEvent &e)
     {
@@ -175,12 +180,12 @@ bool Task::execute()
         LogError << "catch an unknown exception" << std::endl;
     }
 
-    if (!m_snoopy.isErr())
+    bool stat = !m_snoopy.isErr();
+    if (stat)
     {
         ++m_done;
-        return true;
     }
-    return false;
+    return stat;
 }
 
 void Task::reset()
@@ -307,6 +312,7 @@ SniperJSON Task::json()
 {
     static SniperJSON keys = SniperJSON().from(std::vector<std::string>{
         "\"sniper\"",
+        "\"description\"",
         "\"identifier\"",
         "\"properties\"",
         "\"services\"",
@@ -317,6 +323,9 @@ SniperJSON Task::json()
     if (isRoot())
     {
         j.insert("sniper", SniperJSON(Sniper::Config::json_str()));
+        auto &jsniper = j["sniper"];
+        if (jsniper.find("\"LoadDlls\"") != jsniper.map_end())
+            jsniper["LoadDlls"].format(false);
     }
 
     for (auto target : m_targets)
@@ -324,7 +333,10 @@ SniperJSON Task::json()
         SniperJSON &jcomponents = j[target->objName()];
         for (auto obj : target->list())
         {
-            jcomponents.push_back(obj->json());
+            if (obj->tag() != "DataMemSvc")
+            {
+                jcomponents.push_back(obj->json());
+            }
         }
         if (!jcomponents.valid())
         {
@@ -335,6 +347,29 @@ SniperJSON Task::json()
     j.insert("ordered_keys", keys);
 
     return j;
+}
+
+void Task::eval(const SniperJSON &json)
+{
+    //eval for base class
+    DLElement::eval(json);
+    m_limited = (m_evtMax >= 0);
+
+    //eval the services
+    auto &svcs = json["services"];
+    for (auto it = svcs.vec_begin(); it != svcs.vec_end(); ++it)
+    {
+        SvcBase *svc = this->createSvc((*it)["identifier"].get<std::string>());
+        svc->eval(*it);
+    }
+
+    //eval the algorithms
+    auto &algs = json["algorithms"];
+    for (auto it = algs.vec_begin(); it != algs.vec_end(); ++it)
+    {
+        AlgBase* alg = this->createAlg((*it)["identifier"].get<std::string>());
+        alg->eval(*it);
+    }
 }
 
 void Task::queue(DleSupervisor *target)

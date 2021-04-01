@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -17,7 +16,7 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/DeclareDLE.h"
-#include "NonUserIf/DLEFactory.h"
+#include "SniperPrivate/DLEFactory.h"
 
 SniperBookDLE::SniperBookDLE(const std::string& type, DLECreator creator)
 {

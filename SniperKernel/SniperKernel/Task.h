@@ -89,6 +89,8 @@ public:
 
     //the json value of this object
     virtual SniperJSON json();
+    // eval this Task from json
+    virtual void eval(const SniperJSON &json) override;
 
 protected:
     void queue(DleSupervisor *target);
@@ -102,8 +104,10 @@ protected:
 
 private:
     bool m_limited;
-    Incident m_beginEvt;
-    Incident m_endEvt;
+    Incident_T<int> m_beginEvt;
+    Incident_T<int> m_endEvt;
+    Incident_T<AlgBase *> m_beginAlg;
+    Incident_T<AlgBase *> m_endAlg;
     std::list<DleSupervisor *> m_targets;
 };
 

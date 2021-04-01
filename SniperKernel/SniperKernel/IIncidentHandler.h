@@ -1,6 +1,5 @@
-/* Copyright (C) 2018
-   Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
-   Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
    SNiPER is free software: you can redistribute it and/or modify
@@ -27,29 +26,31 @@ class Incident;
 
 class IIncidentHandler
 {
-    public :
+public:
+    IIncidentHandler(Task &domain);
+    IIncidentHandler(Task *domain);
 
-        IIncidentHandler(Task& domain);
-        IIncidentHandler(Task* domain);
+    virtual ~IIncidentHandler();
 
-        virtual ~IIncidentHandler();
+    virtual bool handle(Incident &incident) = 0;
 
-        virtual bool handle(Incident& incident) = 0;
+    bool regist(const std::string &incident);
 
-        bool regist(const std::string& incident);
+    void unregist(const std::string &incident);
 
-        void unregist(const std::string& incident);
+    void listening();
 
-        void listening();
+    const std::string &objName() { return m_name; }
+    const std::string &scope() { return m_scope; }
 
-    protected :
+protected:
+    Task &m_domain;
+    std::string m_name;
 
-        Task&                   m_domain;
-
-    private :
-
-        long                    m_id;
-        std::list<std::string>  m_msg;
+private:
+    std::string m_scope;
+    long m_id;
+    std::list<std::string> m_msg;
 };
 
 #endif

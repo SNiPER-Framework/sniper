@@ -20,15 +20,19 @@
 
 #include <string>
 
+class DLElement;
+
 namespace Sniper
 {
+    DLElement *eval(const char *fname);
+
     void setLogLevel(int level);
     void setColorful(int level);
     void setShowTime(bool flag);
-    void setLogFile(char *fname, bool append = false);
+    void setLogFile(const char *fname, bool append = false);
     void setLogStdout();
 
-    void loadDll(char *dll);
+    void loadDll(const char *dll);
 
     namespace System
     {
@@ -39,6 +43,7 @@ namespace Sniper
     namespace Config
     {
         std::string json_str();
+        void eval(const std::string &json_str);
     }
 }
 

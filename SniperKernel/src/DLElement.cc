@@ -56,6 +56,11 @@ SniperJSON DLElement::json()
     SniperJSON j;
     j["identifier"].from(m_tag + '/' + m_name);
 
+    if (!m_description.empty())
+    {
+        j["description"].from(m_description);
+    }
+
     SniperJSON &jprop = j["properties"];
     for (auto &p : m_pmgr.properties())
     {
@@ -66,7 +71,47 @@ SniperJSON DLElement::json()
         }
     }
 
+    if (m_par != nullptr && m_logLevel == m_par->logLevel())
+    {
+        jprop.erase("\"LogLevel\"");
+        if (jprop.size() == 0)
+        {
+            j.erase("\"properties\"");
+        }
+    }
+
     return j;
+}
+
+void DLElement::eval(const SniperJSON &json)
+{
+    std::string jid = json["identifier"].get<std::string>();
+    std::string::size_type jsep = jid.find('/');
+    std::string type = (jsep == std::string::npos) ? jid : jid.substr(0, jsep);
+    if (type != m_tag)
+    {
+        static const char *_errmsg = "mismatched types while eval json";
+        LogFatal << type << " and " << m_tag << ": " << _errmsg << std::endl;
+        throw ContextMsgException(_errmsg);
+    }
+
+    auto idest = json.find("\"description\"");
+    if (idest != json.map_end())
+    {
+        setDescription(idest->second.get<std::string>());
+    }
+
+    idest = json.find("\"properties\"");
+    if (idest != json.map_end())
+    {
+        const SniperJSON &jprop = idest->second;
+        for (auto it = jprop.map_begin(); it != jprop.map_end(); ++it)
+        {
+            // get "key" from "\"key\""
+            std::string key = (it->first.substr(1, it->first.size() - 2));
+            property(key)->set(it->second.str(-1));
+        }
+    }
 }
 
 void DLElement::show()
