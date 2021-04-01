@@ -15,35 +15,29 @@
    You should have received a copy of the GNU Lesser General Public License
    along with mt.sniper.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "CoreUsages/DummySvc.h"
-#include "SniperKernel/SvcFactory.h"
+#ifndef SNIPER_DATAIO_SVC_H
+#define SNIPER_DATAIO_SVC_H
 
-DECLARE_SERVICE(DummySvc);
+#include "SniperKernel/SvcBase.h"
 
-DummySvc::DummySvc(const std::string &name)
-    : SvcBase(name),
-      m_count(0)
+class DummyDataStore;
+class BeginEvtHandler;
+class EndEvtHandler;
+
+class DataIOSvc : public SvcBase
 {
-}
+public:
+    DataIOSvc(const std::string &name) : SvcBase(name) {}
+    virtual ~DataIOSvc() {}
 
-DummySvc::~DummySvc()
-{
-}
+    bool initialize() override;
+    bool finalize() override;
 
-bool DummySvc::initialize()
-{
-    LogInfo << m_description << std::endl;
-    return true;
-}
+private:
+    DummyDataStore  *m_input;
+    DummyDataStore  *m_output;
+    BeginEvtHandler *m_bh;
+    EndEvtHandler   *m_eh;
+};
 
-bool DummySvc::finalize()
-{
-    LogInfo << "finalized successfully" << std::endl;
-    return true;
-}
-
-void DummySvc::doSomeThing()
-{
-    ++m_count;
-    LogInfo << m_count << " times are invoked" << std::endl;
-}
+#endif

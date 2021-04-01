@@ -16,22 +16,30 @@
   ],
   "algorithms": [
     {
-      "description": "the 1st DummyAlg instance named as alg1",
-      "identifier": "DummyAlg/alg1",
+      "description": "the 1st SvcAndToolAlg instance named as alg1",
+      "identifier": "SvcAndToolAlg/alg1",
+      "properties": {
+        "OwnedTool": "tool1",
+        "SharedSvc": "SharedSvc"
+      },
       "tools": [
         {
           "description": "a DummyTool instance owned by alg1",
-          "identifier": "DummyTool/OwnedTool"
+          "identifier": "DummyTool/tool1"
         }
       ]
     },
     {
-      "description": "the 2nd DummyAlg instance named as alg2",
-      "identifier": "DummyAlg/alg2",
+      "description": "the 2nd SvcAndToolAlg instance named as alg2",
+      "identifier": "SvcAndToolAlg/alg2",
+      "properties": {
+        "OwnedTool": "tool2",
+        "SharedSvc": "SharedSvc"
+      },
       "tools": [
         {
           "description": "a DummyTool instance owned by alg2",
-          "identifier": "DummyTool/OwnedTool"
+          "identifier": "DummyTool/tool2"
         }
       ]
     }

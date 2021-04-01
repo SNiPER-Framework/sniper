@@ -15,35 +15,33 @@
    You should have received a copy of the GNU Lesser General Public License
    along with mt.sniper.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "CoreUsages/DummySvc.h"
-#include "SniperKernel/SvcFactory.h"
+#ifndef DUMMY_DATA_STORE_H
+#define DUMMY_DATA_STORE_H
 
-DECLARE_SERVICE(DummySvc);
+#include "SniperKernel/IDataBlock.h"
 
-DummySvc::DummySvc(const std::string &name)
-    : SvcBase(name),
-      m_count(0)
+//In this example, only an integer in stored
+//It can be any data in real cases
+
+class DummyDataStore : public IDataBlock
 {
-}
+public:
+    DummyDataStore() : m_data(-1) {}
 
-DummySvc::~DummySvc()
-{
-}
+    //update the data in data store
+    void update(int newdata)
+    {
+        m_data = newdata;
+    }
 
-bool DummySvc::initialize()
-{
-    LogInfo << m_description << std::endl;
-    return true;
-}
+    //get the data in data store
+    int get()
+    {
+        return m_data;
+    }
 
-bool DummySvc::finalize()
-{
-    LogInfo << "finalized successfully" << std::endl;
-    return true;
-}
+private:
+    int m_data;
+};
 
-void DummySvc::doSomeThing()
-{
-    ++m_count;
-    LogInfo << m_count << " times are invoked" << std::endl;
-}
+#endif

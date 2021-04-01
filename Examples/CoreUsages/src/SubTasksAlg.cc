@@ -15,56 +15,50 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "DummyAlg.h"
-#include "CoreUsages/DummyDataStore.h"
-#include "SniperKernel/SniperDataPtr.h"
+#include "SubTasksAlg.h"
 #include "SniperKernel/AlgFactory.h"
 
-DECLARE_ALGORITHM(DummyAlg);
+DECLARE_ALGORITHM(SubTasksAlg);
 
-DummyAlg::DummyAlg(const std::string &name)
-    : AlgBase(name)
-{
-    declProp("INFO", m_info);
-}
-
-DummyAlg::~DummyAlg()
+SubTasksAlg::SubTasksAlg(const std::string &name)
+    : AlgBase(name),
+      m_count(0),
+      m_i1("SubT1"),
+      m_i2("SubT2")
 {
 }
 
-bool DummyAlg::initialize()
+SubTasksAlg::~SubTasksAlg()
 {
-    SniperDataPtr<DummyDataStore> iStore(m_par, "input");
-    SniperDataPtr<DummyDataStore> oStore(m_par, "output");
-    if (iStore.invalid() || oStore.invalid())
-    {
-        LogError << "failed to find the data store" << std::endl;
-        return false;
-    }
+}
 
-    m_input = iStore.data();
-    m_output = oStore.data();
-
+bool SubTasksAlg::initialize()
+{
     LogInfo << "initialized successfully" << std::endl;
     return true;
 }
 
-bool DummyAlg::execute()
+bool SubTasksAlg::execute()
 {
-    //get input data
-    int data = m_input->get();
-    LogDebug << m_info << data << std::endl;
+    LogDebug << "Begin Event " << m_count << std::endl;
 
-    //any calculations here
-    data *= 10;
+    if (m_count % 2 != 0)
+    {
+        LogDebug << "fire sub-task SubT1" << std::endl;
+        m_i1.fire(*m_par);
+    }
+    else
+    {
+        LogDebug << "fire sub-task SubT2" << std::endl;
+        m_i2.fire(*m_par);
+    }
 
-    //update output data
-    m_output->update(data);
+    ++m_count;
 
     return true;
 }
 
-bool DummyAlg::finalize()
+bool SubTasksAlg::finalize()
 {
     LogInfo << "finalized successfully" << std::endl;
     return true;

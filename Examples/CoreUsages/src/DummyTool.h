@@ -26,6 +26,9 @@ public:
     DummyTool(const std::string &name);
     virtual ~DummyTool();
 
+    bool initialize() override;
+    bool finalize() override;
+
     void doSomeThing();
 
 private:

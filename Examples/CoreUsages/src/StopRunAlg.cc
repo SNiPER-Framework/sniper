@@ -15,56 +15,61 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "DummyAlg.h"
+#include "StopRunAlg.h"
 #include "CoreUsages/DummyDataStore.h"
 #include "SniperKernel/SniperDataPtr.h"
 #include "SniperKernel/AlgFactory.h"
 
-DECLARE_ALGORITHM(DummyAlg);
+DECLARE_ALGORITHM(StopRunAlg);
 
-DummyAlg::DummyAlg(const std::string &name)
+StopRunAlg::StopRunAlg(const std::string &name)
     : AlgBase(name)
 {
-    declProp("INFO", m_info);
+    declProp("StopMode", m_stopMode);
 }
 
-DummyAlg::~DummyAlg()
+StopRunAlg::~StopRunAlg()
 {
 }
 
-bool DummyAlg::initialize()
+bool StopRunAlg::initialize()
 {
-    SniperDataPtr<DummyDataStore> iStore(m_par, "input");
-    SniperDataPtr<DummyDataStore> oStore(m_par, "output");
-    if (iStore.invalid() || oStore.invalid())
+    if (m_stopMode == "Promptly")
     {
-        LogError << "failed to find the data store" << std::endl;
-        return false;
+        m_mode = Sniper::StopRun::Promptly;
+    }
+    else if (m_stopMode == "Peacefully")
+    {
+        m_mode = Sniper::StopRun::Peacefully;
+    }
+    else if (m_stopMode == "ThisEvent")
+    {
+        m_mode = Sniper::StopRun::ThisEvent;
     }
 
+    SniperDataPtr<DummyDataStore> iStore(m_par, "input");
     m_input = iStore.data();
-    m_output = oStore.data();
 
     LogInfo << "initialized successfully" << std::endl;
     return true;
 }
 
-bool DummyAlg::execute()
+bool StopRunAlg::execute()
 {
-    //get input data
     int data = m_input->get();
-    LogDebug << m_info << data << std::endl;
+    LogDebug << "execute event " << data << std::endl;
 
-    //any calculations here
-    data *= 10;
-
-    //update output data
-    m_output->update(data);
+    if (data == 2)
+    {
+        LogDebug << "before stop event " << data << ": " << m_stopMode << std::endl;
+        m_par->stop(m_mode);
+        LogDebug << "after stop event " << data << ": " << m_stopMode << std::endl;
+    }
 
     return true;
 }
 
-bool DummyAlg::finalize()
+bool StopRunAlg::finalize()
 {
     LogInfo << "finalized successfully" << std::endl;
     return true;

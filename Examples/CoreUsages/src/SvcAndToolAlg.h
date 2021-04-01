@@ -15,28 +15,31 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef SNIPER_DUMMY_ALG_H
-#define SNIPER_DUMMY_ALG_H
+#ifndef SNIPER_SVCANDTOOL_ALG_H
+#define SNIPER_SVCANDTOOL_ALG_H
 
 #include "SniperKernel/AlgBase.h"
 
-class DummyDataStore;
+class DummySvc;
+class DummyTool;
 
-class DummyAlg: public AlgBase
+class SvcAndToolAlg: public AlgBase
 {
 public:
-    DummyAlg(const std::string &name);
-    ~DummyAlg();
+    SvcAndToolAlg(const std::string &name);
+    ~SvcAndToolAlg();
 
     bool initialize();
     bool execute();
     bool finalize();
 
 private:
-    std::string m_info;
+    int m_count;
+    std::string m_svcName;
+    std::string m_toolName;
 
-    DummyDataStore* m_input;
-    DummyDataStore* m_output;
+    DummySvc *m_svc;
+    DummyTool *m_tool;
 };
 
 #endif

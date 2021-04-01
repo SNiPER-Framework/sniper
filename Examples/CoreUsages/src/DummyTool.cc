@@ -24,11 +24,21 @@ DummyTool::DummyTool(const std::string &name)
     : ToolBase(name),
       m_count(0)
 {
-    LogInfo << "this is a tool owned by an algorithm" << std::endl;
 }
 
 DummyTool::~DummyTool()
 {
+}
+
+bool DummyTool::initialize()
+{
+    LogInfo << m_description << std::endl;
+    return true;
+}
+
+bool DummyTool::finalize()
+{
+    return true;
 }
 
 void DummyTool::doSomeThing()

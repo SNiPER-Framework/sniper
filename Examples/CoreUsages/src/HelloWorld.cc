@@ -16,9 +16,7 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "HelloWorld.h"
-#include "DummyTool.h"
 #include "SniperKernel/AlgFactory.h"
-#include "SniperKernel/SniperPtr.h"
 
 DECLARE_ALGORITHM(HelloWorld);
 

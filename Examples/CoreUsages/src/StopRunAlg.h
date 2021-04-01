@@ -15,28 +15,28 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef SNIPER_DUMMY_ALG_H
-#define SNIPER_DUMMY_ALG_H
+#ifndef SNIPER_STOPRUN_ALG_H
+#define SNIPER_STOPRUN_ALG_H
 
 #include "SniperKernel/AlgBase.h"
+#include "SniperKernel/SniperRunState.h"
 
 class DummyDataStore;
 
-class DummyAlg: public AlgBase
+class StopRunAlg: public AlgBase
 {
 public:
-    DummyAlg(const std::string &name);
-    ~DummyAlg();
+    StopRunAlg(const std::string &name);
+    ~StopRunAlg();
 
     bool initialize();
     bool execute();
     bool finalize();
 
 private:
-    std::string m_info;
-
     DummyDataStore* m_input;
-    DummyDataStore* m_output;
+    Sniper::StopRun m_mode;
+    std::string m_stopMode;  //for property
 };
 
 #endif
