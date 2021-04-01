@@ -1,6 +1,5 @@
-from __future__ import print_function
 import sys
-from Sniper import AlgBase, SniperLog
+from .libSniperPython import AlgBase, SniperLog
 
 class PyAlgBase(AlgBase):
 
