@@ -7,7 +7,7 @@ target_link_libraries(SniperRootUsages PRIVATE RootWriterLib)
 # install
 install(TARGETS SniperRootUsages DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install_and_test(RootUsages
-    "LD_LIBRARY_PATH=${PROJECT_BINARY_DIR}/SniperKernel:${PROJECT_BINARY_DIR}/SniperUtil/RootWriter:${PROJECT_BINARY_DIR}/Examples/CoreUsages:$ENV{LD_LIBRARY_PATH}"
+    "LD_LIBRARY_PATH=${PROJECT_BINARY_DIR}/SniperKernel:${PROJECT_BINARY_DIR}/SniperUtil/RootWriter:${PROJECT_BINARY_DIR}/Examples/RootUsages:$ENV{LD_LIBRARY_PATH}"
     options/run-WriteRootAlg.json
 )
 
