@@ -17,13 +17,13 @@
 
 #include <boost/python.hpp>
 #include "SniperKernel/Incident.h"
-#include "SniperKernel/Task.h"
+#include "SniperKernel/IExecUnit.h"
 
 void export_Sniper_Incident()
 {
     using namespace boost::python;
 
-    int (Incident::*member_fire)(Task&) = &Incident::fire;
+    int (Incident::*member_fire)(IExecUnit&) = &Incident::fire;
 
     class_<Incident>("Incident", init<const std::string&>())
         .def("fire", member_fire)

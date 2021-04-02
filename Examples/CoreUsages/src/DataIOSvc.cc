@@ -30,7 +30,7 @@ struct BeginEvtHandler : public IIncidentHandler
 {
     int m_count;
 
-    BeginEvtHandler(Task *domain)
+    BeginEvtHandler(IExecUnit *domain)
         : IIncidentHandler(domain),
           m_count(0)
     {
@@ -53,7 +53,7 @@ bool BeginEvtHandler::handle(Incident &incident)
 
 struct EndEvtHandler : public IIncidentHandler
 {
-    EndEvtHandler(Task *domain)
+    EndEvtHandler(IExecUnit *domain)
         : IIncidentHandler(domain)
     {
         m_name = "EndEvtHandler";

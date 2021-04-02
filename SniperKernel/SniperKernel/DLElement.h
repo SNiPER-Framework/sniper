@@ -22,7 +22,7 @@
 #include "SniperKernel/PropertyMgr.h"
 #include <string>
 
-class Task;
+class IExecUnit;
 
 // The base class of Dynamically Loadable Element
 class DLElement : public NamedElement
@@ -38,11 +38,11 @@ public:
     // return the tag flag: should be the derived concrete class name
     const std::string &tag() { return m_tag; }
 
-    // get the parent (Task) pointer
-    Task *getParent() { return m_par; }
+    // get the parent (ExecUnit implementation) pointer
+    IExecUnit *getParent() { return m_par; }
 
-    // get the root node (Task) pointer of the DLElements' tree
-    Task *getRoot();
+    // get the root node (ExecUnit implementation) pointer of the DLElements' tree
+    IExecUnit *getRoot();
 
     // set the tag
     void setTag(const std::string &tag_) { m_tag = tag_; }
@@ -50,8 +50,8 @@ public:
     // set the description
     void setDescription(const std::string &desc) { m_description = desc; }
 
-    // set the parent (Task) pointer
-    void setParent(Task *parent);
+    // set the parent (ExecUnit implementation) pointer
+    void setParent(IExecUnit *parent);
 
     // get a property via its key-name
     Property *property(const std::string &key);
@@ -70,7 +70,7 @@ protected:
     bool declProp(const std::string &key, Type &var);
 
     //data members
-    Task *m_par; //parent
+    IExecUnit *m_par; //parent
     std::string m_tag;
     std::string m_description;
     PropertyMgr m_pmgr;

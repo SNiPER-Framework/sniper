@@ -16,7 +16,7 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/DLElement.h"
-#include "SniperKernel/Task.h"
+#include "SniperKernel/IExecUnit.h"
 
 DLElement::DLElement(const std::string &name)
     : NamedElement(name),
@@ -29,17 +29,17 @@ DLElement::~DLElement()
 {
 }
 
-Task *DLElement::getRoot()
+IExecUnit *DLElement::getRoot()
 {
     DLElement *p = this;
     while (p->m_par != nullptr)
     {
         p = p->m_par;
     }
-    return dynamic_cast<Task *>(p);
+    return dynamic_cast<IExecUnit *>(p);
 }
 
-void DLElement::setParent(Task *par)
+void DLElement::setParent(IExecUnit *par)
 {
     m_logLevel = par->logLevel();
     m_scope = par->scope() + par->objName() + ':';

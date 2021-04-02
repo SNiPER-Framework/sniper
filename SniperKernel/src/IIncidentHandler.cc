@@ -16,12 +16,12 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/IIncidentHandler.h"
-#include "SniperKernel/Task.h"
+#include "SniperKernel/IExecUnit.h"
 #include "SniperKernel/SniperLog.h"
 #include "SniperPrivate/IncidentMgr.h"
 #include <algorithm>
 
-IIncidentHandler::IIncidentHandler(Task &domain)
+IIncidentHandler::IIncidentHandler(IExecUnit &domain)
     : m_domain(domain),
       m_name("IncidentHandler"),
       m_scope(domain.scope() + domain.objName() + ':'),
@@ -29,7 +29,7 @@ IIncidentHandler::IIncidentHandler(Task &domain)
 {
 }
 
-IIncidentHandler::IIncidentHandler(Task* domain)
+IIncidentHandler::IIncidentHandler(IExecUnit* domain)
     : m_domain(*domain),
       m_name("IncidentHandler"),
       m_scope(domain->scope() + domain->objName() + ':'),

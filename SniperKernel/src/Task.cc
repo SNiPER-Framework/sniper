@@ -31,7 +31,7 @@
 SNIPER_DECLARE_DLE(Task);
 
 Task::Task(const std::string &name)
-    : DLElement(name),
+    : IExecUnit(name),
       m_evtMax(-1),
       m_done(0),
       m_snoopy(this),

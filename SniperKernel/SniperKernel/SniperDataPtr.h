@@ -19,59 +19,58 @@
 #define SNIPER_SNIPER_DATA_PTR_H
 
 #include "SniperKernel/RefBase.h"
-#include "SniperKernel/Task.h"
+#include "SniperKernel/IExecUnit.h"
 #include "SniperKernel/DataMemSvc.h"
 #include <string>
 
 //Get DataBlock reference with its path
-template<typename Data>
+template <typename Data>
 class SniperDataPtr : public RefBase<Data>
 {
-    public :
+public:
+    SniperDataPtr(IExecUnit *domain, const std::string &path);
+    SniperDataPtr(IExecUnit &domain, const std::string &path);
 
-        SniperDataPtr(Task* domain, const std::string& path);
-        SniperDataPtr(Task& domain, const std::string& path);
+    virtual ~SniperDataPtr() = default;
 
-        virtual ~SniperDataPtr() = default;
+private:
+    //following methods are not supported
+    SniperDataPtr() = delete;
+    SniperDataPtr(const SniperDataPtr &) = delete;
+    SniperDataPtr &operator=(const SniperDataPtr &) = delete;
 
-    private :
-
-        //following methods are not supported
-        SniperDataPtr() = delete;
-        SniperDataPtr(const SniperDataPtr&) = delete;
-        SniperDataPtr& operator=(const SniperDataPtr&) = delete;
-
-        void init(Task& domain, const std::string& path);
+    void init(IExecUnit &domain, const std::string &path);
 };
 
 //SniperDataPtr(const std::string& path) is removed (for MT mode)
 
-template<typename Data>
-SniperDataPtr<Data>::SniperDataPtr(Task* domain, const std::string& path)
+template <typename Data>
+SniperDataPtr<Data>::SniperDataPtr(IExecUnit *domain, const std::string &path)
 {
     init(*domain, path);
 }
 
-template<typename Data>
-SniperDataPtr<Data>::SniperDataPtr(Task& domain, const std::string& path)
+template <typename Data>
+SniperDataPtr<Data>::SniperDataPtr(IExecUnit &domain, const std::string &path)
 {
     init(domain, path);
 }
 
-template<typename Data>
-void SniperDataPtr<Data>::init(Task& domain, const std::string& path)
+template <typename Data>
+void SniperDataPtr<Data>::init(IExecUnit &domain, const std::string &path)
 {
-    Task* _domain = &domain;
+    IExecUnit *_domain = &domain;
     std::string name = path;
 
     std::string::size_type pseg = path.rfind(":");
-    if ( pseg != std::string::npos ) {
-        _domain = dynamic_cast<Task*>( domain.find(path.substr(0, pseg)) );
-        name = path.substr(pseg+1, std::string::npos);
+    if (pseg != std::string::npos)
+    {
+        _domain = dynamic_cast<IExecUnit *>(domain.find(path.substr(0, pseg)));
+        name = path.substr(pseg + 1, std::string::npos);
     }
 
-    DataMemSvc* svc = dynamic_cast<DataMemSvc*>(_domain->find("DataMemSvc"));
-    this->m_obj = (svc!=0) ? dynamic_cast<Data*>(svc->find(name)) : 0;
+    DataMemSvc *svc = dynamic_cast<DataMemSvc *>(_domain->find("DataMemSvc"));
+    this->m_obj = (svc != 0) ? dynamic_cast<Data *>(svc->find(name)) : 0;
 }
 
 #endif

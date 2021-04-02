@@ -18,7 +18,7 @@
 #ifndef SNIPER_TASK_H
 #define SNIPER_TASK_H
 
-#include "SniperKernel/DLElement.h"
+#include "SniperKernel/IExecUnit.h"
 #include "SniperKernel/DleSupervisor.h"
 #include "SniperKernel/TaskWatchDog.h"
 #include "SniperKernel/Incident.h"
@@ -28,7 +28,7 @@ class SvcBase;
 class AlgBase;
 
 //Task definition
-class Task : public DLElement
+class Task : public IExecUnit
 {
 public:
     //Constructor
@@ -41,13 +41,10 @@ public:
     virtual bool run();
 
     //stop this task
-    virtual bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly);
+    virtual bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly) override;
 
     //ooo~~ just as its name
-    TaskWatchDog &Snoopy() { return m_snoopy; }
-
-    //for compatibility
-    bool isRoot() { return m_par == nullptr; }
+    TaskWatchDog &Snoopy() override { return m_snoopy; }
 
 protected:
     //none state check... Please use Snoopy for state control
@@ -65,12 +62,12 @@ public:
     void setLogLevel(int level) final;
 
     //set and get the max event number to be processed
-    void setEvtMax(int evtMax);
-    int evtMax() { return m_evtMax; }
+    void setEvtMax(int evtMax) override;
+    int evtMax() override { return m_evtMax; }
 
     //create owned Svc/Alg by name
-    SvcBase *createSvc(const std::string &svcName);
-    AlgBase *createAlg(const std::string &algName);
+    SvcBase *createSvc(const std::string &svcName) override;
+    AlgBase *createAlg(const std::string &algName) override;
 
     //add concrete Svc/Alg to Task without ownership
     //it may be helpful for writing Svc/Alg in Python
@@ -78,7 +75,7 @@ public:
     AlgBase *addAlg(AlgBase *alg);
 
     //find an element by its name
-    virtual DLElement *find(const std::string &name);
+    virtual DLElement *find(const std::string &name) override;
 
     //remove an element with its name
     virtual void remove(const std::string &name);
