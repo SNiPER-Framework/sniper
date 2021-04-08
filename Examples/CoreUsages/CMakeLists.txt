@@ -16,7 +16,7 @@ install_and_test(CoreUsages
 )
 
 if(USE_PYTHON)
-    install(DIRECTORY python/SniperCoreUsages DESTINATION ${CMAKE_INSTALL_PYTHONDIR})
+    install(FILES python/SniperCoreUsages.py DESTINATION ${CMAKE_INSTALL_PYTHONDIR})
     install(FILES
         options/run-HelloWorld.py
         options/run-SvcAndTool.py
