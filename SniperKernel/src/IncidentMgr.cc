@@ -18,14 +18,14 @@
 #include "SniperPrivate/IncidentMgr.h"
 #include "SniperKernel/Incident.h"
 #include "SniperKernel/IIncidentHandler.h"
-#include "SniperKernel/Task.h"
+#include "SniperKernel/IExecUnit.h"
 #include "SniperKernel/SniperLog.h"
 #include <algorithm>
 #include <map>
 
 static auto ps_mgrMap = new std::map<long, IncidentMgr *>();
 
-IncidentMgr &IncidentMgr::instance(Task &root)
+IncidentMgr &IncidentMgr::instance(IExecUnit &root)
 {
     return *(*ps_mgrMap)[long(&root)];
 }
@@ -35,7 +35,7 @@ IncidentMgr &IncidentMgr::instance(long id)
     return *(*ps_mgrMap)[id];
 }
 
-void IncidentMgr::create(Task &root)
+void IncidentMgr::create(IExecUnit &root)
 {
     auto &s_mgrMap = *ps_mgrMap;
     long id = long(&root);

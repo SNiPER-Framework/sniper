@@ -20,13 +20,13 @@
 
 #include <string>
 
-class Task;
+class IExecUnit;
 
 class Incident
 {
 public:
     /// return the number of handlers for the incident, -1 in case of error
-    static int fire(Task &domain, const std::string &key);
+    static int fire(IExecUnit &domain, const std::string &key);
 
     Incident(const std::string &key)
         : m_key(key) {}
@@ -34,7 +34,7 @@ public:
     virtual ~Incident() {}
 
     /// return the number of handlers for the incident, -1 in case of error
-    virtual int fire(Task &domain);
+    virtual int fire(IExecUnit &domain);
 
     const std::string &name() { return m_key; }
 
@@ -50,7 +50,7 @@ struct ScopedIncidentsPair
 {
     ScopedIncidentsPair(Incident &begin,
                       Incident &end,
-                      Task &domain)
+                      IExecUnit &domain)
         : m_end(end),
           m_domain(domain)
     {
@@ -63,7 +63,7 @@ struct ScopedIncidentsPair
     }
 
     Incident &m_end;
-    Task &m_domain;
+    IExecUnit &m_domain;
 };
 
 //templated Incident that can ship additional data

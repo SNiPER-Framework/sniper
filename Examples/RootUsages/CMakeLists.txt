@@ -13,7 +13,7 @@ install_and_test(RootUsages
 
 if(USE_PYTHON)
     install(FILES options/run-WriteRootAlg.py DESTINATION ${CMAKE_INSTALL_DATADIR}/SniperExamples)
-    install(DIRECTORY python/SniperRootUsages DESTINATION ${CMAKE_INSTALL_PYTHONDIR})
+    install(FILES python/SniperRootUsages.py DESTINATION ${CMAKE_INSTALL_PYTHONDIR})
 endif()
 
 endif()

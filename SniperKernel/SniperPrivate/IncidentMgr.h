@@ -24,7 +24,7 @@
 
 class Incident;
 class IIncidentHandler;
-class Task;
+class IExecUnit;
 
 class IncidentMgr
 {
@@ -33,10 +33,10 @@ class IncidentMgr
         friend class Incident;
         friend class IIncidentHandler;
 
-        static IncidentMgr& instance(Task& root);
+        static IncidentMgr& instance(IExecUnit& root);
         static IncidentMgr& instance(long id);
 
-        static void create(Task& root);
+        static void create(IExecUnit& root);
         static void release();
 
     private :
