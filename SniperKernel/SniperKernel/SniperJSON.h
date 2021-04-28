@@ -125,6 +125,7 @@ public:
 
     // get a friendly type string from a typeid
     static std::string typestr(const std::type_info &tid);
+   
    // an inner class for any exception while json parsing
     class Exception : public std::exception
     {
