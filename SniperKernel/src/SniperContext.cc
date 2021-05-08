@@ -28,6 +28,7 @@
 
 Sniper::Context::Context()
     : m_greeting(true),
+      m_summary(true),
       m_mode(static_cast<SysModeInt>(SysMode::BASIC)),
       m_nt(0)
 {
@@ -37,6 +38,7 @@ Sniper::Context::Context()
     {
         std::vector<std::string> keys{
             "\"ShowGreeting\"",
+            "\"ShowSummary\"",
             "\"WelcomeMsg\""};
 
         std::ifstream ifs(finit);
@@ -50,16 +52,18 @@ Sniper::Context::Context()
         }
 
         jp.assign_if_exist(keys[0], m_greeting);
-        jp.assign_if_exist(keys[1], welcome);
+        jp.assign_if_exist(keys[1], m_summary);
+        jp.assign_if_exist(keys[2], welcome);
     }
 
     if (m_greeting)
     {
         std::cout << "**************************************************\n"
                   << welcome << '\n'
-                  << "**************************************************\n"
                   << "Running @ " << hostName()
-                  << " on " << Sniper::System::sysDate();
+                  << " on " << Sniper::System::sysDate()
+                  << "**************************************************"
+                  << std::endl;
     }
 }
 
@@ -68,15 +72,16 @@ Sniper::Context::~Context()
     IncidentMgr::release();
     DLEFactory::release();
 
-    if (m_greeting)
+    if (m_summary)
     {
         std::cout << std::endl
                   << "**************************************************\n"
                   << "Terminating @ " << hostName()
                   << " on " << Sniper::System::sysDate()
-                  << sys_info() << '\n';
+                  << sys_info() << '\n'
+                  << summary()
+                  << std::endl;
     }
-    std::cout << summary() << std::endl;
 
     if (dynamic_cast<std::ofstream *>(SniperLog::LogStream))
     {

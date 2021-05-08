@@ -1,4 +1,5 @@
 {
     "ShowGreeting": true,
+    "ShowSummary": true,
     "WelcomeMsg": "Welcome to SNiPER v@SNiPER_VERSION@"
 }

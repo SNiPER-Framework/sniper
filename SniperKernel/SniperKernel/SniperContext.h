@@ -53,6 +53,7 @@ namespace Sniper
 
     private:
         bool m_greeting;
+        bool m_summary;
         SysModeInt m_mode;
         short m_nt;
         std::string m_hostName;
