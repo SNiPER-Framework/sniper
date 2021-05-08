@@ -2,9 +2,9 @@
 # Define project
 #project(modules)
 
-function(install_and_test package tests_env)
-  math(EXPR max_i "${ARGC} - 1")
-  foreach(i RANGE 2 ${max_i})
+function(install_and_test package)
+  math(EXPR max_i "${ARGC}-1")
+  foreach(i RANGE 1 ${max_i})
     list(GET ARGV ${i} dest)
     set(script ${CMAKE_CURRENT_LIST_DIR}/${dest})
     if(EXISTS ${script})
@@ -13,7 +13,6 @@ function(install_and_test package tests_env)
       #can not test python scripts due to ENVIRONMENT PYTHONPATH
       add_test(NAME ${test} COMMAND sniper.exe ${script})
       set_tests_properties(${test} PROPERTIES
-        ENVIRONMENT ${tests_env}
         FAIL_REGULAR_EXPRESSION "NotFound;Failed"
         PASS_REGULAR_EXPRESSION "events processed 5.* Terminated Successfully"
       )

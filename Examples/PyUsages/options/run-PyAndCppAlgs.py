@@ -6,7 +6,7 @@ if __name__ == "__main__":
     import Sniper
 
     task = Sniper.Task("task")
-    task.setEvtMax(2)
+    task.setEvtMax(5)
 
     import SniperPython
     task.createSvc("PyDataStoreSvc/DataStore")

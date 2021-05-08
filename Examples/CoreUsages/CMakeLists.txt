@@ -8,7 +8,6 @@ target_link_libraries(SniperCoreUsages PRIVATE SniperKernel)
 # install
 install(TARGETS SniperCoreUsages DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install_and_test(CoreUsages
-    "LD_LIBRARY_PATH=${PROJECT_BINARY_DIR}/SniperKernel:${PROJECT_BINARY_DIR}/Examples/CoreUsages:$ENV{LD_LIBRARY_PATH}"
     options/run-HelloWorld.json
     options/run-SvcAndTool.json
     options/senior-DataIO.json
@@ -18,11 +17,11 @@ install_and_test(CoreUsages
 
 if(USE_PYTHON)
     install(FILES python/SniperCoreUsages.py DESTINATION ${CMAKE_INSTALL_PYTHONDIR})
-    install(FILES
+    install_and_test(CoreUsages
         options/run-HelloWorld.py
         options/run-SvcAndTool.py
         options/senior-DataIO.py
         options/senior-StopRun.py
         options/senior-SubTasks.py
-        DESTINATION ${CMAKE_INSTALL_DATADIR}/SniperExamples)
+    )
 endif()

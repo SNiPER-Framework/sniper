@@ -7,6 +7,8 @@ target_link_libraries(SniperPyUsages PRIVATE SniperPythonLib)
 # install
 install(TARGETS SniperPyUsages DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY python/SniperPyUsages DESTINATION ${CMAKE_INSTALL_PYTHONDIR})
-install(FILES options/run-PyAndCppAlgs.py DESTINATION ${CMAKE_INSTALL_DATADIR}/SniperExamples)
+install_and_test(PyUsages
+    options/run-PyAndCppAlgs.py
+)
 
 endif()
