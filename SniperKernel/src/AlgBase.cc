@@ -97,7 +97,7 @@ void AlgBase::eval(const SniperJSON &json)
     DLElement::eval(json);
 
     //eval the tools
-    if (json.find("\"tools\"") != json.map_end())
+    if (json.find("tools") != json.map_end())
     {
         auto &tools = json["tools"];
         for (auto it = tools.vec_begin(); it != tools.vec_end(); ++it)

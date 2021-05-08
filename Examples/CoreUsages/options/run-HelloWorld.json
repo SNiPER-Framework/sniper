@@ -17,6 +17,7 @@
       "identifier": "HelloWorld/HelloWorld",
       "properties": {
         "MapIntStr": { "1": "str1" },
+        "PairDVD": [ 0.09, [ 1.1, 2.2, 3.3 ] ],
         "VarBool": true,
         "VecFloat": [ 0.01 ]
       }

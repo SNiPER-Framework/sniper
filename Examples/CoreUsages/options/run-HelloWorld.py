@@ -16,6 +16,7 @@ if __name__ == "__main__":
     alg = task.createAlg("HelloWorld")
     alg.property("VarBool").set(True)
     alg.property("VecFloat").set([0.01])
+    alg.property("PairDVD").set([0.09, [1.1, 2.2, 3.3]])
     alg.property("MapIntStr").set({1: 'str1'})
 
     task.show()

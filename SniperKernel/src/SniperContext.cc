@@ -37,9 +37,9 @@ Sniper::Context::Context()
     if (finit != nullptr)
     {
         std::vector<std::string> keys{
-            "\"ShowGreeting\"",
-            "\"ShowSummary\"",
-            "\"WelcomeMsg\""};
+            "ShowGreeting",
+            "ShowSummary",
+            "WelcomeMsg"};
 
         std::ifstream ifs(finit);
         auto json = SniperJSON::load(ifs);

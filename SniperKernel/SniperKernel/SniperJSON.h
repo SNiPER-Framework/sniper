@@ -43,7 +43,7 @@ public:
     // whether this is a scalar or string
     bool isScalar() const { return m_type > 2; }
 
-    // whether this is a vector
+    // whether this is a vector or pair
     bool isVector() const { return m_type == 2; }
 
     // whether this is a map
@@ -51,7 +51,7 @@ public:
 
     /* get a C++ object from this element, T can be
      * type[1]: C++ scalar and std::string
-     * type[2]: std::vector< type[1,2,3] >
+     * type[2]: std::vector< type[1,2,3] > or std::pair<type[1,2,3], type[1,2,3]>
      * type[3]: std::map< type[1], type[1,2,3] >
      */
     template <typename T>
@@ -97,7 +97,7 @@ public:
     map_iterator map_begin() const { return m_jmap.cbegin(); }
     // get the map end iterator
     map_iterator map_end() const { return m_jmap.cend(); }
-    // find the iterator via key (note that the key has double quotes like "\"key\"")
+    // find the iterator via key
     map_iterator find(const std::string &key) const { return m_jmap.find(key); }
 
     // get the object in map via key
@@ -132,7 +132,7 @@ private:
     // str() format -> true: in multi lines, false: in one line
     bool m_format;
 
-    // 0:invalid, 1:object/map, 2:array/vector, 3:string, 9:other scalars
+    // 0:invalid, 1:object/map, 2:array/vector/pair, 3:string, 9:other scalars
     int m_type;
     // scalar or std::string element holder
     std::string m_jvar;
@@ -169,6 +169,8 @@ private:
     // function template helps to access type[2]
     template <typename T>
     inline void toCppVar(std::vector<T> &var) const;
+    template <typename K, typename V>
+    inline void toCppVar(std::pair<K, V> &var) const;
 
     // function template helps to access type[3]
     template <typename K, typename V>
@@ -184,6 +186,8 @@ private:
     // function template helps to make json from type[2]
     template <typename T>
     inline void fromCppVar(const std::vector<T> &var);
+    template <typename K, typename V>
+    inline void fromCppVar(const std::pair<K, V> &var);
 
     // function template helps to make json from type[3]
     template <typename K, typename V>
@@ -292,6 +296,18 @@ inline void SniperJSON::toCppVar(std::vector<T> &var) const
     throw Exception(std::string("not a valid vector\n") + this->str());
 }
 
+template <typename F, typename S>
+inline void SniperJSON::toCppVar(std::pair<F, S> &var) const
+{
+    if (m_type == 2 && m_jvec.size() == 2)
+    {
+        var = std::make_pair(m_jvec[0].get<F>(), m_jvec[1].get<S>());
+        return;
+    }
+
+    throw Exception(std::string("not a valid pair\n") + this->str());
+}
+
 template <typename K, typename V>
 inline void SniperJSON::toCppVar(std::map<K, V> &var) const
 {
@@ -301,7 +317,7 @@ inline void SniperJSON::toCppVar(std::map<K, V> &var) const
         {
             var.insert(std::make_pair(
                 SniperJSON(
-                    std::is_same<K, std::string>::value ? it.first : it.first.substr(1, it.first.size() - 2))
+                    std::is_same<K, std::string>::value ? '"' + it.first + '"' : it.first)
                     .get<K>(),
                 it.second.get<V>()));
         }
@@ -350,13 +366,21 @@ inline void SniperJSON::fromCppVar(const std::vector<T> &var)
     m_type = 2;
 }
 
+template <typename F, typename S>
+inline void SniperJSON::fromCppVar(const std::pair<F, S> &var)
+{
+    m_jvec.emplace_back(SniperJSON().from(var.first));
+    m_jvec.emplace_back(SniperJSON().from(var.second));
+    m_type = 2;
+}
+
 template <typename K, typename V>
 inline void SniperJSON::fromCppVar(const std::map<K, V> &var)
 {
     for (const auto &it : var)
     {
         std::stringstream key;
-        key << '"' << it.first << '"';
+        key << it.first;
         m_jmap.insert(std::make_pair(key.str(), SniperJSON().from(it.second)));
     }
     m_type = 1;

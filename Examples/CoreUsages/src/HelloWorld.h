@@ -37,6 +37,7 @@ private:
 
     bool m_bool;
     std::vector<float> m_vector_float;
+    std::pair<double, std::vector<double>> m_pair_dvd;
     std::map<int, std::string> m_int_str;
 };
 

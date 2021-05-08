@@ -13,6 +13,7 @@ install_and_test(CoreUsages
     options/run-SvcAndTool.json
     options/senior-DataIO.json
     options/senior-StopRun.json
+    options/senior-SubTasks.json
 )
 
 if(USE_PYTHON)
@@ -22,5 +23,6 @@ if(USE_PYTHON)
         options/run-SvcAndTool.py
         options/senior-DataIO.py
         options/senior-StopRun.py
+        options/senior-SubTasks.py
         DESTINATION ${CMAKE_INSTALL_DATADIR}/SniperExamples)
 endif()

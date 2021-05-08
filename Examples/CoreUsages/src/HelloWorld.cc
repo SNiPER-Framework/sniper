@@ -27,6 +27,7 @@ HelloWorld::HelloWorld(const std::string &name)
     // declare properties
     declProp("VarBool", m_bool);
     declProp("VecFloat", m_vector_float);
+    declProp("PairDVD", m_pair_dvd);
     declProp("MapIntStr", m_int_str);
 }
 
@@ -47,6 +48,7 @@ bool HelloWorld::initialize()
     LogDebug << "properties are initialized as:" << std::endl;
     LogDebug << "VarBool: " << SniperJSON().from(m_bool).str() << std::endl;
     LogDebug << "VecFloat: " << SniperJSON().from(m_vector_float).str(-1) << std::endl;
+    LogDebug << "PairDVD: " << SniperJSON().from(m_pair_dvd).str(-1) << std::endl;
     LogDebug << "MapIntStr: " << SniperJSON().from(m_int_str).str(-1) << std::endl;
 
     LogInfo << "initialized successfully" << std::endl;
@@ -66,6 +68,7 @@ bool HelloWorld::execute()
 
     LogDebug << "VarBool: " << SniperJSON().from(m_bool).str() << std::endl;
     LogDebug << "VecFloat: " << SniperJSON().from(m_vector_float).str(-1) << std::endl;
+    LogDebug << "PairDVD: " << SniperJSON().from(m_pair_dvd).str(-1) << std::endl;
     LogDebug << "MapIntStr: " << SniperJSON().from(m_int_str).str() << std::endl;
 
     return true;

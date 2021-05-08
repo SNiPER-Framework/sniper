@@ -73,10 +73,10 @@ SniperJSON DLElement::json()
 
     if (m_par != nullptr && m_logLevel == m_par->logLevel())
     {
-        jprop.erase("\"LogLevel\"");
+        jprop.erase("LogLevel");
         if (jprop.size() == 0)
         {
-            j.erase("\"properties\"");
+            j.erase("properties");
         }
     }
 
@@ -95,21 +95,19 @@ void DLElement::eval(const SniperJSON &json)
         throw ContextMsgException(_errmsg);
     }
 
-    auto idest = json.find("\"description\"");
+    auto idest = json.find("description");
     if (idest != json.map_end())
     {
         setDescription(idest->second.get<std::string>());
     }
 
-    idest = json.find("\"properties\"");
+    idest = json.find("properties");
     if (idest != json.map_end())
     {
         const SniperJSON &jprop = idest->second;
         for (auto it = jprop.map_begin(); it != jprop.map_end(); ++it)
         {
-            // get "key" from "\"key\""
-            std::string key = (it->first.substr(1, it->first.size() - 2));
-            property(key)->set(it->second.str(-1));
+            property(it->first)->set(it->second.str(-1));
         }
     }
 }

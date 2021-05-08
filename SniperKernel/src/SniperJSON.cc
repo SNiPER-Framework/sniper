@@ -62,8 +62,7 @@ bool SniperJSON::insert(const std::string &key, const SniperJSON &val)
 {
     if (m_type == 1 || m_type == 0)
     {
-        std::string _key = '"' + key + '"';
-        m_jmap.insert(std::make_pair(_key, val));
+        m_jmap.insert(std::make_pair(key, val));
         m_type = 1;
         return true;
     }
@@ -95,12 +94,12 @@ int SniperJSON::size() const
 SniperJSON &SniperJSON::operator[](const std::string &key)
 {
     m_type = 1;
-    return m_jmap['"' + key + '"'];
+    return m_jmap[key];
 }
 
 const SniperJSON &SniperJSON::operator[](const std::string &key) const
 {
-    return m_jmap.at('"' + key + '"');
+    return m_jmap.at(key);
 }
 
 SniperJSON &SniperJSON::format(bool flag)
@@ -156,28 +155,28 @@ std::string SniperJSON::str(int indent, unsigned flags) const
             std::string fixedPrefix = (indent < 0) ? "" : std::string().assign(indent * level + indent, ' ');
             unsigned _level = (level + 1) | mapValueBit;
 
-            if (m_jmap.find("\"ordered_keys\"") == m_jmap.end())
+            if (m_jmap.find("ordered_keys") == m_jmap.end())
             {
                 auto it = map_begin();
-                oss << linefeed << fixedPrefix << it->first
-                    << ": " << it->second.str(indent, _level);
+                oss << linefeed << fixedPrefix << '"' << it->first
+                    << "\": " << it->second.str(indent, _level);
                 while (++it != map_end())
                 {
-                    oss << "," << linefeed << fixedPrefix << it->first
-                        << ": " << it->second.str(indent, _level);
+                    oss << "," << linefeed << fixedPrefix << '"' << it->first
+                        << "\": " << it->second.str(indent, _level);
                 }
             }
             else
             {
                 std::string separator{""};
-                auto keys = m_jmap.at("\"ordered_keys\"").get<std::vector<std::string>>();
+                auto keys = m_jmap.at("ordered_keys").get<std::vector<std::string>>();
                 for (auto &key : keys)
                 {
                     auto it = m_jmap.find(key);
                     if (it != m_jmap.end())
                     {
-                        oss << separator << linefeed << fixedPrefix << it->first
-                            << ": " << it->second.str(indent, _level);
+                        oss << separator << linefeed << fixedPrefix << '"' << it->first
+                            << "\": " << it->second.str(indent, _level);
                         separator = ",";
                     }
                 }
@@ -290,7 +289,7 @@ void SniperJSON::readObjectMap(const std::string &jstr, StrCursor &cursor)
                 status = false;
                 break;
             }
-            m_jmap.insert(std::make_pair(key, SniperJSON(jstr, ++cursor)));
+            m_jmap.insert(std::make_pair(key.substr(1, key.size()-2), SniperJSON(jstr, ++cursor)));
         } while (getValidChar(jstr, cursor) == ',');
     }
 

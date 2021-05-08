@@ -151,11 +151,11 @@ std::string Sniper::Config::json_str()
 void Sniper::Config::eval(const std::string &json_str)
 {
     static const std::vector<std::string> keys{
-        "\"LogLevel\"",
-        "\"Colorful\"",
-        "\"ShowTime\"",
-        "\"LogFile\"",
-        "\"LoadDlls\""};
+        "LogLevel",
+        "Colorful",
+        "ShowTime",
+        "LogFile",
+        "LoadDlls"};
 
     SniperJSON json(json_str);
     JSONParser jp(json);

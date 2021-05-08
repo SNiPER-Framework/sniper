@@ -311,20 +311,20 @@ void Task::remove(const std::string &name)
 SniperJSON Task::json()
 {
     static SniperJSON keys = SniperJSON().from(std::vector<std::string>{
-        "\"sniper\"",
-        "\"description\"",
-        "\"identifier\"",
-        "\"properties\"",
-        "\"services\"",
-        "\"algorithms\"",
-        "\"subtasks\""});
+        "sniper",
+        "description",
+        "identifier",
+        "properties",
+        "services",
+        "algorithms",
+        "subtasks"});
 
     SniperJSON j = DLElement::json();
     if (isRoot())
     {
         j.insert("sniper", SniperJSON(Sniper::Config::json_str()));
         auto &jsniper = j["sniper"];
-        if (jsniper.find("\"LoadDlls\"") != jsniper.map_end())
+        if (jsniper.find("LoadDlls") != jsniper.map_end())
             jsniper["LoadDlls"].format(false);
     }
 
