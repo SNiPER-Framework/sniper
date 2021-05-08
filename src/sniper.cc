@@ -22,13 +22,18 @@
 #include <stdlib.h>
 #include <dlfcn.h>
 
-int exe_python(const std::string &script)
+int exe_python(int pyArgc, char* pyArgv[])
 {
 #ifdef HAVE_PYTHON
     std::string pyver{SNIPER_USE_PYTHON_VERSION};
     std::string pycmd{"pythonv "};
     pycmd[6] = pyver.empty() ? ' ' : pyver.at(0);
-    pycmd += script;
+    pycmd += pyArgv[0];
+    for (int i = 1; i < pyArgc; ++i)
+    {
+        pycmd += " ";
+        pycmd += pyArgv[i];
+    }
     return system(pycmd.c_str());
 #else
     std::cerr << "error: this application is built without python" << std::endl;
@@ -63,22 +68,25 @@ int exe_json(const std::string &jfile)
 int main(int argc, char *argv[])
 {
 
+    std::string usage{argv[0]};
 #ifdef HAVE_PYTHON
-    std::string validfile{" config.[json|py]"};
+    usage += " config.[json|py] [argus_for_config.py]";
 #else
-    std::string validfile{" config.json"};
+    usage += " config.json";
 #endif
 
-    if (argc != 2)
+    if (argc < 2)
     {
-        std::cerr << "Usage: " << argv[0] << validfile << std::endl;
+        std::cerr << "Usage: " << usage << std::endl;
         return 1;
     }
 
-    std::string fname(argv[1]);
+    int argi = 1;
+
+    std::string fname(argv[argi]);
     if (fname.substr(fname.size() - 3, 10) == ".py")
     {
-        return exe_python(fname);
+        return exe_python(argc - argi, argv + argi);
     }
     else if (fname.substr(fname.size() - 5, 10) == ".json")
     {
@@ -87,7 +95,7 @@ int main(int argc, char *argv[])
     else
     {
         std::cerr << "error: unsupported config file " << fname << std::endl;
-        std::cerr << "Usage: " << argv[0] << validfile << std::endl;
+        std::cerr << "Usage: " << usage << std::endl;
     }
 
     return 1;
