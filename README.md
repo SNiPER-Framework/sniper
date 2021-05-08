@@ -11,7 +11,7 @@ Required packages:
 * Compiler with C++11 support (GCC 4.8 or LLVM 3.4 or other);
 
 Recommended packages:
-* Boost (1.53 or later, with Boost.Python) - portable C++ source libraries, used for interface with python scripts;
+* Boost (1.67 or later, with Boost.Python) - portable C++ source libraries, used for interface with python scripts;
 * Python (2.7 or later) - interpreted, interactive, object-oriented programming language, used as main script engine for SNiPER modules.
 
 Optional software:
@@ -36,11 +36,11 @@ Run CMake to configure your build. You can change your settings with `ccmake` or
 $ cmake -DCMAKE_INSTALL_PREFIX=<install_dir> ..
 ```
 
-There are more options we can use while configuring the build:
-* `$ cmake .. -DDEBUG=OFF` : Turn debug options on. The default value is `OFF`.
-* `$ cmake .. -DUSE_PYTHON=ON` : Build the project with Python support. A pure C++ version will be built if it is turned off. The default value is `ON`.
-    * `$ cmake .. -DUSE_PYTHON2=OFF` : Turn it on to use Python2, otherwise Python3 is used by default.
-* `$ cmake .. -DUSE_ROOT=ON` : Build components that depend on ROOT. The default value is `ON`.
+There are more cmake options we can use while configuring the build:
+* `-DDEBUG=OFF` : Turn debug options on. The default value is `OFF`.
+* `-DUSE_PYTHON=ON` : Build the project with Python support. A pure C++ version will be built if it is turned off. The default value is `ON`.
+    * `-DUSE_PYTHON2=OFF` : Turn it on to use Python2, otherwise Python3 is used by default.
+* `-DUSE_ROOT=ON` : Build components that depend on ROOT. The default value is `ON`.
 
 Then build and install the result. Default build agent is `make` and you can call it directly.
 
