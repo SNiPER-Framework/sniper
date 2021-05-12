@@ -18,6 +18,7 @@
 #include "StopRunAlg.h"
 #include "CoreUsages/DummyDataStore.h"
 #include "SniperKernel/SniperDataPtr.h"
+#include "SniperKernel/Task.h"
 #include "SniperKernel/AlgFactory.h"
 
 DECLARE_ALGORITHM(StopRunAlg);
@@ -62,7 +63,7 @@ bool StopRunAlg::execute()
     if (data == 2)
     {
         LogDebug << "before stop event " << data << ": " << m_stopMode << std::endl;
-        m_par->stop(m_mode);
+        dynamic_cast<Task*>(m_par)->stop(m_mode);
         LogDebug << "after stop event " << data << ": " << m_stopMode << std::endl;
     }
 

@@ -28,5 +28,8 @@ void export_Sniper_TopTask()
         ("TopTask", init<const std::string&>())
         .def("createTask", &TopTask::createTask,
                 return_value_policy<reference_existing_object>())
+        .def("addTask", &TopTask::addTask,
+                return_value_policy<reference_existing_object>())
+        .def("clearTasks", &TopTask::clearTasks)
         ;
 }

@@ -68,8 +68,6 @@ void export_Sniper_DLElement()
 {
     using namespace boost::python;
 
-    void (DLElement::*showf)() = &DLElement::show;
-
     class_<DLElementWrap, boost::noncopyable>("DLElement", no_init)
         .def("logLevel", &DLElement::logLevel)
         .def("scope", &DLElement::scope,
@@ -81,7 +79,7 @@ void export_Sniper_DLElement()
         .def("initialize", pure_virtual(&DLElement::initialize))
         .def("finalize", pure_virtual(&DLElement::finalize))
         .def("tag", &DLElement::tag,
-             return_value_policy<reference_existing_object>())
+             return_value_policy<copy_const_reference>())
         .def("setTag", &DLElement::setTag)
         .def("setDescription", &DLElement::setDescription)
         .def("getParent", &DLElement::getParent,
@@ -93,5 +91,5 @@ void export_Sniper_DLElement()
              return_value_policy<reference_existing_object>())
         .def("json", DLElementExp_json)
         .def("eval", DLElementExp_eval)
-        .def("show", showf);
+        .def("show", &DLElement::show);
 }

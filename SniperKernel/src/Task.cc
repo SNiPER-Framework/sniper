@@ -18,31 +18,24 @@
 #include "SniperKernel/Task.h"
 #include "SniperKernel/AlgBase.h"
 #include "SniperKernel/SvcBase.h"
-#include "SniperKernel/DataMemSvc.h"
 #include "SniperKernel/SniperContext.h"
-#include "SniperKernel/SniperLog.h"
 #include "SniperKernel/SniperException.h"
 #include "SniperKernel/DeclareDLE.h"
-#include "SniperKernel/Sniper.h"
 #include "SniperPrivate/TaskProperty.h"
 #include "SniperPrivate/WhiteBoard.h"
-#include "SniperPrivate/DLEFactory.h"
 
 SNIPER_DECLARE_DLE(Task);
 
 Task::Task(const std::string &name)
-    : IExecUnit(name),
+    : ExecUnit(name),
+      m_limited(false),
       m_evtMax(-1),
       m_done(0),
       m_snoopy(this),
-      m_svcs(name, "services"),
-      m_algs(name, "algorithms"),
-      m_limited(false),
       m_beginEvt("BeginEvent"),
       m_endEvt("EndEvent"),
       m_beginAlg("BeginAlg"),
-      m_endAlg("EndAlg"),
-      m_targets{&m_svcs, &m_algs}
+      m_endAlg("EndAlg")
 {
     if (m_tag.empty())
         m_tag = "Task"; //protection for derived classes
@@ -50,13 +43,27 @@ Task::Task(const std::string &name)
     declProp("EvtMax", m_evtMax);
     m_pmgr.addProperty(new TaskProperty("svcs", this));
     m_pmgr.addProperty(new TaskProperty("algs", this));
-
-    this->createSvc("DataMemSvc");
 }
 
 Task::~Task()
 {
     m_snoopy.terminate();
+}
+
+void Task::setEvtMax(int evtMax_)
+{
+    m_evtMax = evtMax_;
+    m_limited = (m_evtMax >= 0);
+}
+
+void Task::setLogLevel(int level)
+{
+    DLElement::setLogLevel(level);
+
+    for (auto target : m_targets)
+    {
+        target->setLogLevel(level);
+    }
 }
 
 bool Task::run()
@@ -85,6 +92,39 @@ bool Task::run()
 bool Task::stop(Sniper::StopRun mode)
 {
     return m_snoopy.stop(mode);
+}
+
+void Task::reset()
+{
+    m_evtMax = -1;
+    m_done = 0;
+    m_limited = false;
+
+    ExecUnit::reset();
+}
+
+SniperJSON Task::json()
+{
+    static SniperJSON keys = SniperJSON().from(std::vector<std::string>{
+        "sniper",
+        "description",
+        "identifier",
+        "properties",
+        "services",
+        "algorithms"});
+
+    SniperJSON j = ExecUnit::json();
+    j.insert("ordered_keys", keys);
+
+    return j;
+}
+
+void Task::eval(const SniperJSON &json)
+{
+    //eval for base class
+    ExecUnit::eval(json);
+    //set event number limitation
+    m_limited = (m_evtMax >= 0);
 }
 
 bool Task::config()
@@ -186,193 +226,4 @@ bool Task::execute()
         ++m_done;
     }
     return stat;
-}
-
-void Task::reset()
-{
-    m_evtMax = -1;
-    m_done = 0;
-    m_limited = false;
-
-    for (auto it = m_targets.rbegin(); it != m_targets.rend(); ++it)
-    {
-        (*it)->clear();
-    }
-    m_targets.clear();
-}
-
-void Task::setLogLevel(int level)
-{
-    DLElement::setLogLevel(level);
-
-    for (auto target : m_targets)
-    {
-        target->setLogLevel(level);
-    }
-}
-
-void Task::setEvtMax(int evtMax_)
-{
-    m_evtMax = evtMax_;
-    m_limited = (m_evtMax >= 0);
-}
-
-SvcBase *Task::createSvc(const std::string &svcName)
-{
-    DLElement *obj = DLEFactory::instance().create(svcName);
-    if (obj != nullptr)
-    {
-        SvcBase *result = dynamic_cast<SvcBase *>(obj);
-        if (result != nullptr)
-        {
-            if (m_svcs.append(result, true))
-            {
-                result->setParent(this);
-                return result;
-            }
-        }
-        else
-        {
-            LogFatal << obj->objName() << " cannot cast to SvcBase."
-                     << std::endl;
-        }
-        delete obj;
-    }
-    return nullptr;
-}
-
-AlgBase *Task::createAlg(const std::string &algName)
-{
-    DLElement *obj = DLEFactory::instance().create(algName);
-    if (obj != nullptr)
-    {
-        AlgBase *result = dynamic_cast<AlgBase *>(obj);
-        if (result != nullptr)
-        {
-            if (m_algs.append(result, true))
-            {
-                result->setParent(this);
-                return result;
-            }
-        }
-        else
-        {
-            LogFatal << obj->objName() << " cannot cast to AlgBase."
-                     << std::endl;
-        }
-        delete obj;
-    }
-    return nullptr;
-}
-
-SvcBase *Task::addSvc(SvcBase *svc)
-{
-    if (m_svcs.append(svc, false))
-    {
-        svc->setParent(this);
-        return svc;
-    }
-    return nullptr;
-}
-
-AlgBase *Task::addAlg(AlgBase *alg)
-{
-    if (m_algs.append(alg, false))
-    {
-        alg->setParent(this);
-        return alg;
-    }
-    return nullptr;
-}
-
-DLElement *Task::find(const std::string &name)
-{
-    for (auto target : m_targets)
-    {
-        if (auto res = target->find(name))
-            return res;
-    }
-
-    LogWarn << "Cann't find Object " << name << std::endl;
-    return nullptr;
-}
-
-void Task::remove(const std::string &name)
-{
-    for (auto target : m_targets)
-    {
-        if (target->remove(name))
-            return;
-    }
-
-    LogWarn << "Cannot remove, no such element " << name << std::endl;
-}
-
-SniperJSON Task::json()
-{
-    static SniperJSON keys = SniperJSON().from(std::vector<std::string>{
-        "sniper",
-        "description",
-        "identifier",
-        "properties",
-        "services",
-        "algorithms",
-        "subtasks"});
-
-    SniperJSON j = DLElement::json();
-    if (isRoot())
-    {
-        j.insert("sniper", SniperJSON(Sniper::Config::json_str()));
-        auto &jsniper = j["sniper"];
-        if (jsniper.find("LoadDlls") != jsniper.map_end())
-            jsniper["LoadDlls"].format(false);
-    }
-
-    for (auto target : m_targets)
-    {
-        SniperJSON &jcomponents = j[target->objName()];
-        for (auto obj : target->list())
-        {
-            if (obj->tag() != "DataMemSvc")
-            {
-                jcomponents.push_back(obj->json());
-            }
-        }
-        if (!jcomponents.valid())
-        {
-            jcomponents = SniperJSON::loads("[]");
-        }
-    }
-
-    j.insert("ordered_keys", keys);
-
-    return j;
-}
-
-void Task::eval(const SniperJSON &json)
-{
-    //eval for base class
-    DLElement::eval(json);
-    m_limited = (m_evtMax >= 0);
-
-    //eval the services
-    auto &svcs = json["services"];
-    for (auto it = svcs.vec_begin(); it != svcs.vec_end(); ++it)
-    {
-        SvcBase *svc = this->createSvc((*it)["identifier"].get<std::string>());
-        svc->eval(*it);
-    }
-
-    //eval the algorithms
-    auto &algs = json["algorithms"];
-    for (auto it = algs.vec_begin(); it != algs.vec_end(); ++it)
-    {
-        AlgBase* alg = this->createAlg((*it)["identifier"].get<std::string>());
-        alg->eval(*it);
-    }
-}
-
-void Task::queue(DleSupervisor *target)
-{
-    m_targets.push_back(target);
 }

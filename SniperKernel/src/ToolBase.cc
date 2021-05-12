@@ -36,6 +36,6 @@ bool ToolBase::finalize()
 void ToolBase::setParentAlg(AlgBase* par)
 {
     m_logLevel = par->logLevel();
-    m_scope = par->scope() + par->objName() + ':';
+    m_scope = par->scope() + par->objName() + '.';
     m_par = par->getParent();
 }

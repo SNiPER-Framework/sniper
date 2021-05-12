@@ -40,7 +40,7 @@ TopTask::TopTask(const std::string &name)
       m_tasks(name, "subtasks")
 {
     m_tag = "TopTask";
-    queue(&m_tasks);
+    m_targets.push_back(&m_tasks);
 }
 
 TopTask::~TopTask()
@@ -80,67 +80,16 @@ Task *TopTask::addTask(Task *task)
     return nullptr;
 }
 
-void TopTask::eval(const SniperJSON &json)
+DLElement *TopTask::create(const std::string &type, const std::string &name)
 {
-    //eval for base class
-    Task::eval(json);
-
-    //eval the sub-tasks
-    auto &tasks = json["subtasks"];
-    for (auto it = tasks.vec_begin(); it != tasks.vec_end(); ++it)
+    if (type == "task")
     {
-        Task* task = this->createTask((*it)["identifier"].get<std::string>());
-        task->eval(*it);
+        return createTask(name);
     }
-}
-
-bool TopTask::config()
-{
-    bool stat = Task::config();
-
-    for (auto obj : m_tasks.list())
+    else
     {
-        Task *task = dynamic_cast<Task *>(obj);
-        if (!task->Snoopy().config())
-            return false;
+        return Task::create(type, name);
     }
-
-    return stat;
-}
-
-bool TopTask::initialize()
-{
-    bool stat = true;
-
-    if (!Task::initialize())
-        stat = false;
-
-    for (auto obj : m_tasks.list())
-    {
-        Task *task = dynamic_cast<Task *>(obj);
-        if (!task->Snoopy().initialize())
-            stat = false;
-    }
-
-    return stat;
-}
-
-bool TopTask::finalize()
-{
-    bool stat = true;
-
-    auto &tasks = m_tasks.list();
-    for (auto it = tasks.rbegin(); it != tasks.rend(); ++it)
-    {
-        Task *task = dynamic_cast<Task *>(*it);
-        if (!task->Snoopy().finalize())
-            stat = false;
-    }
-
-    if (!Task::finalize())
-        stat = false;
-
-    return stat;
 }
 
 DLElement *TopTask::find(const std::string &name)
@@ -177,4 +126,83 @@ void TopTask::remove(const std::string &name)
 
     LogWarn << "Cannot remove, no such element " << name << std::endl;
     return;
+}
+
+SniperJSON TopTask::json()
+{
+    SniperJSON j = Task::json();
+    j["ordered_keys"].push_back(SniperJSON().from("subtasks"));
+    return j;
+}
+
+void TopTask::eval(const SniperJSON &json)
+{
+    //eval for base class
+    Task::eval(json);
+
+    //eval the sub-tasks
+    auto &tasks = json["subtasks"];
+    for (auto it = tasks.vec_begin(); it != tasks.vec_end(); ++it)
+    {
+        Task* task = this->createTask((*it)["identifier"].get<std::string>());
+        task->eval(*it);
+    }
+}
+
+bool TopTask::config()
+{
+    bool stat = Task::config();
+
+    for (auto obj : m_tasks.list())
+    {
+        Task *task = dynamic_cast<Task *>(obj);
+        if (!task->Snoopy().config())
+            stat = false;
+    }
+
+    if (!stat)
+        m_snoopy.setErr();
+
+    return stat;
+}
+
+bool TopTask::initialize()
+{
+    bool stat = true;
+
+    if (!Task::initialize())
+        stat = false;
+
+    for (auto obj : m_tasks.list())
+    {
+        Task *task = dynamic_cast<Task *>(obj);
+        if (!task->Snoopy().initialize())
+            stat = false;
+    }
+
+    if (!stat)
+        m_snoopy.setErr();
+
+    return stat;
+}
+
+bool TopTask::finalize()
+{
+    bool stat = true;
+
+    auto &tasks = m_tasks.list();
+    for (auto it = tasks.rbegin(); it != tasks.rend(); ++it)
+    {
+        Task *task = dynamic_cast<Task *>(*it);
+        if (!task->Snoopy().finalize())
+            stat = false;
+    }
+
+    if (!Task::finalize())
+        stat = false;
+
+    if (!stat)
+        m_snoopy.setErr();
+
+    return stat;
 }

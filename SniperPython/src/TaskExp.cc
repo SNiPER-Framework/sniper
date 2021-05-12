@@ -37,31 +37,30 @@ struct TaskWrap : Task, bp::wrapper<Task>
     bool default_run() {
         return this->Task::run();
     }
+
+    bool stop(Sniper::StopRun mode) {
+        if (bp::override f = this->get_override("stop")) return f(mode);
+        return Task::stop(mode);
+    }
+
+    bool default_stop(Sniper::StopRun mode) {
+        return this->Task::stop(mode);
+    }
 };
 
 void export_Sniper_Task()
 {
     using namespace boost::python;
 
-    class_<TaskWrap, bases<DLElement>, boost::noncopyable>
+    class_<TaskWrap, bases<ExecUnit>, boost::noncopyable>
         ("Task", init<const std::string&>())
         .def("run",        &Task::run, &TaskWrap::default_run)
+        .def("stop",       &Task::stop, &TaskWrap::default_stop)
         .def("Snoopy",     &Task::Snoopy,
                 return_value_policy<reference_existing_object>())
         //.def("config",     &Task::config)
         //.def("execute",    &Task::execute)
         //.def("reset",      &Task::reset)
-        .def("addAlg",     &Task::addAlg,
-                return_value_policy<reference_existing_object>())
-        .def("addSvc",     &Task::addSvc,
-                return_value_policy<reference_existing_object>())
         .def("setEvtMax",  &Task::setEvtMax)
-        .def("createSvc",  &Task::createSvc,
-                return_value_policy<reference_existing_object>())
-        .def("createAlg",  &Task::createAlg,
-                return_value_policy<reference_existing_object>())
-        .def("find",       &Task::find,
-                return_value_policy<reference_existing_object>())
-        .def("remove",     &Task::remove)
-        ;
+        .def("evtMax",  &Task::evtMax);
 }

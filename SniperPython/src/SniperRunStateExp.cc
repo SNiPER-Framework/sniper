@@ -33,4 +33,11 @@ void export_Sniper_RunState()
         .value("EndUp",     RunState::EndUp)
         .value("Error",     RunState::Error)
         ;
+
+    using Sniper::StopRun;
+    enum_<StopRun>("StopRun")
+        .value("Promptly",   StopRun::Promptly)
+        .value("Peacefully", StopRun::Peacefully)
+        .value("ThisEvent",  StopRun::ThisEvent)
+        ;
 }

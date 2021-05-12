@@ -21,14 +21,14 @@
 #include <string>
 #include <list>
 
-class IExecUnit;
+class ExecUnit;
 class Incident;
 
 class IIncidentHandler
 {
 public:
-    IIncidentHandler(IExecUnit &domain);
-    IIncidentHandler(IExecUnit *domain);
+    IIncidentHandler(ExecUnit &domain);
+    IIncidentHandler(ExecUnit *domain);
 
     virtual ~IIncidentHandler();
 
@@ -44,7 +44,7 @@ public:
     const std::string &scope() { return m_scope; }
 
 protected:
-    IExecUnit &m_domain;
+    ExecUnit &m_domain;
     std::string m_name;
 
 private:

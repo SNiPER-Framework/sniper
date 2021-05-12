@@ -178,12 +178,12 @@ bool TaskWatchDog::finalize()
             LogWarn << "try to finalize within error" << std::endl;
         }
         m_task.finalize();
-        return isErr();
+        return !isErr();
     }
     else if (real_stat == RunState::Finalized)
     {
         LogInfo << "already in state " << snoopy_o2str[RunState::Finalized] << std::endl;
-        return isErr();
+        return !isErr();
     }
 
     SNOOPY_WARN_MSG(RunState::Finalized);
@@ -201,7 +201,7 @@ bool TaskWatchDog::terminate()
     }
     else if (real_stat == RunState::EndUp)
     {
-        return isErr();
+        return !isErr();
     }
 
     typedef Sniper::RunStateInt S_Int;
@@ -214,7 +214,7 @@ bool TaskWatchDog::terminate()
         {
             this->setErr();
         }
-        return isErr();
+        return !isErr();
     }
 
     SNOOPY_CHECK_ERR();

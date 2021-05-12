@@ -134,8 +134,14 @@ std::string Sniper::Config::json_str()
 {
     SniperJSON j;
     j["LogLevel"].from(SniperLog::LogLevel);
-    j["Colorful"].from(SniperLog::Colorful);
-    j["ShowTime"].from(SniperLog::ShowTime);
+    if (SniperLog::Colorful < 9)
+    {
+        j["Colorful"].from(SniperLog::Colorful);
+    }
+    if (SniperLog::ShowTime)
+    {
+        j["ShowTime"].from(SniperLog::ShowTime);
+    }
     if (!SniperLog::LogFile.empty())
     {
         j["LogFile"].from(SniperLog::LogFile);

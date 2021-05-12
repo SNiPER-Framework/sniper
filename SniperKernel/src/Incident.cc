@@ -16,16 +16,16 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/Incident.h"
-#include "SniperKernel/IExecUnit.h"
+#include "SniperKernel/ExecUnit.h"
 #include "SniperPrivate/IncidentMgr.h"
 
-int Incident::fire(IExecUnit& domain, const std::string& key)
+int Incident::fire(ExecUnit& domain, const std::string& key)
 {
     Incident incident(key);
     return incident.fire(domain);
 }
 
-int Incident::fire(IExecUnit& domain)
+int Incident::fire(ExecUnit& domain)
 {
     if ( domain.isRoot() ) {
         return IncidentMgr::instance(domain).handle(*this);

@@ -19,7 +19,7 @@
 #define SNIPER_SNIPER_DATA_PTR_H
 
 #include "SniperKernel/RefBase.h"
-#include "SniperKernel/IExecUnit.h"
+#include "SniperKernel/ExecUnit.h"
 #include "SniperKernel/DataMemSvc.h"
 #include <string>
 
@@ -28,8 +28,8 @@ template <typename Data>
 class SniperDataPtr : public RefBase<Data>
 {
 public:
-    SniperDataPtr(IExecUnit *domain, const std::string &path);
-    SniperDataPtr(IExecUnit &domain, const std::string &path);
+    SniperDataPtr(ExecUnit *domain, const std::string &path);
+    SniperDataPtr(ExecUnit &domain, const std::string &path);
 
     virtual ~SniperDataPtr() = default;
 
@@ -39,33 +39,33 @@ private:
     SniperDataPtr(const SniperDataPtr &) = delete;
     SniperDataPtr &operator=(const SniperDataPtr &) = delete;
 
-    void init(IExecUnit &domain, const std::string &path);
+    void init(ExecUnit &domain, const std::string &path);
 };
 
 //SniperDataPtr(const std::string& path) is removed (for MT mode)
 
 template <typename Data>
-SniperDataPtr<Data>::SniperDataPtr(IExecUnit *domain, const std::string &path)
+SniperDataPtr<Data>::SniperDataPtr(ExecUnit *domain, const std::string &path)
 {
     init(*domain, path);
 }
 
 template <typename Data>
-SniperDataPtr<Data>::SniperDataPtr(IExecUnit &domain, const std::string &path)
+SniperDataPtr<Data>::SniperDataPtr(ExecUnit &domain, const std::string &path)
 {
     init(domain, path);
 }
 
 template <typename Data>
-void SniperDataPtr<Data>::init(IExecUnit &domain, const std::string &path)
+void SniperDataPtr<Data>::init(ExecUnit &domain, const std::string &path)
 {
-    IExecUnit *_domain = &domain;
+    ExecUnit *_domain = &domain;
     std::string name = path;
 
     std::string::size_type pseg = path.rfind(":");
     if (pseg != std::string::npos)
     {
-        _domain = dynamic_cast<IExecUnit *>(domain.find(path.substr(0, pseg)));
+        _domain = dynamic_cast<ExecUnit *>(domain.find(path.substr(0, pseg)));
         name = path.substr(pseg + 1, std::string::npos);
     }
 

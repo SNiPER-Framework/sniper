@@ -18,8 +18,7 @@
 #ifndef SNIPER_TASK_H
 #define SNIPER_TASK_H
 
-#include "SniperKernel/IExecUnit.h"
-#include "SniperKernel/DleSupervisor.h"
+#include "SniperKernel/ExecUnit.h"
 #include "SniperKernel/TaskWatchDog.h"
 #include "SniperKernel/Incident.h"
 
@@ -28,7 +27,7 @@ class SvcBase;
 class AlgBase;
 
 //Task definition
-class Task : public IExecUnit
+class Task : public ExecUnit
 {
 public:
     //Constructor
@@ -37,14 +36,30 @@ public:
     //Destructor
     virtual ~Task();
 
+    //set and get the max event number to be processed
+    void setEvtMax(int evtMax);
+    int evtMax() { return m_evtMax; }
+
+    //set the log level of this domain
+    void setLogLevel(int level) final;
+
     //run this task
     virtual bool run();
 
     //stop this task
-    virtual bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly) override;
+    virtual bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly);
+
+    //reset the state of this object
+    virtual void reset() override;
+
+    //the json value of this object
+    virtual SniperJSON json();
+
+    // eval this Task from json
+    virtual void eval(const SniperJSON &json) override;
 
     //ooo~~ just as its name
-    TaskWatchDog &Snoopy() override { return m_snoopy; }
+    TaskWatchDog &Snoopy() { return m_snoopy; }
 
 protected:
     //none state check... Please use Snoopy for state control
@@ -54,58 +69,20 @@ protected:
     virtual bool initialize();
     virtual bool finalize();
     virtual bool execute();
-    //clear all svcs and algs
-    void reset();
-
-public:
-    //set the log level of this domain
-    void setLogLevel(int level) final;
-
-    //set and get the max event number to be processed
-    void setEvtMax(int evtMax) override;
-    int evtMax() override { return m_evtMax; }
-
-    //create owned Svc/Alg by name
-    SvcBase *createSvc(const std::string &svcName) override;
-    AlgBase *createAlg(const std::string &algName) override;
-
-    //add concrete Svc/Alg to Task without ownership
-    //it may be helpful for writing Svc/Alg in Python
-    SvcBase *addSvc(SvcBase *svc);
-    AlgBase *addAlg(AlgBase *alg);
-
-    //find an element by its name
-    virtual DLElement *find(const std::string &name) override;
-
-    //remove an element with its name
-    virtual void remove(const std::string &name);
-
-    //clear all svcs/algs seperately
-    void clearSvcs() { m_svcs.clear(); }
-    void clearAlgs() { m_algs.clear(); }
-
-    //the json value of this object
-    virtual SniperJSON json();
-    // eval this Task from json
-    virtual void eval(const SniperJSON &json) override;
 
 protected:
-    void queue(DleSupervisor *target);
-
     //member data
+    bool m_limited;
     int m_evtMax;
     int m_done;
     TaskWatchDog m_snoopy;
-    DleSupervisor m_svcs;
-    DleSupervisor m_algs;
 
 private:
-    bool m_limited;
+    //incidents
     Incident_T<int> m_beginEvt;
     Incident_T<int> m_endEvt;
     Incident_T<AlgBase *> m_beginAlg;
     Incident_T<AlgBase *> m_endAlg;
-    std::list<DleSupervisor *> m_targets;
 };
 
 #endif

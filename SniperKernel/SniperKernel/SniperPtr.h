@@ -19,7 +19,7 @@
 #define SNIPER_SNIPER_PTR_H
 
 #include "SniperKernel/RefBase.h"
-#include "SniperKernel/IExecUnit.h"
+#include "SniperKernel/ExecUnit.h"
 #include <string>
 
 //Get the DLE(Dynamically Loadable Element) reference with its path
@@ -28,8 +28,8 @@ class SniperPtr : public RefBase<DLE>
 {
 public:
     //Constructor with the DLE's domain and path
-    SniperPtr(IExecUnit *domain, const std::string &path);
-    SniperPtr(IExecUnit &domain, const std::string &path);
+    SniperPtr(ExecUnit *domain, const std::string &path);
+    SniperPtr(ExecUnit &domain, const std::string &path);
 
     virtual ~SniperPtr() = default;
 
@@ -43,13 +43,13 @@ private:
 //SniperPtr(const std::string& path) is removed (for MT mode)
 
 template <typename DLE>
-SniperPtr<DLE>::SniperPtr(IExecUnit *domain, const std::string &path)
+SniperPtr<DLE>::SniperPtr(ExecUnit *domain, const std::string &path)
 {
     this->m_obj = dynamic_cast<DLE *>(domain->find(path));
 }
 
 template <typename DLE>
-SniperPtr<DLE>::SniperPtr(IExecUnit &domain, const std::string &path)
+SniperPtr<DLE>::SniperPtr(ExecUnit &domain, const std::string &path)
 {
     this->m_obj = dynamic_cast<DLE *>(domain.find(path));
 }

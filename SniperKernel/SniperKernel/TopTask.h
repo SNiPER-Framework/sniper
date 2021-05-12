@@ -26,11 +26,20 @@ public:
     TopTask(const std::string &name);
     virtual ~TopTask();
 
-    // interfaces for sub-tasks
+    // handlers for sub-tasks
     Task *createTask(const std::string &taskName);
     Task *addTask(Task *task);
     void clearTasks() { m_tasks.clear(); }
 
+    // create an element by its type and name
+    DLElement *create(const std::string &type, const std::string &name) override;
+    // find an owned element
+    DLElement *find(const std::string &name) override;
+    // remove an owned element
+    void remove(const std::string &name) override;
+
+    //the json value of this object
+    virtual SniperJSON json() override;
     // eval this Task from json
     virtual void eval(const SniperJSON &json) override;
 
@@ -39,8 +48,6 @@ protected:
     bool config() override;
     bool initialize() override;
     bool finalize() override;
-    DLElement *find(const std::string &name) override;
-    void remove(const std::string &name) override;
 
 private:
     DleSupervisor m_tasks;
