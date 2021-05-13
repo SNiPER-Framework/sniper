@@ -20,9 +20,8 @@
 
 #include "SniperKernel/SvcBase.h"
 
-class DummyDataStore;
-class BeginEvtHandler;
-class EndEvtHandler;
+struct BeginEvtHandler;
+struct EndEvtHandler;
 
 class DataIOSvc : public SvcBase
 {
@@ -34,8 +33,6 @@ public:
     bool finalize() override;
 
 private:
-    DummyDataStore  *m_input;
-    DummyDataStore  *m_output;
     BeginEvtHandler *m_bh;
     EndEvtHandler   *m_eh;
 };
