@@ -125,6 +125,18 @@ public:
 
     // get a friendly type string from a typeid
     static std::string typestr(const std::type_info &tid);
+   
+    // an inner class for any exception while json parsing
+    class Exception : public std::exception
+    {
+    public:
+        Exception(const std::string &msg);
+        Exception(const std::string &jstr, int cursor);
+        virtual ~Exception() throw();
+        const char *what() const throw();
+     private:
+        std::string m_msg;
+    };
 
 private:
     typedef std::string::size_type StrCursor;
@@ -193,18 +205,6 @@ private:
     template <typename K, typename V>
     inline void fromCppVar(const std::map<K, V> &var);
 
-    // an inner class for any exception while json parsing
-    class Exception : public std::exception
-    {
-    public:
-        Exception(const std::string &msg);
-        Exception(const std::string &jstr, int cursor);
-        virtual ~Exception() throw();
-        const char *what() const throw();
-
-    private:
-        std::string m_msg;
-    };
 };
 
 template <typename T>

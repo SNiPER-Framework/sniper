@@ -53,7 +53,7 @@ public:
     virtual void reset() override;
 
     //the json value of this object
-    virtual SniperJSON json();
+    virtual SniperJSON json() override;
 
     // eval this Task from json
     virtual void eval(const SniperJSON &json) override;
@@ -66,8 +66,8 @@ protected:
     friend class TaskWatchDog;
     //the concrete task operations
     virtual bool config();
-    virtual bool initialize();
-    virtual bool finalize();
+    virtual bool initialize() override;
+    virtual bool finalize() override;
     virtual bool execute();
 
 protected:
