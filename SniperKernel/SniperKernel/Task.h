@@ -53,7 +53,7 @@ public:
     virtual void reset() override;
 
     //the json value of this object
-    virtual SniperJSON json();
+    virtual SniperJSON json() override;
 
     // eval this Task from json
     virtual void eval(const SniperJSON &json) override;
