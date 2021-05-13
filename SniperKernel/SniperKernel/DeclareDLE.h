@@ -32,10 +32,13 @@ struct SniperBookDLE
     SniperBookDLE(const std::string& type, DLECreator creator);
 };
 
+template <typename T>
+DLElement *SniperCreateDLE_T(const std::string &name)
+{
+   return new T(name);
+}
+
 #define SNIPER_DECLARE_DLE(DLEClass) \
-DLElement* sniper_DLE_##DLEClass##_creator_(const std::string& name) { \
-   return new DLEClass(name); \
-} \
-SniperBookDLE sniper_book_DLE_##DLEClass##_(#DLEClass, &sniper_DLE_##DLEClass##_creator_)
+SniperBookDLE SniperBook_##DLEClass##_(#DLEClass, &SniperCreateDLE_T<DLEClass>)
 
 #endif
