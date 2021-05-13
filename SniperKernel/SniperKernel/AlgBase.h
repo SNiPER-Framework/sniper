@@ -47,7 +47,7 @@ public:
     //virtual bool finalize() = 0;
 
     //the json value of this object
-    virtual SniperJSON json();
+    virtual SniperJSON json() override;
     // eval this Algorithm from json
     virtual void eval(const SniperJSON &json) override;
 
