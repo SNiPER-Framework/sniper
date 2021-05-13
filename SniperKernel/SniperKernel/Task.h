@@ -66,8 +66,8 @@ protected:
     friend class TaskWatchDog;
     //the concrete task operations
     virtual bool config();
-    virtual bool initialize();
-    virtual bool finalize();
+    virtual bool initialize() override;
+    virtual bool finalize() override;
     virtual bool execute();
 
 protected:
