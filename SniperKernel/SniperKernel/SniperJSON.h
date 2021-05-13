@@ -134,6 +134,9 @@ public:
         Exception(const std::string &jstr, int cursor);
         virtual ~Exception() throw();
         const char *what() const throw();
+     private:
+        std::string m_msg;
+    };
 
 private:
     typedef std::string::size_type StrCursor;
@@ -202,9 +205,6 @@ private:
     template <typename K, typename V>
     inline void fromCppVar(const std::map<K, V> &var);
 
-    private:
-        std::string m_msg;
-    };
 };
 
 template <typename T>
