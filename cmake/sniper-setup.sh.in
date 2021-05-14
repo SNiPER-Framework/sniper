@@ -10,9 +10,3 @@ if [ "x@CMAKE_INSTALL_PYTHONDIR@" != "x" ]; then
         export PYTHONPATH=@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_PYTHONDIR@:$PYTHONPATH
     fi
 fi
-
-if [[ "$OSTYPE" =~ ^darwin ]]; then
-	install_name_tool -add_rpath @CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_PYTHONDIR@/Sniper/libSniperPython.so
-	install_name_tool -add_rpath @CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@/libSniperCoreUsages.so
-	install_name_tool -add_rpath @CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@/libSniperKernel.so
-fi
