@@ -16,7 +16,7 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/TaskWatchDog.h"
-#include "SniperKernel/Task.h"
+#include "SniperKernel/ExecUnit.h"
 #include "SniperKernel/SniperLog.h"
 #include "SniperKernel/SniperContext.h"
 #include "SniperKernel/SniperException.h"
@@ -52,7 +52,7 @@ static std::map<RunState, const char*> snoopy_o2str{
     LogWarn << "invalid state tranform " << snoopy_o2str[ real_state() ] \
         << " => " << snoopy_o2str[StateX] << std::endl
 
-TaskWatchDog::TaskWatchDog(Task *task)
+TaskWatchDog::TaskWatchDog(ExecUnit *task)
     : m_stat(RunState::Invalid),
       m_task(*task)
 {

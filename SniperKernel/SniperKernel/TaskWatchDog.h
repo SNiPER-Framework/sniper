@@ -21,14 +21,14 @@
 #include "SniperKernel/SniperRunState.h"
 #include <string>
 
-class Task;
+class ExecUnit;
 
 class TaskWatchDog final  //XXX: final?
 {
     public:
 
         // constructor and destructor
-        TaskWatchDog(Task* task);
+        TaskWatchDog(ExecUnit* task);
         virtual ~TaskWatchDog();
 
         // operations
@@ -66,7 +66,7 @@ class TaskWatchDog final  //XXX: final?
 
         //Data members
         Sniper::RunState  m_stat;
-        Task&             m_task;
+        ExecUnit&             m_task;
 
         // we should not copy a TaskWatchDog
         TaskWatchDog() = delete;

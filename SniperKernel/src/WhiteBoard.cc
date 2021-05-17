@@ -22,7 +22,7 @@
 static WhiteBoard s_wbObj;
 static std::mutex s_local_mutex;
 
-void WhiteBoard::mark(Task* task)
+void WhiteBoard::mark(ExecUnit* task)
 {
     std::lock_guard<std::mutex> lock(s_local_mutex);
     if ( task->isRoot() ) {

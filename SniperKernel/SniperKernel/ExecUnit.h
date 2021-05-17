@@ -20,6 +20,7 @@
 
 #include "SniperKernel/DLElement.h"
 #include "SniperKernel/DleSupervisor.h"
+#include "SniperKernel/TaskWatchDog.h"
 
 class SvcBase;
 class AlgBase;
@@ -65,6 +66,18 @@ public:
     virtual SniperJSON json() override;
     // eval this Task from json
     virtual void eval(const SniperJSON &json) override;
+
+    //ooo~~ just as its name
+    virtual TaskWatchDog &Snoopy() = 0;
+
+public:
+    //none state check... Please use Snoopy for state control
+    friend class TaskWatchDog;
+    //the concrete task operations
+    virtual bool config() = 0;
+    virtual bool initialize() = 0;
+    virtual bool finalize() = 0;
+    virtual bool execute() = 0;
 
 protected:
     // the supervisors of services and algorithms

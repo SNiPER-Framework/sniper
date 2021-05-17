@@ -24,7 +24,7 @@ class WhiteBoard final
 {
     public :
 
-        static void mark(Task* task);
+        static void mark(ExecUnit* task);
         static void clear();
 
         WhiteBoard() = default;

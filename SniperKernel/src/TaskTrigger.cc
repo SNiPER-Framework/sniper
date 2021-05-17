@@ -18,7 +18,7 @@
 #include "SniperPrivate/TaskTrigger.h"
 #include "SniperKernel/TaskWatchDog.h"
 
-TaskTrigger::TaskTrigger(Task* task)
+TaskTrigger::TaskTrigger(ExecUnit* task)
     : IIncidentHandler(task->getRoot()),
       m_dog(task->Snoopy())
 {
