@@ -26,18 +26,18 @@ class TaskProperty : public SniperProperty<std::vector<std::string>>
 public:
     typedef SniperProperty<std::vector<std::string>> BaseType;
 
-    TaskProperty(const std::string &key_, Task *domain_)
+    TaskProperty(const std::string &key_, ExecUnit *domain_)
         : BaseType(key_, m_names), m_domain(domain_)
     {
         if (key_ == "algs")
         {
-            pclear = &Task::clearAlgs;
+            pclear = &ExecUnit::clearAlgs;
             pcreate = &TaskProperty::createAlg;
             padd = &TaskProperty::addAlg;
         }
         else if (key_ == "svcs")
         {
-            pclear = &Task::clearSvcs;
+            pclear = &ExecUnit::clearSvcs;
             pcreate = &TaskProperty::createSvc;
             padd = &TaskProperty::addSvc;
         }
@@ -100,11 +100,11 @@ private:
         return m_domain->addSvc(dynamic_cast<SvcBase *>(svc)) != 0;
     }
 
-    void (Task::*pclear)();
+    void (ExecUnit::*pclear)();
     bool (TaskProperty::*pcreate)(const std::string &);
     bool (TaskProperty::*padd)(DLElement *);
 
-    Task *m_domain;
+    ExecUnit *m_domain;
     std::vector<std::string> m_names;
 };
 

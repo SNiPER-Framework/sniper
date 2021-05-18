@@ -19,13 +19,13 @@
 #define SNIPER_TASK_TRIGGER_H
 
 #include "SniperKernel/IIncidentHandler.h"
-#include "SniperKernel/Task.h"
+#include "SniperKernel/ExecUnit.h"
 
 class TaskTrigger final : public IIncidentHandler
 {
     public :
 
-        TaskTrigger(Task* task);
+        TaskTrigger(ExecUnit* task);
         ~TaskTrigger() = default;
 
         virtual bool handle(Incident& incident) override;
