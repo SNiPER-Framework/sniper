@@ -75,8 +75,6 @@ public:
     friend class TaskWatchDog;
     //the concrete task operations
     virtual bool config() = 0;
-    virtual bool initialize() = 0;
-    virtual bool finalize() = 0;
     virtual bool execute() = 0;
 
 protected:

@@ -59,16 +59,16 @@ public:
     virtual void eval(const SniperJSON &json) override;
 
     //ooo~~ just as its name
-    TaskWatchDog &Snoopy() { return m_snoopy; }
+    TaskWatchDog &Snoopy() override { return m_snoopy; }
 
 protected:
     //none state check... Please use Snoopy for state control
     friend class TaskWatchDog;
     //the concrete task operations
-    virtual bool config();
+    virtual bool config() override;
     virtual bool initialize() override;
     virtual bool finalize() override;
-    virtual bool execute();
+    virtual bool execute() override;
 
 protected:
     //member data

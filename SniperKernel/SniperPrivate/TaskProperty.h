@@ -19,6 +19,8 @@
 #define SNIPER_TASK_PROPERTY_H
 
 #include "SniperKernel/Property.h"
+#include "SniperKernel/AlgBase.h"
+#include "SniperKernel/SvcBase.h"
 #include <iostream>
 
 class TaskProperty : public SniperProperty<std::vector<std::string>>

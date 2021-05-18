@@ -55,9 +55,7 @@ void export_Sniper_Workflow()
     class_<WorkflowWrap, bases<ExecUnit>, boost::noncopyable>
         ("Workflow", init<const std::string&>())
         .def("run",        &Workflow::run, &WorkflowWrap::default_run)
-        .def("stop",       &Workflow::stop, &WorkflowWrap::default_stop)
-        .def("Snoopy",     &Workflow::Snoopy,
-                return_value_policy<reference_existing_object>());
+        .def("stop",       &Workflow::stop, &WorkflowWrap::default_stop);
         //.def("config",     &Workflow::config)
         //.def("execute",    &Workflow::execute)
         //.def("reset",      &Workflow::reset)

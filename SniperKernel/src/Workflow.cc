@@ -1,4 +1,4 @@
-/* Copyright (C) 2018
+/* Copyright (C) 2018-2021
    Haolai Tian <tianhl@ihep.ac.cn>
    Jiaheng Zou <zoujh@ihep.ac.cn> Tao Lin <lintao@ihep.ac.cn>
    Weidong Li <liwd@ihep.ac.cn> Xingtao Huang <huangxt@sdu.edu.cn>
@@ -18,17 +18,10 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/Workflow.h"
-#include "SniperKernel/Task.h"
-#include "SniperKernel/AlgBase.h"
-#include "SniperKernel/SvcBase.h"
-#include "SniperKernel/DataMemSvc.h"
-#include "SniperKernel/SniperContext.h"
-#include "SniperKernel/SniperLog.h"
-#include "SniperKernel/SniperException.h"
 #include "SniperKernel/DeclareDLE.h"
+#include "SniperKernel/SniperContext.h"
 #include "SniperPrivate/TaskProperty.h"
 #include "SniperPrivate/WhiteBoard.h"
-#include "SniperPrivate/DLEFactory.h"
 
 SNIPER_DECLARE_DLE(Workflow);
 
@@ -45,6 +38,16 @@ Workflow::Workflow(const std::string& name)
 Workflow::~Workflow()
 {
     m_snoopy.terminate();
+}
+
+void Workflow::setLogLevel(int level)
+{
+    DLElement::setLogLevel(level);
+
+    for (auto target : m_targets)
+    {
+        target->setLogLevel(level);
+    }
 }
 
 bool Workflow::run()
@@ -69,6 +72,14 @@ bool Workflow::run()
 bool Workflow::stop(Sniper::StopRun mode)
 {
     return m_snoopy.stop(mode);
+}
+
+void Workflow::reset()
+{
+    //for ( auto it = m_targets.rbegin(); it != m_targets.rend(); ++it ) {
+    //    (*it)->clear();
+    //}
+    //m_targets.clear();
 }
 
 bool Workflow::config()
@@ -112,35 +123,3 @@ bool Workflow::execute()
 {
     return true;
 }
-
-void Workflow::setLogLevel(int level)
-{
-    DLElement::setLogLevel(level);
-
-    for (auto target : m_targets)
-    {
-        target->setLogLevel(level);
-    }
-}
-
-void Workflow::reset()
-{
-    //m_evtMax = -1;
-    //m_done = 0;
-    //m_limited = false;
-
-    //for ( auto it = m_targets.rbegin(); it != m_targets.rend(); ++it ) {
-    //    (*it)->clear();
-    //}
-    //m_targets.clear();
-}
-
-//AlgBase* Workflow::findAlg(const std::string& name)
-//{
-//    if ( auto res = m_algs.find(name) ) {
-//        return dynamic_cast<AlgBase*>(res);
-//    }
-//
-//    LogWarn << "Cann't find Object " << name << std::endl;
-//    return nullptr;
-//}

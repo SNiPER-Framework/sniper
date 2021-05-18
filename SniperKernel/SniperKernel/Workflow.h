@@ -1,4 +1,4 @@
-/* Copyright (C) 2018
+/* Copyright (C) 2018-2021
    Haolai Tian <tianhl@ihep.ac.cn> Jiaheng Zou <zoujh@ihep.ac.cn> 
    Weidong Li <liwd@ihep.ac.cn> 
    This file is part of SNiPER.
@@ -21,92 +21,43 @@
 
 #include "SniperKernel/ExecUnit.h"
 #include "SniperKernel/TaskWatchDog.h"
-#include "SniperKernel/Incident.h"
 
-
-//Task definition
+//Workflow definition
 class Workflow : public ExecUnit
 {
-    public :
+public:
+    //Constructor
+    Workflow(const std::string &name);
 
-        //Constructor
-        Workflow(const std::string& name);
+    //Destructor
+    virtual ~Workflow();
 
-        //Destructor
-        virtual ~Workflow();
+    //set the log level of this domain
+    void setLogLevel(int level) final;
 
-        //run this workflow
-        virtual bool run();
+    //run this workflow
+    virtual bool run();
 
-        //stop this workflow
-        virtual bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly);
+    //stop this workflow
+    virtual bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly);
 
-        //ooo~~ just as its name
-        TaskWatchDog& Snoopy() { return m_snoopy; }
+    //clear all svcs and algs
+    virtual void reset() override;
 
-        //for compatibility
-        bool isRoot() { return m_par == nullptr; }
+    //ooo~~ just as its name
+    TaskWatchDog &Snoopy() override { return m_snoopy; }
 
-    protected :
-        //none state check... Please use Snoopy for state control
-        friend class TaskWatchDog;
-        //the concrete workflow operations
-        virtual bool config();
-        virtual bool initialize();
-        virtual bool finalize();
-        virtual bool execute();
-        //clear all svcs and algs
-        void reset();
+protected:
+    //none state check... Please use Snoopy for state control
+    friend class TaskWatchDog;
+    //the concrete workflow operations
+    virtual bool config() override;
+    virtual bool initialize() override;
+    virtual bool finalize() override;
+    virtual bool execute() override;
 
-    public :
-        //set the log level of this domain
-        void setLogLevel(int level) final;
-
-        //set and get the max event number to be processed
-        //void setEvtMax(int evtMax);
-        //int  evtMax() { return m_evtMax; }
-
-        //create owned Svc/Alg by name
-        //SvcBase* createSvc(const std::string& svcName);
-        //AlgBase* createAlg(const std::string& algName);
-
-        //add concrete Svc/Alg to Task without ownership
-        //it may be helpful for writing Svc/Alg in Python
-        //SvcBase* addSvc(SvcBase* svc);
-        //AlgBase* addAlg(AlgBase* alg);
-
-        //find an algorithm by its name
-        //virtual AlgBase* findAlg(const std::string& name);
-
-        //remove an element with its name
-        //virtual void remove(const std::string& name);
-
-        //clear all svcs/algs seperately
-        //void clearSvcs() { m_svcs.clear(); }
-        //void clearAlgs() { m_algs.clear(); }
-
-        //override from base class DLElement
-        //void show(int indent) final;
-
-
-    protected :
-
-        //void queue(DleSupervisor* target);
-
-        //member data
-        //int                     m_evtMax;
-        //int                     m_done;
-        TaskWatchDog            m_snoopy;
-        //DleSupervisor           m_svcs;
-        //DleSupervisor           m_algs;
-
-    private :
-
-        //bool                    m_limited;
-        //Incident                m_beginEvt;
-        //Incident                m_endEvt;
-        //std::list<DleSupervisor*>  m_targets;
-
+protected:
+    TaskWatchDog m_snoopy;
 };
 
 #endif

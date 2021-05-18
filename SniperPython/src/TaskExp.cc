@@ -56,8 +56,6 @@ void export_Sniper_Task()
         ("Task", init<const std::string&>())
         .def("run",        &Task::run, &TaskWrap::default_run)
         .def("stop",       &Task::stop, &TaskWrap::default_stop)
-        .def("Snoopy",     &Task::Snoopy,
-                return_value_policy<reference_existing_object>())
         //.def("config",     &Task::config)
         //.def("execute",    &Task::execute)
         //.def("reset",      &Task::reset)
