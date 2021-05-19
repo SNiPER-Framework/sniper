@@ -62,9 +62,12 @@ private:
     //fKey: the tag of a file
     bool addFile(const std::string &fKey, const std::string &fname);
 
+    //the property for fKey -> file path
+    std::map<std::string, std::string> fmap;
     //fKey -> TFile
     std::map<std::string, TFile *> m_key2file;
-    std::map<std::string, std::string> fmap;
+    //absolute full path -> TFile
+    std::map<std::string, TFile *> m_absfile;
 };
 
 template <class Type>
