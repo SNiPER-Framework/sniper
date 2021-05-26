@@ -10,6 +10,7 @@ install(TARGETS SniperCoreUsages DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install_and_test(CoreUsages
     options/run-HelloWorld.json
     options/run-SvcAndTool.json
+    options/run-TimerUsage.json
     options/senior-DataIO.json
     options/senior-StopRun.json
     options/senior-SubTasks.json
@@ -20,6 +21,7 @@ if(USE_PYTHON)
     install_and_test(CoreUsages
         options/run-HelloWorld.py
         options/run-SvcAndTool.py
+        options/run-TimerUsage.py
         options/senior-DataIO.py
         options/senior-StopRun.py
         options/senior-SubTasks.py

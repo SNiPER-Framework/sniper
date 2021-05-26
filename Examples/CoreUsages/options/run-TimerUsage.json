@@ -1,0 +1,56 @@
+{
+  "sniper": {
+    "LoadDlls": [ "libSniperCoreUsages.so", "libSniperProfilingLib.so" ],
+    "LogLevel": 2
+  },
+  "description": "an example to use profiling",
+  "identifier": "Task/task",
+  "properties": {
+    "EvtMax": 5,
+    "LogLevel": 2
+  },
+  "services": [
+    {
+      "description": "a service instance that can be share by all algorithms",
+      "identifier": "DummySvc/SharedSvc"
+    },
+    {
+      "description": "a service for using SniperTimer",
+      "identifier": "SniperTimerSvc/SniperTimerSvc"
+    },
+    {
+      "description": "a service for providing some profiles",
+      "identifier": "SniperProfiling/SniperProfiling"
+    }
+  ],
+  "algorithms": [
+    {
+      "description": "the 1st SvcAndToolAlg instance named as alg1",
+      "identifier": "SvcAndToolAlg/alg1",
+      "properties": {
+        "OwnedTool": "tool1",
+        "SharedSvc": "SharedSvc"
+      },
+      "tools": [
+        {
+          "description": "a DummyTool instance owned by alg1",
+          "identifier": "DummyTool/tool1"
+        }
+      ]
+    },
+    {
+      "description": "the 2nd SvcAndToolAlg instance named as alg2",
+      "identifier": "SvcAndToolAlg/alg2",
+      "properties": {
+        "OwnedTool": "tool2",
+        "SharedSvc": "SharedSvc"
+      },
+      "tools": [
+        {
+          "description": "a DummyTool instance owned by alg2",
+          "identifier": "DummyTool/tool2"
+        }
+      ]
+    }
+  ]
+}
