@@ -1,6 +1,6 @@
 {
   "sniper": {
-    "LoadDlls": [ "libSniperCoreUsages.so", "libSniperProfilingLib.so" ],
+    "LoadDlls": [ "libSniperProfilingLib.so", "libSniperCoreUsages.so" ],
     "LogLevel": 2
   },
   "description": "an example to use profiling",
@@ -11,16 +11,16 @@
   },
   "services": [
     {
-      "description": "a service instance that can be share by all algorithms",
-      "identifier": "DummySvc/SharedSvc"
-    },
-    {
       "description": "a service for using SniperTimer",
       "identifier": "SniperTimerSvc/SniperTimerSvc"
     },
     {
       "description": "a service for providing some profiles",
       "identifier": "SniperProfiling/SniperProfiling"
+    },
+    {
+      "description": "a service instance that can be share by all algorithms",
+      "identifier": "DummySvc/SharedSvc"
     }
   ],
   "algorithms": [
