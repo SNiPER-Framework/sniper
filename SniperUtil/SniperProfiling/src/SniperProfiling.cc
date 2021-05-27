@@ -11,8 +11,10 @@
 
 DECLARE_SERVICE(SniperProfiling);
 
+namespace sp = SnierProfilingNS;
+
 //time for events
-struct BeginEvtHandler : public IIncidentHandler
+struct sp::BeginEvtHandler : public IIncidentHandler
 {
     BeginEvtHandler(ExecUnit *domain)
         : IIncidentHandler(domain)
@@ -23,7 +25,7 @@ struct BeginEvtHandler : public IIncidentHandler
     bool handle(Incident &incident) override;
 };
 
-bool BeginEvtHandler::handle(Incident &incident)
+bool sp::BeginEvtHandler::handle(Incident &incident)
 {
     SniperPtr<SniperTimerSvc> timerSvc(m_domain, "SniperTimerSvc");
     auto evtTimer = timerSvc->get("evtTimer");
@@ -37,7 +39,7 @@ bool BeginEvtHandler::handle(Incident &incident)
     return true;
 }
 
-struct EndEvtHandler : public IIncidentHandler
+struct sp::EndEvtHandler : public IIncidentHandler
 {
     EndEvtHandler(ExecUnit *domain)
         : IIncidentHandler(domain)
@@ -48,7 +50,7 @@ struct EndEvtHandler : public IIncidentHandler
     bool handle(Incident &incident) override;
 };
 
-bool EndEvtHandler::handle(Incident &incident)
+bool sp::EndEvtHandler::handle(Incident &incident)
 {
     //get the evtTimer
     SniperPtr<SniperProfiling> profiler(m_domain, "SniperProfiling");
@@ -61,7 +63,7 @@ bool EndEvtHandler::handle(Incident &incident)
 }
 
 // time for algs
-struct BeginAlgHandler : public IIncidentHandler
+struct sp::BeginAlgHandler : public IIncidentHandler
 {
     BeginAlgHandler(ExecUnit *domain)
         : IIncidentHandler(domain)
@@ -72,7 +74,7 @@ struct BeginAlgHandler : public IIncidentHandler
     bool handle(Incident &incident) override;
 };
 
-bool BeginAlgHandler::handle(Incident &incident)
+bool sp::BeginAlgHandler::handle(Incident &incident)
 {
     //get the name of the algorithm
     auto iPtr = dynamic_cast<Incident_T<AlgBase*>*>(&incident);
@@ -92,7 +94,7 @@ bool BeginAlgHandler::handle(Incident &incident)
     return true;
 }
 
-struct EndAlgHandler : public IIncidentHandler
+struct sp::EndAlgHandler : public IIncidentHandler
 {
     EndAlgHandler(ExecUnit *domain)
         : IIncidentHandler(domain)
@@ -103,7 +105,7 @@ struct EndAlgHandler : public IIncidentHandler
     bool handle(Incident &incident) override;
 };
 
-bool EndAlgHandler::handle(Incident &incident)
+bool sp::EndAlgHandler::handle(Incident &incident)
 {
     //get the name of the algorithm
     auto iPtr = dynamic_cast<Incident_T<AlgBase*>*>(&incident);
@@ -128,19 +130,19 @@ bool SniperProfiling::initialize()
     m_timerSvc = timerSvc.data();
 
     //create and regist the handler for BeginEvent
-    m_beginEvtHdl = new BeginEvtHandler(m_par);
+    m_beginEvtHdl = new sp::BeginEvtHandler(m_par);
     m_beginEvtHdl->regist("BeginEvent");
 
     // //create and regist the handler for EndEvent
-    m_endEvtHdl = new EndEvtHandler(m_par);
+    m_endEvtHdl = new sp::EndEvtHandler(m_par);
     m_endEvtHdl->regist("EndEvent");
 
     //create and regist the handler for BeginAlg
-    m_beginAlgHdl = new BeginAlgHandler(m_par);
+    m_beginAlgHdl = new sp::BeginAlgHandler(m_par);
     m_beginAlgHdl->regist("BeginAlg");
 
     //create and regist the handler for EndAlg
-    m_endAlgHdl = new EndAlgHandler(m_par);
+    m_endAlgHdl = new sp::EndAlgHandler(m_par);
     m_endAlgHdl->regist("EndAlg");
 
     LogInfo << m_description << std::endl;

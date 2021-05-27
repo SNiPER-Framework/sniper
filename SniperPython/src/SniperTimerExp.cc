@@ -3,7 +3,7 @@
 
 namespace bp = boost::python;
 
-BOOST_PYTHON_MODULE(libSniperTimer)
+void export_Sniper_Timer()
 {
     bp::class_<SniperTimer, boost::shared_ptr<SniperTimer> >
         ("SniperTimer", bp::init<std::string>())

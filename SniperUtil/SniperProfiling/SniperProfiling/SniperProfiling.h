@@ -7,11 +7,14 @@
 #include <map>
 #include <string>
 
-struct BeginEvtHandler;
-struct EndEvtHandler;
-struct BeginAlgHandler;
-struct EndAlgHandler;
-
+namespace SnierProfilingNS
+{
+    struct BeginEvtHandler;
+    struct EndEvtHandler;
+    struct BeginAlgHandler;
+    struct EndAlgHandler;
+}
+namespace sp = SnierProfilingNS;
 class SniperProfiling : public SvcBase
 {
 public:
@@ -30,10 +33,10 @@ public:
 private:
 
     SniperTimerSvc* m_timerSvc;
-    BeginEvtHandler* m_beginEvtHdl;
-    EndEvtHandler*   m_endEvtHdl;
-    BeginAlgHandler* m_beginAlgHdl;
-    EndAlgHandler*   m_endAlgHdl;
+    sp::BeginEvtHandler* m_beginEvtHdl;
+    sp::EndEvtHandler*   m_endEvtHdl;
+    sp::BeginAlgHandler* m_beginAlgHdl;
+    sp::EndAlgHandler*   m_endAlgHdl;
     
     SniperTimer* m_evtTimer;
     std::map<std::string, SniperTimer*> m_algTimers;
