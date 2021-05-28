@@ -24,22 +24,15 @@ public:
     bool initialize();
     bool finalize();
 
-    bool storeAlgTimer(const std::string& algName, SniperTimer* algTimer);
-    SniperTimer* getAlgTimer(const std::string& algName);
-
-    bool storeEvtTimer(SniperTimer* evtTimer);
-    SniperTimer* getEvtTimer();
-
 private:
+    SniperTimer* m_evtTimer;
+    std::vector<std::string> m_algName;
+    std::map<std::string, SniperTimer*> m_algTimer;
 
-    SniperTimerSvc* m_timerSvc;
     sp::BeginEvtHandler* m_beginEvtHdl;
     sp::EndEvtHandler*   m_endEvtHdl;
     sp::BeginAlgHandler* m_beginAlgHdl;
     sp::EndAlgHandler*   m_endAlgHdl;
-    
-    SniperTimer* m_evtTimer;
-    std::map<std::string, SniperTimer*> m_algTimers;
 };
 
 #endif

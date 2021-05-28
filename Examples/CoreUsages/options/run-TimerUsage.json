@@ -11,10 +11,6 @@
   },
   "services": [
     {
-      "description": "a service for using SniperTimer",
-      "identifier": "SniperTimerSvc/SniperTimerSvc"
-    },
-    {
       "description": "a service for providing some profiles",
       "identifier": "SniperProfiling/SniperProfiling"
     },

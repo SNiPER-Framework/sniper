@@ -2,12 +2,13 @@
 #include <iomanip>
 #include <iostream>
 #include "SniperProfiling/SniperProfiling.h"
-#include "SniperKernel/SniperTimerSvc.h"
 #include "SniperKernel/SvcFactory.h"
 #include "SniperKernel/Incident.h"
 #include "SniperKernel/IIncidentHandler.h"
 #include "SniperKernel/SniperPtr.h"
 #include "SniperKernel/AlgBase.h"
+#include "SniperKernel/Task.h"
+#include "SniperKernel/SniperJSON.h"
 
 DECLARE_SERVICE(SniperProfiling);
 
@@ -16,48 +17,44 @@ namespace sp = SnierProfilingNS;
 //time for events
 struct sp::BeginEvtHandler : public IIncidentHandler
 {
-    BeginEvtHandler(ExecUnit *domain)
+    BeginEvtHandler(ExecUnit *domain, SniperTimer* evtTimer)
         : IIncidentHandler(domain)
     {
         m_name = "BeginEvtHandler";
+        h_evtTimer = evtTimer;
     }
+
+    SniperTimer* h_evtTimer;
 
     bool handle(Incident &incident) override;
 };
 
 bool sp::BeginEvtHandler::handle(Incident &incident)
-{
-    SniperPtr<SniperTimerSvc> timerSvc(m_domain, "SniperTimerSvc");
-    auto evtTimer = timerSvc->get("evtTimer");
-
-    //store evtTimer
-    SniperPtr<SniperProfiling> profiler(m_domain, "SniperProfiling");
-    profiler->storeEvtTimer(evtTimer);
-    
-    evtTimer->start();
+{   
+    h_evtTimer->start();
 
     return true;
 }
 
 struct sp::EndEvtHandler : public IIncidentHandler
 {
-    EndEvtHandler(ExecUnit *domain)
+    EndEvtHandler(ExecUnit *domain, SniperTimer* evtTimer)
         : IIncidentHandler(domain)
     {
         m_name = "EndEvtHandler";
+        h_evtTimer = evtTimer;
     }
+
+    SniperTimer* h_evtTimer;
 
     bool handle(Incident &incident) override;
 };
 
 bool sp::EndEvtHandler::handle(Incident &incident)
 {
-    //get the evtTimer
-    SniperPtr<SniperProfiling> profiler(m_domain, "SniperProfiling");
-    auto evtTimer = profiler->getEvtTimer();
-    evtTimer->stop();
+    h_evtTimer->stop();
 
-    LogDebug << "The event " << "tooks " << evtTimer->elapsed() << "ms" << std::endl;
+    LogDebug << "The event " << "tooks " << h_evtTimer->elapsed() << "ms" << std::endl;
 
     return true;
 }
@@ -65,11 +62,14 @@ bool sp::EndEvtHandler::handle(Incident &incident)
 // time for algs
 struct sp::BeginAlgHandler : public IIncidentHandler
 {
-    BeginAlgHandler(ExecUnit *domain)
+    BeginAlgHandler(ExecUnit *domain,  std::map<std::string, SniperTimer*>& algTimer)
         : IIncidentHandler(domain)
     {
         m_name = "BeginAlgHandler";
+        h_timerMap = algTimer;
     }
+
+    std::map<std::string, SniperTimer*> h_timerMap;
 
     bool handle(Incident &incident) override;
 };
@@ -81,26 +81,21 @@ bool sp::BeginAlgHandler::handle(Incident &incident)
     AlgBase* algPtr = iPtr->payload();
     const std::string& key = algPtr->objName();
 
-    //get the algTimer
-    SniperPtr<SniperTimerSvc> timerSvc(m_domain, "SniperTimerSvc");
-    auto algTimer = timerSvc->get(key);
-
-    //store algTimer in profiling
-    SniperPtr<SniperProfiling> profiler(m_domain, "SniperProfiling");
-    profiler->storeAlgTimer(key, algTimer);
-
-    algTimer->start();
+    h_timerMap[key]->start();
 
     return true;
 }
 
 struct sp::EndAlgHandler : public IIncidentHandler
 {
-    EndAlgHandler(ExecUnit *domain)
+    EndAlgHandler(ExecUnit *domain, std::map<std::string, SniperTimer*>& algTimer)
         : IIncidentHandler(domain)
     {
         m_name = "EndAlgHandler";
+        h_timerMap = algTimer;
     }
+
+    std::map<std::string, SniperTimer*> h_timerMap;
 
     bool handle(Incident &incident) override;
 };
@@ -113,36 +108,44 @@ bool sp::EndAlgHandler::handle(Incident &incident)
     const std::string& key = algPtr->objName();
 
     //get algTimer
-    SniperPtr<SniperProfiling> profiler(m_domain, "SniperProfiling");
-    auto algTimer = profiler->getAlgTimer(key);
-
-    algTimer->stop();
-    LogDebug << "The algorithm " << key << " tooks " << algTimer->elapsed() << "ms" << std::endl;
+    h_timerMap[key]->stop();
+    LogDebug << "The algorithm " << key << " tooks " << h_timerMap[key]->elapsed() << "ms" << std::endl;
 
     return true;
 }
 
 bool SniperProfiling::initialize()
 {
-    SniperPtr<SniperTimerSvc> timerSvc(m_par, "SniperTimerSvc");
+    Task* taskPtr = dynamic_cast<Task*>(m_par);
+    const SniperJSON& taskJson = taskPtr->json();
+    const SniperJSON& algVec = taskJson["algorithms"];
 
-    //check the validity of SniperTimerSvc
-    m_timerSvc = timerSvc.data();
+    //get event timer
+    m_evtTimer = new SniperTimer("evtTimer");
+
+    //get names of algs and store them
+    for (auto it = algVec.vec_begin(); it != algVec.vec_end(); it++)
+    {
+        const std::string& idtf = (*it)["identifier"].get<std::string>();
+        const std::string&& algName = idtf.substr(idtf.find('/') + 1, idtf.size());
+        m_algName.emplace_back(algName);
+        m_algTimer[algName] = new SniperTimer(algName);
+    }
 
     //create and regist the handler for BeginEvent
-    m_beginEvtHdl = new sp::BeginEvtHandler(m_par);
+    m_beginEvtHdl = new sp::BeginEvtHandler(m_par, m_evtTimer);
     m_beginEvtHdl->regist("BeginEvent");
 
     // //create and regist the handler for EndEvent
-    m_endEvtHdl = new sp::EndEvtHandler(m_par);
+    m_endEvtHdl = new sp::EndEvtHandler(m_par, m_evtTimer);
     m_endEvtHdl->regist("EndEvent");
 
     //create and regist the handler for BeginAlg
-    m_beginAlgHdl = new sp::BeginAlgHandler(m_par);
+    m_beginAlgHdl = new sp::BeginAlgHandler(m_par, m_algTimer);
     m_beginAlgHdl->regist("BeginAlg");
 
     //create and regist the handler for EndAlg
-    m_endAlgHdl = new sp::EndAlgHandler(m_par);
+    m_endAlgHdl = new sp::EndAlgHandler(m_par, m_algTimer);
     m_endAlgHdl->regist("EndAlg");
 
     LogInfo << m_description << std::endl;
@@ -177,13 +180,13 @@ bool SniperProfiling::finalize()
                           << std::endl;
 
     //print time of algs
-    for (const auto& it : m_algTimers)
+    for (const auto& it : m_algName)
     {
-        *SniperLog::LogStream << std::setw(15) << std::left << it.first
-                              << std::setw(15) << (it.second)->number_of_measurements()
-                              << std::setw(15) << (it.second)->number_of_measurements() * (it.second)->mean()
-                              << std::setw(15) << (it.second)->mean()
-                              << std::setw(15) << (it.second)->rms()
+        *SniperLog::LogStream << std::setw(15) << std::left << it
+                              << std::setw(15) << (m_algTimer[it])->number_of_measurements()
+                              << std::setw(15) << (m_algTimer[it])->number_of_measurements() * (m_algTimer[it])->mean()
+                              << std::setw(15) << (m_algTimer[it])->mean()
+                              << std::setw(15) << (m_algTimer[it])->rms()
                               << std::endl;
     }
 
@@ -197,31 +200,4 @@ bool SniperProfiling::finalize()
     
     LogInfo << "finalized successfully" << std::endl;
     return true;
-}
-
-bool SniperProfiling::storeAlgTimer(const std::string& algName, SniperTimer* algTimer)
-{
-    auto it = m_algTimers.find(algName);
-    if (it == m_algTimers.end())
-        m_algTimers[algName] = algTimer;
-
-    return true;
-}
-
-SniperTimer* SniperProfiling::getAlgTimer(const std::string& algName)
-{
-    return m_algTimers[algName];
-}
-
-bool SniperProfiling::storeEvtTimer(SniperTimer* evtTimer)
-{
-    if (m_evtTimer != evtTimer)
-        m_evtTimer = evtTimer;
-
-    return true;
-}
-
-SniperTimer* SniperProfiling::getEvtTimer()
-{
-    return m_evtTimer;
 }

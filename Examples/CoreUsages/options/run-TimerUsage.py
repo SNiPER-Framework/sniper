@@ -8,9 +8,6 @@ if __name__ == "__main__":
     task = Sniper.Task("task")
     task.setDescription("an example to use profiling")
     task.setEvtMax(5)
-
-    svc1 = task.createSvc("SniperTimerSvc")
-    svc1.setDescription("a service for using SniperTimer")
     
     import SniperProfiling
     svc2 = task.createSvc("SniperProfiling")
