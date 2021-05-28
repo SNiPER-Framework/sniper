@@ -10,12 +10,12 @@ if __name__ == "__main__":
     task.setEvtMax(5)
     
     import SniperProfiling
-    svc2 = task.createSvc("SniperProfiling")
-    svc2.setDescription("a service for providing some profiles")
+    svc1 = task.createSvc("SniperProfiling")
+    svc1.setDescription("a service for providing some profiles")
 
     import SniperCoreUsages
-    svc3 = task.createSvc("DummySvc/SharedSvc")
-    svc3.setDescription("a service instance that can be share by all algorithms")
+    svc2 = task.createSvc("DummySvc/SharedSvc")
+    svc2.setDescription("a service instance that can be share by all algorithms")
 
     alg1 = task.createAlg("SvcAndToolAlg/alg1")
     alg1.setDescription("the 1st SvcAndToolAlg instance named as alg1")
