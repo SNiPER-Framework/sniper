@@ -197,6 +197,10 @@ bool SniperProfiling::finalize()
                           << std::setw(15) << m_evtTimer->rms()
                           << std::endl << std::defaultfloat;
     *SniperLog::LogStream << "#####################################################################\n";
+
+    delete m_evtTimer;
+    for (auto& it : m_algTimer)
+        delete it.second;
     
     LogInfo << "finalized successfully" << std::endl;
     return true;
