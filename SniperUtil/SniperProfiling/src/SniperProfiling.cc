@@ -18,10 +18,9 @@ namespace sp = SnierProfilingNS;
 struct sp::BeginEvtHandler : public IIncidentHandler
 {
     BeginEvtHandler(ExecUnit *domain, SniperTimer* evtTimer)
-        : IIncidentHandler(domain)
+        : IIncidentHandler(domain), h_evtTimer(evtTimer)
     {
         m_name = "BeginEvtHandler";
-        h_evtTimer = evtTimer;
     }
 
     SniperTimer* h_evtTimer;
@@ -39,10 +38,9 @@ bool sp::BeginEvtHandler::handle(Incident &incident)
 struct sp::EndEvtHandler : public IIncidentHandler
 {
     EndEvtHandler(ExecUnit *domain, SniperTimer* evtTimer)
-        : IIncidentHandler(domain)
+        : IIncidentHandler(domain), h_evtTimer(evtTimer)
     {
         m_name = "EndEvtHandler";
-        h_evtTimer = evtTimer;
     }
 
     SniperTimer* h_evtTimer;
@@ -88,13 +86,12 @@ bool sp::BeginAlgHandler::handle(Incident &incident)
 struct sp::EndAlgHandler : public IIncidentHandler
 {
     EndAlgHandler(ExecUnit *domain, std::map<std::string, SniperTimer*>& algTimer)
-        : IIncidentHandler(domain)
+        : IIncidentHandler(domain), h_timerMap(algTimer)
     {
         m_name = "EndAlgHandler";
-        h_timerMap = algTimer;
     }
 
-    std::map<std::string, SniperTimer*> h_timerMap;
+    std::map<std::string, SniperTimer*>& h_timerMap;
 
     bool handle(Incident &incident) override;
 };
