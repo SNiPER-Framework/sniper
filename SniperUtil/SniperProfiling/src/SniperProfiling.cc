@@ -63,13 +63,12 @@ bool sp::EndEvtHandler::handle(Incident &incident)
 struct sp::BeginAlgHandler : public IIncidentHandler
 {
     BeginAlgHandler(ExecUnit *domain,  std::map<std::string, SniperTimer*>& algTimer)
-        : IIncidentHandler(domain)
+        : IIncidentHandler(domain), h_timerMap(algTimer)
     {
         m_name = "BeginAlgHandler";
-        h_timerMap = algTimer;
     }
 
-    std::map<std::string, SniperTimer*> h_timerMap;
+    std::map<std::string, SniperTimer*>& h_timerMap;
 
     bool handle(Incident &incident) override;
 };
