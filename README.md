@@ -41,6 +41,7 @@ There are more cmake options we can use while configuring the build:
 * `-DUSE_PYTHON=ON` : Build the project with Python support. A pure C++ version will be built if it is turned off. The default value is `ON`.
     * `-DUSE_PYTHON2=OFF` : Turn it on to use Python2, otherwise Python3 is used by default.
 * `-DUSE_ROOT=ON` : Build components that depend on ROOT. The default value is `ON`.
+* `-DCMAKE_CXX_STANDARD=11|14|17` : specify the C++ standard 11, 14 or 17.
 
 Then build and install the result. Default build agent is `make` and you can call it directly.
 
