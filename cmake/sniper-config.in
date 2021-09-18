@@ -79,7 +79,7 @@ while test $# -gt 0; do
         ;;
 
     --cflags)
-        echo "-std=c++11 -fPIC -I$includedir -I@Boost_INCLUDE_DIR@ -I@PYTHON_INCLUDE_DIRS@"
+        echo "-std=c++@CMAKE_CXX_STANDARD@ -fPIC -I$includedir -I@Boost_INCLUDE_DIR@ -I@PYTHON_INCLUDE_DIRS@"
         ;;
 
     --libdir)
