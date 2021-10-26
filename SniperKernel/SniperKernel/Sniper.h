@@ -24,6 +24,9 @@ class DLElement;
 
 namespace Sniper
 {
+    //create a DLElement from a json string
+    DLElement *create(const std::string &json_str);
+    //eval a SNiPER job from a json config file
     DLElement *eval(const char *fname);
 
     void setLogLevel(int level);

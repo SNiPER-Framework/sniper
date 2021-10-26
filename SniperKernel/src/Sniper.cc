@@ -39,6 +39,16 @@ namespace Sniper
     std::vector<std::string> LoadDlls;
 }
 
+DLElement *Sniper::create(const std::string &json_str)
+{
+    auto json = SniperJSON::loads(json_str);
+
+    DLElement *pobj = DLEFactory::instance().create(json["identifier"].get<std::string>());
+    pobj->eval(json);
+
+    return pobj;
+}
+
 DLElement *Sniper::eval(const char *fname)
 {
     std::ifstream ifs(fname);
