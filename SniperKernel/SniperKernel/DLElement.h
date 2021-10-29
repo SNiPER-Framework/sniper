@@ -51,7 +51,7 @@ public:
     void setDescription(const std::string &desc) { m_description = desc; }
 
     // set the parent (ExecUnit implementation) pointer
-    void setParent(ExecUnit *parent);
+    virtual void setParent(ExecUnit *parent);
 
     // get a property via its key-name
     Property *property(const std::string &key);

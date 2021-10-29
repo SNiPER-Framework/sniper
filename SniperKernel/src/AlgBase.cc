@@ -74,6 +74,15 @@ ToolBase *AlgBase::findTool(const std::string &toolName)
     return nullptr;
 }
 
+void AlgBase::setParent(ExecUnit *parent)
+{
+    DLElement::setParent(parent);
+    for (auto &it : m_tools)
+    {
+        it.second->setParentAlg(this);
+    }
+}
+
 SniperJSON AlgBase::json()
 {
     SniperJSON j = DLElement::json();

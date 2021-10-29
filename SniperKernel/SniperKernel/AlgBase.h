@@ -42,6 +42,9 @@ public:
     template <typename Type>
     Type *tool(const std::string &toolName);
 
+    // set the parent (ExecUnit implementation) pointer
+    virtual void setParent(ExecUnit *parent) override;
+
     //Declared in base class DLElement
     //virtual bool initialize() = 0;
     //virtual bool finalize() = 0;
