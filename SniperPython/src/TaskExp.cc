@@ -37,15 +37,6 @@ struct TaskWrap : Task, bp::wrapper<Task>
     bool default_run() {
         return this->Task::run();
     }
-
-    bool stop(Sniper::StopRun mode) {
-        if (bp::override f = this->get_override("stop")) return f(mode);
-        return Task::stop(mode);
-    }
-
-    bool default_stop(Sniper::StopRun mode) {
-        return this->Task::stop(mode);
-    }
 };
 
 void export_Sniper_Task()
@@ -55,10 +46,6 @@ void export_Sniper_Task()
     class_<TaskWrap, bases<ExecUnit>, boost::noncopyable>
         ("Task", init<const std::string&>())
         .def("run",        &Task::run, &TaskWrap::default_run)
-        .def("stop",       &Task::stop, &TaskWrap::default_stop)
-        //.def("config",     &Task::config)
-        //.def("execute",    &Task::execute)
-        //.def("reset",      &Task::reset)
         .def("setEvtMax",  &Task::setEvtMax)
         .def("evtMax",  &Task::evtMax);
 }

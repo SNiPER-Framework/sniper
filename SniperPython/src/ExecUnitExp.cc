@@ -81,6 +81,11 @@ struct ExecUnitWarp : ExecUnit, bp::wrapper<ExecUnit>
     {
         return this->get_override("execute")();
     }
+
+    bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly)
+    {
+        return this->get_override("stop")(mode);
+    }
 };
 
 void export_Sniper_ExecUnit()
@@ -105,5 +110,6 @@ void export_Sniper_ExecUnit()
         .def("reset", &ExecUnit::reset, &ExecUnitWarp::default_reset)
         .def("Snoopy", pure_virtual(&ExecUnit::Snoopy), return_value_policy<reference_existing_object>())
         .def("config", pure_virtual(&ExecUnit::config))
-        .def("execute", pure_virtual(&ExecUnit::execute));
+        .def("execute", pure_virtual(&ExecUnit::execute))
+        .def("stop", pure_virtual(&ExecUnit::stop));
 }

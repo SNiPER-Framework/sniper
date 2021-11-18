@@ -47,7 +47,7 @@ public:
     virtual bool run();
 
     //stop this task
-    virtual bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly);
+    virtual bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly) override;
 
     //reset the state of this object
     virtual void reset() override;

@@ -39,7 +39,7 @@ public:
     virtual bool run();
 
     //stop this workflow
-    virtual bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly);
+    virtual bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly) override;
 
     //clear all svcs and algs
     virtual void reset() override;
