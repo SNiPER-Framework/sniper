@@ -13,7 +13,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 endif()
 
 # Project and Build Options
-project(SNiPER VERSION 2.0 LANGUAGES CXX)
+project(SNiPER VERSION 2.0.4 LANGUAGES CXX)
 
 option(DEBUG       "Turn debug options on" OFF)
 option(BUILD_TESTS "Whether to build the examples and enable testing" ON)
