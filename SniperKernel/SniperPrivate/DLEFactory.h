@@ -19,44 +19,47 @@
 #define SNIPER_DLE_FACTORY_H
 
 #include <string>
+#include <vector>
 #include <map>
 
 class DLElement;
 
 class DLEFactory
 {
-    public :
+public:
+    typedef DLElement *(*DLECreator)(const std::string &);
 
-        typedef DLElement* (*DLECreator)(const std::string&);
+    // get the singleton instance
+    static DLEFactory &instance();
 
-        //get the singleton instance
-        static DLEFactory& instance();
+    // release the singleton instance
+    static void release();
 
-        //release the singleton instance
-        static void release();
+    // create a DLE object with its name
+    DLElement *create(const std::string &name);
 
-        //create a DLE object with its name
-        DLElement* create(const std::string& name);
+    // book the creator of new DLE types
+    bool book(const std::string &type, DLECreator creator);
 
-        //book the creator of new DLE types
-        bool book(const std::string& type, DLECreator creator);
+    // name
+    const std::string &objName() { return m_name; }
 
-        //name
-        const std::string& objName() { return m_name; }
+    // valid types
+    const std::vector<std::string> &validTypes() { return m_types; }
 
-    private :
+private:
+    typedef std::map<std::string, DLECreator> Type2CreatorMap;
 
-        typedef std::map<std::string, DLECreator> Type2CreatorMap;
+    // standard constructor
+    DLEFactory();
+    ~DLEFactory();
 
-        //standard constructor
-        DLEFactory();
-        ~DLEFactory();
+    // members
+    std::string m_name;
+    std::vector<std::string> m_types;
+    Type2CreatorMap m_creators;
 
-        //members
-        std::string      m_name;
-        Type2CreatorMap  m_creators;
-
-        static DLEFactory* s_obj;
+    static DLEFactory *s_obj;
 };
 
 #endif

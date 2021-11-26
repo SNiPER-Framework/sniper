@@ -134,6 +134,18 @@ void Sniper::loadDll(const char *dll)
     }
 }
 
+std::string Sniper::dlls()
+{
+    return SniperJSON().from(Sniper::LoadDlls).str(-9);
+}
+
+std::string Sniper::validTypes()
+{
+    static auto& factory = DLEFactory::instance();
+    auto& types = factory.validTypes();
+    return SniperJSON().from(types).str(-9);
+}
+
 std::string Sniper::System::sysDate()
 {
     time_t t = time(0);

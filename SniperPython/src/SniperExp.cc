@@ -69,4 +69,6 @@ void export_Sniper_Sniper()
     def("setLogFile", SniperExp::setLogFile2);
     def("setLogStdout", &Sniper::setLogStdout);
     def("loadDll", &Sniper::loadDll);
+    def("dlls", &Sniper::dlls);
+    def("validTypes", &Sniper::validTypes);
 }
