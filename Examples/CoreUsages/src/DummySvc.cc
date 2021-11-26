@@ -17,8 +17,12 @@
 
 #include "CoreUsages/DummySvc.h"
 #include "SniperKernel/SvcFactory.h"
+#include "SniperKernel/SharedElemFactory.h"
 
 DECLARE_SERVICE(DummySvc);
+
+//This service is not thread safe, and it only can be used in single threaded tests
+DECLARE_CAN_BE_SHARED(DummySvc);
 
 DummySvc::DummySvc(const std::string &name)
     : SvcBase(name),

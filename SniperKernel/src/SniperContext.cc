@@ -19,6 +19,7 @@
 #include "SniperKernel/JSONParser.h"
 #include "SniperKernel/SniperLog.h"
 #include "SniperKernel/Sniper.h"
+#include "SniperPrivate/SharedElemMgr.h"
 #include "SniperPrivate/IncidentMgr.h"
 #include "SniperPrivate/DLEFactory.h"
 #include <sstream>
@@ -69,6 +70,7 @@ Sniper::Context::Context()
 
 Sniper::Context::~Context()
 {
+    SharedElemMgr::release();
     IncidentMgr::release();
     DLEFactory::release();
 

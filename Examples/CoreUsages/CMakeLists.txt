@@ -25,5 +25,6 @@ if(USE_PYTHON)
         options/senior-DataIO.py
         options/senior-StopRun.py
         options/senior-SubTasks.py
+        options/senior-1Svc2Tasks.py
     )
 endif()
