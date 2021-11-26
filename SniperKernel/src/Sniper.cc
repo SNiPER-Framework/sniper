@@ -41,10 +41,18 @@ namespace Sniper
 
 DLElement *Sniper::create(const std::string &json_str)
 {
-    auto json = SniperJSON::loads(json_str);
+    DLElement *pobj = nullptr;
 
-    DLElement *pobj = DLEFactory::instance().create(json["identifier"].get<std::string>());
-    pobj->eval(json);
+    auto json = SniperJSON::loads(json_str);
+    if (json.isMap())
+    {
+        pobj = DLEFactory::instance().create(json["identifier"].get<std::string>());
+        pobj->eval(json);
+    }
+    else
+    {
+        pobj = DLEFactory::instance().create(json_str);
+    }
 
     return pobj;
 }
