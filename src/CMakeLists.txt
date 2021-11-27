@@ -1,6 +1,3 @@
-# configure
-configure_file("${CMAKE_CURRENT_LIST_DIR}/SniperConfig.h.in" "${PROJECT_BINARY_DIR}/SniperConfig.h")
-
 # build
 add_executable(sniper.exe sniper.cc)
 target_include_directories(sniper.exe PRIVATE ${PROJECT_BINARY_DIR})

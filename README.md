@@ -49,7 +49,13 @@ Then build and install the result. Default build agent is `make` and you can cal
 $ cmake --build . --target install
 ```
 
-Your build is now installed to the directory you provided to CMake. For the best experience one needs to set the proper environment. This can be done with the help of shell script `<install_dir>/share/sniper/setup.sh`, or, a modern solution, using an Environment Modules file `<install_dir>/share/sniper/modulefiles/sniper`.
+Your build is now installed to the directory you provided to CMake. For the best experience one needs to set the proper environment. This can be done by a shell script file (bash):
+ 
+ ```
+ $ source <install_dir>/share/sniper/setup.sh
+ ```
+ 
+ Or, a modern solution, using an Environment Modules file `<install_dir>/share/sniper/modulefiles/sniper`.
 
 Suppose the environment has been set, then we can run the tests in the build directory:
 
@@ -58,6 +64,12 @@ $ make test
 ```
 
 The test uses the components in `Examples`, which covers the main functionalities of SNiPER.
+
+## Configuration
+
+There is a default configure file (in json style) for the initialization of SNiPER: `<install_dir>/share/sniper/.init.json`
+
+We can assign a different configure file with the environment variable `$SNIPER_INIT_FILE`
 
 ## Contributing
 
