@@ -21,6 +21,7 @@
 #include "SniperKernel/DataMemSvc.h"
 #include "SniperKernel/Sniper.h"
 #include "SniperPrivate/DLEFactory.h"
+#include "SniperPrivate/SharedElemMgr.h"
 
 ExecUnit::ExecUnit(const std::string &name)
     : DLElement(name),
@@ -202,15 +203,33 @@ void ExecUnit::eval(const SniperJSON &json)
     auto &svcs = json["services"];
     for (auto it = svcs.vec_begin(); it != svcs.vec_end(); ++it)
     {
-        SvcBase *svc = this->createSvc((*it)["identifier"].get<std::string>());
-        svc->eval(*it);
+        auto idStr = (*it)["identifier"].get<std::string>();
+        if (idStr.front() != '[')
+        {
+            SvcBase *svc = this->createSvc(idStr);
+            svc->eval(*it);
+        }
+        else
+        {
+            SvcBase *svc = dynamic_cast<SvcBase *>(SharedElemMgr::get(idStr));
+            this->addSvc(svc);
+        }
     }
 
     //eval the algorithms
     auto &algs = json["algorithms"];
     for (auto it = algs.vec_begin(); it != algs.vec_end(); ++it)
     {
-        AlgBase* alg = this->createAlg((*it)["identifier"].get<std::string>());
-        alg->eval(*it);
+        auto idStr = (*it)["identifier"].get<std::string>();
+        if (idStr.front() != '[')
+        {
+            AlgBase *alg = this->createAlg(idStr);
+            alg->eval(*it);
+        }
+        else
+        {
+            AlgBase *alg = dynamic_cast<AlgBase *>(SharedElemMgr::get(idStr));
+            this->addAlg(alg);
+        }
     }
 }

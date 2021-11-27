@@ -34,6 +34,7 @@ namespace SharedElemMgr
 
 struct SharedElemBase
 {
+   virtual SniperJSON json_r() = 0;
    int index; // to distinguish elements that have same names
 };
 
@@ -50,6 +51,7 @@ public:
 
    virtual void setParent(ExecUnit *parent) override;
    virtual SniperJSON json() override;
+   virtual SniperJSON json_r() override;
 
 private:
    bool m_iStat;
@@ -109,7 +111,17 @@ void SharedElem<DLEClass>::setParent(ExecUnit *)
 template <typename DLEClass>
 SniperJSON SharedElem<DLEClass>::json()
 {
-   auto json = DLEClass::json();
+   std::stringstream ss;
+   ss << '[' << this->index << "]:" << this->m_tag << '/' << this->m_name;
+   SniperJSON json;
+   json["identifier"].from(ss.str());
+   return json;
+}
+
+template <typename DLEClass>
+SniperJSON SharedElem<DLEClass>::json_r()
+{
+   SniperJSON json = DLEClass::json();
    json["index"].from(this->index);
    return json;
 }

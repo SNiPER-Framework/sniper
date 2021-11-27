@@ -18,12 +18,16 @@
 #ifndef SNIPER_SHARED_ELEM_MGR_H
 #define SNIPER_SHARED_ELEM_MGR_H
 
+#include <string>
+
 class DLElement;
 
 namespace SharedElemMgr
 {
     void take_ownership(DLElement *obj);
-    DLElement *get(int id);
+    int number_of_elements();
+    DLElement *get(int index);
+    DLElement *get(const std::string &identifier);
     void release();
 }
 

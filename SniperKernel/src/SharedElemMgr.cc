@@ -18,6 +18,7 @@
 #include "SniperPrivate/SharedElemMgr.h"
 #include "SniperKernel/DLElement.h"
 #include "SniperKernel/SharedElemFactory.h"
+#include "SniperKernel/SniperException.h"
 #include <vector>
 #include <mutex>
 
@@ -35,10 +36,26 @@ void SharedElemMgr::take_ownership(DLElement *obj)
     s_shared_elements->push_back(obj);
 }
 
-DLElement *SharedElemMgr::get(int id)
+int SharedElemMgr::number_of_elements()
 {
-    const std::lock_guard<std::mutex> lock(s_mutex);
-    return s_shared_elements->at(id);
+    return s_shared_elements->size();
+}
+
+DLElement *SharedElemMgr::get(int index)
+{
+    return s_shared_elements->at(index);
+}
+
+DLElement *SharedElemMgr::get(const std::string &identifier)
+{
+    auto iend = identifier.find(']');
+    int index = atoi(identifier.substr(1, iend-1).c_str());
+    auto elem = s_shared_elements->at(index);
+    if (elem->json()["identifier"].get<std::string>() == identifier)
+    {
+        return elem;
+    }
+    throw ContextMsgException(std::string("Invalid shared element: ") + identifier);
 }
 
 void SharedElemMgr::release()
