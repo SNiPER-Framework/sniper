@@ -45,14 +45,14 @@ void export_Sniper_AlgBase()
 {
     using namespace boost::python;
 
-    class_<AlgBaseWarp, bases<DLElement>, boost::noncopyable>
-        ("AlgBase", init<const std::string&>())
+    class_<AlgBaseWarp, bases<DLElement>, boost::noncopyable>("AlgBase", init<const std::string &>())
         .def("initialize", pure_virtual(&AlgBase::initialize))
-        .def("execute",    pure_virtual(&AlgBase::execute))
-        .def("finalize",   pure_virtual(&AlgBase::finalize))
+        .def("execute", pure_virtual(&AlgBase::execute))
+        .def("finalize", pure_virtual(&AlgBase::finalize))
         .def("createTool", &AlgBase::createTool,
-                return_value_policy<reference_existing_object>())
-        .def("findTool",   &AlgBase::findTool,
-                return_value_policy<reference_existing_object>())
-        ;
+             return_value_policy<reference_existing_object>())
+        .def("addTool", &AlgBase::addTool,
+             return_value_policy<reference_existing_object>())
+        .def("findTool", &AlgBase::findTool,
+             return_value_policy<reference_existing_object>());
 }

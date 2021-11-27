@@ -14,6 +14,7 @@ install_and_test(CoreUsages
     options/senior-DataIO.json
     options/senior-StopRun.json
     options/senior-SubTasks.json
+    options/senior-1Svc2Tasks.json
 )
 
 if(USE_PYTHON)

@@ -36,6 +36,7 @@ public:
 
     //for handling tools if needed
     ToolBase *createTool(const std::string &toolName);
+    ToolBase *addTool(ToolBase *tool);
     ToolBase *findTool(const std::string &toolName);
 
     //template version of retrieving a Tool instance
@@ -56,6 +57,7 @@ public:
 
 protected:
     std::map<std::string, ToolBase *> m_tools;
+    std::vector<std::pair<ToolBase *, bool>> m_vtools;
 };
 
 template <typename Type>

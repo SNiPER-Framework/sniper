@@ -31,6 +31,7 @@
 #include "SniperKernel/TopTask.h"
 #include "SniperKernel/SniperLog.h"
 #include "SniperPrivate/DLEFactory.h"
+#include "SniperPrivate/SharedElemMgr.h"
 #include "SniperKernel/DeclareDLE.h"
 
 SNIPER_DECLARE_DLE(TopTask);
@@ -144,8 +145,17 @@ void TopTask::eval(const SniperJSON &json)
     auto &tasks = json["subtasks"];
     for (auto it = tasks.vec_begin(); it != tasks.vec_end(); ++it)
     {
-        Task* task = this->createTask((*it)["identifier"].get<std::string>());
-        task->eval(*it);
+        auto idStr = (*it)["identifier"].get<std::string>();
+        if (idStr.front() != '[')
+        {
+            Task *task = this->createTask(idStr);
+            task->eval(*it);
+        }
+        else
+        {
+            Task *task = dynamic_cast<Task *>(SharedElemMgr::get(idStr));
+            this->addTask(task);
+        }
     }
 }
 
