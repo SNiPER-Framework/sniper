@@ -19,6 +19,7 @@
 #define SNIPER_DUMMY_SVC_H
 
 #include "SniperKernel/SvcBase.h"
+#include <atomic>
 
 class DummySvc : public SvcBase
 {
@@ -32,7 +33,7 @@ public:
     void doSomeThing();
 
 private:
-    int m_count;
+    std::atomic_long m_count;
 };
 
 #endif

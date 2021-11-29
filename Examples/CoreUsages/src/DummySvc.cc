@@ -21,7 +21,6 @@
 
 DECLARE_SERVICE(DummySvc);
 
-//This service is not thread safe, and it only can be used in single threaded tests
 DECLARE_CAN_BE_SHARED(DummySvc);
 
 DummySvc::DummySvc(const std::string &name)
@@ -48,6 +47,5 @@ bool DummySvc::finalize()
 
 void DummySvc::doSomeThing()
 {
-    ++m_count;
-    LogInfo << m_count << " times are invoked" << std::endl;
+    LogInfo << ++m_count << " times are invoked" << std::endl;
 }
