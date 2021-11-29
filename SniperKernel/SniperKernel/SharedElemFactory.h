@@ -55,9 +55,7 @@ public:
 
 private:
    bool m_iStat;
-   bool m_fStat;
-   bool m_initialized;
-   bool m_finalized;
+   int m_nref;  //the number of users
    std::mutex m_mutex;
 };
 
@@ -65,9 +63,7 @@ template <typename DLEClass>
 SharedElem<DLEClass>::SharedElem(const std::string &name)
     : DLEClass(name),
       m_iStat(false),
-      m_fStat(false),
-      m_initialized(false),
-      m_finalized(false)
+      m_nref(0)
 {
    this->m_scope = "SharedElem-";
    SharedElemMgr::take_ownership(this);
@@ -82,10 +78,9 @@ template <typename DLEClass>
 bool SharedElem<DLEClass>::initialize()
 {
    const std::lock_guard<std::mutex> lock(m_mutex);
-   if (!m_initialized)
+   if (++m_nref == 1)  //do initialize when it's firstly used
    {
       m_iStat = DLEClass::initialize();
-      m_initialized = true;
    }
    return m_iStat;
 }
@@ -94,12 +89,11 @@ template <typename DLEClass>
 bool SharedElem<DLEClass>::finalize()
 {
    const std::lock_guard<std::mutex> lock(m_mutex);
-   if (!m_finalized)
+   if (--m_nref == 0)  //do finalize when it's not used any more
    {
-      m_fStat = DLEClass::finalize();
-      m_finalized = true;
+      return DLEClass::finalize();
    }
-   return m_fStat;
+   return true;
 }
 
 template <typename DLEClass>
