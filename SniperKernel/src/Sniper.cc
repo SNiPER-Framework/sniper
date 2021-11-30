@@ -39,6 +39,13 @@ namespace SniperLog
 namespace Sniper
 {
     std::vector<std::string> LoadDlls;
+    const std::string &objName();
+}
+
+const std::string &Sniper::objName()
+{
+    static const std::string _name{"Sniper"};
+    return _name;
 }
 
 DLElement *Sniper::create(const std::string &json_str)
@@ -99,7 +106,7 @@ void Sniper::setLogFile(const char *fname, bool append)
         mode |= std::ios::trunc;
     }
 
-    LogWarn << "Now using log file: " << fname << std::endl;
+    LogInfo << "Now using log file: " << fname << std::endl;
     SniperLog::Logger::lock();
     SniperLog::LogStream = new std::ofstream(fname, mode);
 
