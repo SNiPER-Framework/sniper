@@ -65,7 +65,7 @@ SharedElem<DLEClass>::SharedElem(const std::string &name)
       m_iStat(false),
       m_nref(0)
 {
-   this->m_scope = "SharedElem-";
+   this->m_scope = "Shared:";
    SharedElemMgr::take_ownership(this);
 }
 
