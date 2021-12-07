@@ -97,9 +97,13 @@ bool SharedElem<DLEClass>::finalize()
 }
 
 template <typename DLEClass>
-void SharedElem<DLEClass>::setParent(ExecUnit *)
+void SharedElem<DLEClass>::setParent(ExecUnit *par)
 {
-   //nothing to do
+   const std::lock_guard<std::mutex> lock(m_mutex);
+   if (this->m_par == nullptr)
+   {
+       this->m_par = par;
+   }
 }
 
 template <typename DLEClass>
