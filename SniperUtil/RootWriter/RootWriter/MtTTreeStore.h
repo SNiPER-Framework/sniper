@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -15,36 +15,25 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef WRITE_ROOT_ALG_H
-#define WRITE_ROOT_ALG_H
+#ifndef SNIPER_MT_TTREE_STORE_H
+#define SNIPER_MT_TTREE_STORE_H
 
-#include "SniperKernel/AlgBase.h"
-#include <atomic>
+#include "SniperKernel/IDataBlock.h"
+#include "RootWriter/MtTTree.h"
 
-class TTree;
-
-class WriteRootAlg : public AlgBase
+class MtTTreeStore : public IDataBlock
 {
-    public :
+public:
+    MtTTreeStore();
+    virtual ~MtTTreeStore();
 
-	WriteRootAlg(const std::string& name);
-	virtual ~WriteRootAlg();
+    std::vector<MtTTree *> &trees() { return m_trees; }
 
-	virtual bool initialize();
-	virtual bool execute();
-	virtual bool finalize();
+    void add(MtTTree *tree) { m_trees.emplace_back(tree); }
+    void clear() { m_trees.clear(); }
 
-    private :
-    static std::atomic_int m_globalCount;
-
-	int     m_iEvt;
-	int     m_iLeaf;
-	float   m_fLeaf;
-	double  m_dLeaf;
-
-	TTree*       m_tree1;
-	TTree*       m_tree2;
-	TTree*       m_tree3;
+private:
+    std::vector<MtTTree*> m_trees;
 };
 
 #endif

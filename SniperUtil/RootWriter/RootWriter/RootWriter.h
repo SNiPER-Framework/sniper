@@ -49,8 +49,8 @@ public:
     bool initialize();
     bool finalize();
 
-    TTree *bookTree(const std::string &fullPath, const std::string &title);
-    TNtuple *bookNtuple(const std::string &fullPath, const std::string &title, const std::string &leafs);
+    virtual TTree *bookTree(ExecUnit &domain, const std::string &fullPath, const std::string &title);
+    virtual TNtuple *bookNtuple(const std::string &fullPath, const std::string &title, const std::string &leafs);
 
     //get the TDirectory that associated to fullDirs
     TDirectory *getDir(const std::string &fullDirs);
@@ -58,10 +58,7 @@ public:
     template <class Type>
     bool attach(const std::string &fullDirs, Type *obj); //fullDirs: fKey/Dirs
 
-private:
-    //fKey: the tag of a file
-    bool addFile(const std::string &fKey, const std::string &fname);
-
+protected:
     //the property for fKey -> file path
     std::map<std::string, std::string> fmap;
     //fKey -> TFile

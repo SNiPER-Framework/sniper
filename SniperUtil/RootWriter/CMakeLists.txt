@@ -1,6 +1,7 @@
 if(USE_ROOT)
     # build cxx lib
-    add_library(RootWriterLib SHARED lib/RootWriter.cc)
+    file(GLOB sources CONFIGURE_DEPENDS lib/*.cc)
+    add_library(RootWriterLib SHARED ${sources})
     target_include_directories(RootWriterLib PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}> ${ROOT_INCLUDE_DIRS}
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>

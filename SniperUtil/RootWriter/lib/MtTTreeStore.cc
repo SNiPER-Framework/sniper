@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -15,36 +15,12 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef WRITE_ROOT_ALG_H
-#define WRITE_ROOT_ALG_H
+#include "RootWriter/MtTTreeStore.h"
 
-#include "SniperKernel/AlgBase.h"
-#include <atomic>
-
-class TTree;
-
-class WriteRootAlg : public AlgBase
+MtTTreeStore::MtTTreeStore()
 {
-    public :
+}
 
-	WriteRootAlg(const std::string& name);
-	virtual ~WriteRootAlg();
-
-	virtual bool initialize();
-	virtual bool execute();
-	virtual bool finalize();
-
-    private :
-    static std::atomic_int m_globalCount;
-
-	int     m_iEvt;
-	int     m_iLeaf;
-	float   m_fLeaf;
-	double  m_dLeaf;
-
-	TTree*       m_tree1;
-	TTree*       m_tree2;
-	TTree*       m_tree3;
-};
-
-#endif
+MtTTreeStore::~MtTTreeStore()
+{
+}
