@@ -51,7 +51,7 @@ Sniper::Context::Context()
         std::vector<std::string> keys{
             "ShowGreeting",
             "ShowSummary",
-            "WelcomeMsg"};
+            "GreetingMsg"};
 
         std::ifstream ifs(finit);
         auto json = SniperJSON::load(ifs);
