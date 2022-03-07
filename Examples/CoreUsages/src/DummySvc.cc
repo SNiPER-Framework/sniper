@@ -17,8 +17,11 @@
 
 #include "CoreUsages/DummySvc.h"
 #include "SniperKernel/SvcFactory.h"
+#include "SniperKernel/SharedElemFactory.h"
 
 DECLARE_SERVICE(DummySvc);
+
+DECLARE_CAN_BE_SHARED(DummySvc);
 
 DummySvc::DummySvc(const std::string &name)
     : SvcBase(name),
@@ -44,6 +47,5 @@ bool DummySvc::finalize()
 
 void DummySvc::doSomeThing()
 {
-    ++m_count;
-    LogInfo << m_count << " times are invoked" << std::endl;
+    LogInfo << ++m_count << " times are invoked" << std::endl;
 }

@@ -18,6 +18,7 @@
 #include "SniperKernel/AlgBase.h"
 #include "SniperKernel/ToolBase.h"
 #include "SniperPrivate/DLEFactory.h"
+#include "SniperPrivate/SharedElemMgr.h"
 
 AlgBase::AlgBase(const std::string &name)
     : DLElement(name)
@@ -26,11 +27,11 @@ AlgBase::AlgBase(const std::string &name)
 
 AlgBase::~AlgBase()
 {
-    for (auto &t : m_tools)
-    {
-        delete t.second;
-    }
     m_tools.clear();
+    for (auto it = m_vtools.rbegin(); it != m_vtools.rend(); ++it)
+    {
+        if (it->second) delete it->first;
+    }
 }
 
 ToolBase *AlgBase::createTool(const std::string &toolName)
@@ -41,16 +42,10 @@ ToolBase *AlgBase::createTool(const std::string &toolName)
         ToolBase *result = dynamic_cast<ToolBase *>(obj);
         if (result != 0)
         {
-            if (0 == this->findTool(result->objName()))
+            if (this->addTool(result) != nullptr)
             {
-                result->setParentAlg(this);
-                m_tools.insert(std::make_pair(result->objName(), result));
+                m_vtools.back().second = true;
                 return result;
-            }
-            else
-            {
-                LogError << "already exist tool: " << result->objName()
-                         << std::endl;
             }
         }
         else
@@ -59,6 +54,22 @@ ToolBase *AlgBase::createTool(const std::string &toolName)
                      << std::endl;
         }
         delete obj;
+    }
+    return nullptr;
+}
+
+ToolBase *AlgBase::addTool(ToolBase *tool)
+{
+    if (m_tools.find(tool->objName()) == m_tools.end())
+    {
+        tool->setParentAlg(this);
+        m_vtools.push_back(std::make_pair(tool, false));
+        m_tools.insert(std::make_pair(tool->objName(), tool));
+        return tool;
+    }
+    else
+    {
+        LogError << "already exist tool: " << tool->objName() << std::endl;
     }
     return nullptr;
 }
@@ -74,17 +85,26 @@ ToolBase *AlgBase::findTool(const std::string &toolName)
     return nullptr;
 }
 
+void AlgBase::setParent(ExecUnit *parent)
+{
+    DLElement::setParent(parent);
+    for (auto &it : m_vtools)
+    {
+        it.first->setParentAlg(this);
+    }
+}
+
 SniperJSON AlgBase::json()
 {
     SniperJSON j = DLElement::json();
 
-    if (!m_tools.empty())
+    if (!m_vtools.empty())
     {
         SniperJSON &jtools = j["tools"];
 
-        for (auto &t : m_tools)
+        for (auto &t : m_vtools)
         {
-            jtools.push_back(t.second->json());
+            jtools.push_back(t.first->json());
         }
     }
 
@@ -102,8 +122,17 @@ void AlgBase::eval(const SniperJSON &json)
         auto &tools = json["tools"];
         for (auto it = tools.vec_begin(); it != tools.vec_end(); ++it)
         {
-            ToolBase *tool = this->createTool((*it)["identifier"].get<std::string>());
-            tool->eval(*it);
+            auto idStr = (*it)["identifier"].get<std::string>();
+            if (idStr.front() != '[')
+            {
+                ToolBase *tool = this->createTool(idStr);
+                tool->eval(*it);
+            }
+            else
+            {
+                ToolBase *tool = dynamic_cast<ToolBase *>(SharedElemMgr::get(idStr));
+                this->addTool(tool);
+            }
         }
     }
 }

@@ -1,0 +1,83 @@
+{
+  "sniper": {
+    "LoadDlls": [ "libSniperCoreUsages.so" ],
+    "LogLevel": 3,
+    "SharedElems": [
+      {
+        "description": "a service instance that share by different Tasks",
+        "identifier": "SharedElem<DummySvc>/SharedSvc",
+        "index": 0,
+        "properties": {
+          "LogLevel": 3
+        }
+      }
+    ]
+  },
+  "description": "an example to share a service in multiple tasks",
+  "identifier": "TopTask/TopT",
+  "properties": {
+    "EvtMax": 5,
+    "LogLevel": 2
+  },
+  "services": [],
+  "algorithms": [
+    {
+      "description": "fire SubT1 for odd events and SubT2 for even events",
+      "identifier": "SubTasksAlg/SubTasksAlg"
+    }
+  ],
+  "subtasks": [
+    {
+      "identifier": "Task/SubT1",
+      "properties": {
+        "EvtMax": -1
+      },
+      "services": [
+        {
+          "identifier": "[0]:SharedElem<DummySvc>/SharedSvc"
+        }
+      ],
+      "algorithms": [
+        {
+          "identifier": "SvcAndToolAlg/alg1",
+          "properties": {
+            "OwnedTool": "tool1",
+            "SharedSvc": "SharedSvc"
+          },
+          "tools": [
+            {
+              "description": "a DummyTool instance owned by alg1",
+              "identifier": "DummyTool/tool1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "identifier": "Task/SubT2",
+      "properties": {
+        "EvtMax": -1
+      },
+      "services": [
+        {
+          "identifier": "[0]:SharedElem<DummySvc>/SharedSvc"
+        }
+      ],
+      "algorithms": [
+        {
+          "identifier": "SvcAndToolAlg/alg2",
+          "properties": {
+            "OwnedTool": "tool2",
+            "SharedSvc": "SharedSvc"
+          },
+          "tools": [
+            {
+              "description": "a DummyTool instance owned by alg2",
+              "identifier": "DummyTool/tool2"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

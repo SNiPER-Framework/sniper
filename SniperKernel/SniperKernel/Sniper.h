@@ -24,6 +24,9 @@ class DLElement;
 
 namespace Sniper
 {
+    //create a DLElement from a json string
+    DLElement *create(const std::string &json_str);
+    //eval a SNiPER job from a json config file
     DLElement *eval(const char *fname);
 
     void setLogLevel(int level);
@@ -32,7 +35,12 @@ namespace Sniper
     void setLogFile(const char *fname, bool append = false);
     void setLogStdout();
 
+    //load a dll into SNiPER
     void loadDll(const char *dll);
+    //the names of loaded DLLs (the return value is in json format)
+    std::string dlls();
+    //the names of valid DLEs (the return value is in json format)
+    std::string validTypes();
 
     namespace System
     {

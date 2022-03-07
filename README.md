@@ -20,7 +20,7 @@ Optional software:
 
 Note that in RHEL6 system (and derivatives) an old GCC 4.4.7 is used. To enable C++11 features, we recommend to use [devtoolset](http://linux.web.cern.ch/linux/devtoolset/) packages, where GCC 4.8 or better are available.
 
-## Build
+## Build and test
 
 Get the source code using `git clone https://github.com/SNiPER-Framework/sniper.git` or downloading a [ZIP file](https://github.com/SNiPER-Framework/sniper/archive/master.zip) from GitHub and extracting it.
 
@@ -37,7 +37,7 @@ $ cmake -DCMAKE_INSTALL_PREFIX=<install_dir> ..
 ```
 
 There are more cmake options we can use while configuring the build:
-* `-DDEBUG=OFF` : Turn debug options on. The default value is `OFF`.
+* `-DDEBUG=OFF` : Switch the debug option. The default value is `OFF`.
 * `-DUSE_PYTHON=ON` : Build the project with Python support. A pure C++ version will be built if it is turned off. The default value is `ON`.
     * `-DUSE_PYTHON2=OFF` : Turn it on to use Python2, otherwise Python3 is used by default.
 * `-DUSE_ROOT=ON` : Build components that depend on ROOT. The default value is `ON`.
@@ -49,7 +49,27 @@ Then build and install the result. Default build agent is `make` and you can cal
 $ cmake --build . --target install
 ```
 
-Your build is now installed to the directory you provided to CMake. For the best experience one needs to set the proper environment. This can be done with the help of shell script `share/sniper/setup.sh`, or, a modern solution, using an Environment Modules file `share/sniper/modulefiles/sniper`.
+Your build is now installed to the directory you provided to CMake. For the best experience one needs to set the proper environment. This can be done by a shell script file (bash):
+ 
+ ```
+ $ source <install_dir>/share/sniper/setup.sh
+ ```
+ 
+ Or, a modern solution, using an Environment Modules file `<install_dir>/share/sniper/modulefiles/sniper`.
+
+Suppose the environment has been set, then we can run the tests in the build directory:
+
+```
+$ make test
+```
+
+The test uses the components in `Examples`, which covers the main functionalities of SNiPER.
+
+## Configuration
+
+There is a default configure file (in json style) for the initialization of SNiPER: `<install_dir>/share/sniper/.init.json`
+
+We can assign a different configure file with the environment variable `$SNIPER_INIT_FILE`
 
 ## Contributing
 

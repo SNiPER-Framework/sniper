@@ -59,6 +59,7 @@ bool DLEFactory::book(const std::string& type, DLECreator creator)
 {
     Type2CreatorMap::iterator it = m_creators.find(type);
     if ( it == m_creators.end() ) {
+        m_types.push_back(type);
         m_creators.insert(std::make_pair(type, creator));
         return true;
     }

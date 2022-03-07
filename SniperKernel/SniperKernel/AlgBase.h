@@ -36,11 +36,15 @@ public:
 
     //for handling tools if needed
     ToolBase *createTool(const std::string &toolName);
+    ToolBase *addTool(ToolBase *tool);
     ToolBase *findTool(const std::string &toolName);
 
     //template version of retrieving a Tool instance
     template <typename Type>
     Type *tool(const std::string &toolName);
+
+    // set the parent (ExecUnit implementation) pointer
+    virtual void setParent(ExecUnit *parent) override;
 
     //Declared in base class DLElement
     //virtual bool initialize() = 0;
@@ -53,6 +57,7 @@ public:
 
 protected:
     std::map<std::string, ToolBase *> m_tools;
+    std::vector<std::pair<ToolBase *, bool>> m_vtools;
 };
 
 template <typename Type>

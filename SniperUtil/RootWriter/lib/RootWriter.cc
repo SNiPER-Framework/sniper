@@ -17,6 +17,7 @@
 
 #include "RootWriter/RootWriter.h"
 #include "SniperKernel/SvcFactory.h"
+#include "SniperKernel/SharedElemFactory.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TNtuple.h"
@@ -26,6 +27,7 @@
 #include <stdlib.h>
 
 DECLARE_SERVICE(RootWriter);
+DECLARE_CAN_BE_SHARED(RootWriter);
 
 RootWriter::RootWriter(const std::string &name)
     : SvcBase(name)
@@ -39,16 +41,24 @@ RootWriter::~RootWriter()
 
 bool RootWriter::initialize()
 {
-    for (auto &it : fmap)
+    for (auto &iKey2Path : fmap)
     {
-        auto iabs = m_absfile.find(it.second);
+        auto iabs = m_absfile.find(iKey2Path.second);
         if (iabs == m_absfile.end())
         {
-            addFile(it.first, it.second);
+            std::map<std::string, TFile *>::iterator iKey2File = m_key2file.find(iKey2Path.first);
+            if (iKey2File == m_key2file.end())
+            {
+                const char *preDir = gDirectory->GetPath();
+                auto fptr = TFile::Open(iKey2Path.second.c_str(), "RECREATE");
+                gDirectory->cd(preDir);
+                m_absfile[iKey2Path.second] = fptr;
+                m_key2file[iKey2Path.first] = fptr;
+            }
         }
         else
         {
-            m_key2file[it.first] = iabs->second;
+            m_key2file[iKey2Path.first] = iabs->second;
         }
     }
 
@@ -68,8 +78,10 @@ bool RootWriter::finalize()
     return true;
 }
 
-TTree *RootWriter::bookTree(const std::string &fullPath, const std::string &title)
+TTree *RootWriter::bookTree(ExecUnit & /*domain*/, const std::string &fullPath, const std::string &title)
 {
+    // param domain is only used in the context of multithreading computing 
+
     std::string::size_type lSeg = fullPath.rfind('/');
     std::string name = fullPath.substr(lSeg + 1, std::string::npos);
     std::string fullDirs = fullPath.substr(0, lSeg);
@@ -133,19 +145,4 @@ TDirectory *RootWriter::getDir(const std::string &fullPath)
     }
 
     return result;
-}
-
-bool RootWriter::addFile(const std::string &fKey, const std::string &fname)
-{
-    std::map<std::string, TFile *>::iterator it = m_key2file.find(fKey);
-    if (it == m_key2file.end())
-    {
-        const char *preDir = gDirectory->GetPath();
-        auto fptr = TFile::Open(fname.c_str(), "RECREATE");
-        m_key2file[fKey] = fptr;
-        m_absfile[fname] = fptr;
-        gDirectory->cd(preDir);
-        return true;
-    }
-    return false;
 }

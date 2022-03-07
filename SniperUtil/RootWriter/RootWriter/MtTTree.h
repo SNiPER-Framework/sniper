@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -15,36 +15,41 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef WRITE_ROOT_ALG_H
-#define WRITE_ROOT_ALG_H
+#ifndef SNIPER_MT_TTREE_H
+#define SNIPER_MT_TTREE_H
 
-#include "SniperKernel/AlgBase.h"
-#include <atomic>
+#include "TTree.h"
+#include <deque>
+#include <mutex>
 
-class TTree;
+class MtTTreeStore;
 
-class WriteRootAlg : public AlgBase
+class MtTTree : public TTree
 {
-    public :
+public:
+    friend class MtRootWriter;
 
-	WriteRootAlg(const std::string& name);
-	virtual ~WriteRootAlg();
+    MtTTree(const char *name, const char *title);
+    virtual ~MtTTree();
 
-	virtual bool initialize();
-	virtual bool execute();
-	virtual bool finalize();
+    virtual Int_t Fill() override;
 
-    private :
-    static std::atomic_int m_globalCount;
+    TTree* CloneEmptyTree();
 
-	int     m_iEvt;
-	int     m_iLeaf;
-	float   m_fLeaf;
-	double  m_dLeaf;
+    Int_t DoFillOne();
 
-	TTree*       m_tree1;
-	TTree*       m_tree2;
-	TTree*       m_tree3;
+private:
+    bool m_first;
+    TTree **m_dest;
+    MtTTreeStore *m_store;
+
+    std::deque<TTree *> m_freeSlots;
+    std::deque<TTree *> m_srcSlots;
+
+    std::mutex m_firstMutex;
+    std::mutex m_cloneMutex;
+    std::mutex m_freeMutex;
+    std::mutex m_srcMutex;
 };
 
 #endif

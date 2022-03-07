@@ -17,9 +17,11 @@
 
 #include "SniperKernel/Sniper.h"
 #include "SniperKernel/DLElement.h"
+#include "SniperKernel/SharedElemFactory.h"
 #include "SniperKernel/JSONParser.h"
 #include "SniperKernel/SniperLog.h"
 #include "SniperKernel/SniperException.h"
+#include "SniperPrivate/SharedElemMgr.h"
 #include "SniperPrivate/DLEFactory.h"
 #include <algorithm>
 #include <fstream>
@@ -37,6 +39,31 @@ namespace SniperLog
 namespace Sniper
 {
     std::vector<std::string> LoadDlls;
+    const std::string &objName();
+}
+
+const std::string &Sniper::objName()
+{
+    static const std::string _name{"Sniper"};
+    return _name;
+}
+
+DLElement *Sniper::create(const std::string &json_str)
+{
+    DLElement *pobj = nullptr;
+
+    auto json = SniperJSON::loads(json_str);
+    if (json.isMap())
+    {
+        pobj = DLEFactory::instance().create(json["identifier"].get<std::string>());
+        pobj->eval(json);
+    }
+    else
+    {
+        pobj = DLEFactory::instance().create(json_str);
+    }
+
+    return pobj;
 }
 
 DLElement *Sniper::eval(const char *fname)
@@ -79,7 +106,7 @@ void Sniper::setLogFile(const char *fname, bool append)
         mode |= std::ios::trunc;
     }
 
-    LogWarn << "Now using log file: " << fname << std::endl;
+    LogInfo << "Now using log file: " << fname << std::endl;
     SniperLog::Logger::lock();
     SniperLog::LogStream = new std::ofstream(fname, mode);
 
@@ -124,6 +151,18 @@ void Sniper::loadDll(const char *dll)
     }
 }
 
+std::string Sniper::dlls()
+{
+    return SniperJSON().from(Sniper::LoadDlls).str(-9);
+}
+
+std::string Sniper::validTypes()
+{
+    static auto& factory = DLEFactory::instance();
+    auto& types = factory.validTypes();
+    return SniperJSON().from(types).str(-9);
+}
+
 std::string Sniper::System::sysDate()
 {
     time_t t = time(0);
@@ -150,6 +189,15 @@ std::string Sniper::Config::json_str()
     {
         j["LoadDlls"].from(Sniper::LoadDlls);
     }
+    int nSharedObjs = SharedElemMgr::number_of_elements();
+    if (nSharedObjs > 0)
+    {
+        for (int i = 0; i < nSharedObjs; ++i)
+        {
+            auto pObj = dynamic_cast<SharedElemBase*>(SharedElemMgr::get(i));
+            j["SharedElems"].push_back(pObj->json_r());
+        }
+    }
 
     return j.str(-9);
 }
@@ -161,7 +209,8 @@ void Sniper::Config::eval(const std::string &json_str)
         "Colorful",
         "ShowTime",
         "LogFile",
-        "LoadDlls"};
+        "LoadDlls",
+        "SharedElems"};
 
     SniperJSON json(json_str);
     JSONParser jp(json);
@@ -187,5 +236,12 @@ void Sniper::Config::eval(const std::string &json_str)
     for (auto &dll : _dlls)
     {
         Sniper::loadDll(dll.c_str());
+    }
+
+    auto& _shared_elems = json["SharedElems"];
+    for (auto it = _shared_elems.vec_begin(); it != _shared_elems.vec_end(); ++it )
+    {
+        auto pobj = DLEFactory::instance().create((*it)["identifier"].get<std::string>());
+        pobj->eval(*it);
     }
 }

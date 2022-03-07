@@ -23,10 +23,11 @@
 
 DECLARE_ALGORITHM(WriteRootAlg);
 
+std::atomic_int WriteRootAlg::m_globalCount{0};
+
 WriteRootAlg::WriteRootAlg(const std::string& name)
     : AlgBase(name)
 {
-    m_iEvt = 0;
 }
 
 WriteRootAlg::~WriteRootAlg()
@@ -36,21 +37,22 @@ WriteRootAlg::~WriteRootAlg()
 bool WriteRootAlg::initialize()
 {
     SniperPtr<RootWriter> m_rw(this->getParent(), "RootWriter");
-    if ( ! m_rw.valid() ) {
-	LogError << "Failed to get RootWriter instance!" << std::endl;
-	return false;
+    if (!m_rw.valid())
+    {
+        LogError << "Failed to get RootWriter instance!" << std::endl;
+        return false;
     }
 
-    m_tree1 = new TTree("tree1", "Dummy Test");
-    m_tree1->Branch("iEvt",  &m_iEvt,  "iEvt/I");
+    m_tree1 = m_rw->bookTree(*m_par, "FILE1/tree1", "Dummy Test");
+    m_tree1->Branch("iEvt", &m_iEvt, "iEvt/I");
     m_tree1->Branch("iLeaf", &m_iLeaf, "iLeaf/I");
 
-    m_tree2 = new TTree("tree2", "Dummy Test");
-    m_tree2->Branch("iEvt",  &m_iEvt,  "iEvt/I");
+    m_tree2 = m_rw->bookTree(*m_par, "FILE2/tree2", "Dummy Test");
+    m_tree2->Branch("iEvt", &m_iEvt, "iEvt/I");
     m_tree2->Branch("fLeaf", &m_fLeaf, "fLeaf/F");
 
-    m_tree3 = new TTree("tree3", "Dummy Test");
-    m_tree3->Branch("iEvt",  &m_iEvt,  "iEvt/I");
+    m_tree3 = m_rw->bookTree(*m_par, "FILE1/tree3", "Dummy Test");
+    m_tree3->Branch("iEvt", &m_iEvt, "iEvt/I");
     m_tree3->Branch("dLeaf", &m_dLeaf, "dLeaf/D");
 
     /* Make RootWriter be in charge of the Trees, so that we can set the
@@ -59,10 +61,6 @@ bool WriteRootAlg::initialize()
      *                            "FILE2" : "output2.root" };
      *
      */
-    m_rw->attach("FILE1", m_tree1);
-    m_rw->attach("FILE1", m_tree3);
-
-    m_rw->attach("FILE2", m_tree2);
 
     LogInfo << " initialized successfully" << std::endl;
 
@@ -71,7 +69,7 @@ bool WriteRootAlg::initialize()
 
 bool WriteRootAlg::execute()
 {
-    ++m_iEvt;
+    m_iEvt = ++m_globalCount;
 
     //Valid log level: LogDebug, LogInfo, LogWarn, LogError, LogFatal
     LogDebug << "Processing event " << m_iEvt << std::endl;

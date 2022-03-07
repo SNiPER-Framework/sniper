@@ -15,36 +15,20 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef WRITE_ROOT_ALG_H
-#define WRITE_ROOT_ALG_H
+#ifndef SNIPER_SHARED_ELEM_MGR_H
+#define SNIPER_SHARED_ELEM_MGR_H
 
-#include "SniperKernel/AlgBase.h"
-#include <atomic>
+#include <string>
 
-class TTree;
+class DLElement;
 
-class WriteRootAlg : public AlgBase
+namespace SharedElemMgr
 {
-    public :
-
-	WriteRootAlg(const std::string& name);
-	virtual ~WriteRootAlg();
-
-	virtual bool initialize();
-	virtual bool execute();
-	virtual bool finalize();
-
-    private :
-    static std::atomic_int m_globalCount;
-
-	int     m_iEvt;
-	int     m_iLeaf;
-	float   m_fLeaf;
-	double  m_dLeaf;
-
-	TTree*       m_tree1;
-	TTree*       m_tree2;
-	TTree*       m_tree3;
-};
+    void take_ownership(DLElement *obj);
+    int number_of_elements();
+    DLElement *get(int index);
+    DLElement *get(const std::string &identifier);
+    void release();
+}
 
 #endif

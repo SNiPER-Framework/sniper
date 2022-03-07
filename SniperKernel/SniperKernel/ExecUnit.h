@@ -76,6 +76,7 @@ public:
     //the concrete task operations
     virtual bool config() = 0;
     virtual bool execute() = 0;
+    virtual bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly) = 0;
 
 protected:
     // the supervisors of services and algorithms

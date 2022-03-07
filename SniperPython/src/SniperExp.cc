@@ -60,6 +60,7 @@ void export_Sniper_Sniper()
 {
     using namespace boost::python;
 
+    def("create", &Sniper::create, return_value_policy<reference_existing_object>());
     def("eval", &Sniper::eval, return_value_policy<reference_existing_object>());
     def("setLogLevel", SniperExp::setLogLevel);
     def("setColorful", SniperExp::setColorful);
@@ -68,4 +69,6 @@ void export_Sniper_Sniper()
     def("setLogFile", SniperExp::setLogFile2);
     def("setLogStdout", &Sniper::setLogStdout);
     def("loadDll", &Sniper::loadDll);
+    def("dlls", &Sniper::dlls);
+    def("validTypes", &Sniper::validTypes);
 }

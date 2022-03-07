@@ -19,8 +19,10 @@
 #include "SniperKernel/JSONParser.h"
 #include "SniperKernel/SniperLog.h"
 #include "SniperKernel/Sniper.h"
+#include "SniperPrivate/SharedElemMgr.h"
 #include "SniperPrivate/IncidentMgr.h"
 #include "SniperPrivate/DLEFactory.h"
+#include "SniperConfig.h"
 #include <sstream>
 #include <fstream>
 #include <unistd.h>
@@ -33,13 +35,23 @@ Sniper::Context::Context()
       m_nt(0)
 {
     const char *finit = getenv("SNIPER_INIT_FILE");
-    std::string welcome{"Welcome to SNiPER"};
+    if(finit == nullptr) {
+        const char *dir = getenv("SNiPER_DIR");
+        if (dir != nullptr)
+        {
+            std::string sdir{dir};
+            static const std::string fdefault = sdir + "/share/sniper/.init.json";
+            finit = fdefault.c_str();
+        }
+    }
+
+    std::string welcome = "Welcome to SNiPER " + std::string{Sniper_VERSION};
     if (finit != nullptr)
     {
         std::vector<std::string> keys{
             "ShowGreeting",
             "ShowSummary",
-            "WelcomeMsg"};
+            "GreetingMsg"};
 
         std::ifstream ifs(finit);
         auto json = SniperJSON::load(ifs);
@@ -69,6 +81,7 @@ Sniper::Context::Context()
 
 Sniper::Context::~Context()
 {
+    SharedElemMgr::release();
     IncidentMgr::release();
     DLEFactory::release();
 

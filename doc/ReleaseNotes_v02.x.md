@@ -16,3 +16,12 @@ This is the release notes for the SNiPER project.
   - Add an executable sniper.exe
   - Configure a job from a json file
   - SniperTimer and SniperProfiling for performance testing
+
+## v2.1
+
+- Changes
+  - an additional parameter is required when we book a TTree with RootWriter, which is necessary for thread-safety
+- New features
+  - Better multithreading computing supports, includs:
+    - a DLElement inherited class instance can be easily shared by multiple tasks running in different threads
+    - a workable thread-safe RootWriter for TTrees

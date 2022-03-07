@@ -162,6 +162,9 @@ bool SniperProfiling::finalize()
     delete m_beginAlgHdl;
     delete m_endAlgHdl;
 
+    //hold the lock so that other logs will not insert into the profiling messages in multi-threading context 
+    SniperLog::Logger::lock();
+
     //print statical times
     *SniperLog::LogStream << "########################## SniperProfiling ##########################\n";
 
@@ -193,6 +196,9 @@ bool SniperProfiling::finalize()
                           << std::setw(15) << m_evtTimer->rms()
                           << std::endl << std::defaultfloat;
     *SniperLog::LogStream << "#####################################################################\n";
+
+    // release the lock for logs
+    SniperLog::Logger::unlock();
 
     delete m_evtTimer;
     for (auto& it : m_algTimer)
