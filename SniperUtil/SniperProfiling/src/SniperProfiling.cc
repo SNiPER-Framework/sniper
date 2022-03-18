@@ -1,3 +1,20 @@
+/* Copyright (C) 2018-2021
+   Institute of High Energy Physics and Shandong University
+   This file is part of SNiPER.
+
+   SNiPER is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   SNiPER is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
+
 #include <unistd.h>
 #include <iomanip>
 #include <iostream>
@@ -29,7 +46,7 @@ struct sp::BeginEvtHandler : public IIncidentHandler
 };
 
 bool sp::BeginEvtHandler::handle(Incident &incident)
-{   
+{
     h_evtTimer->start();
 
     return true;
@@ -162,7 +179,7 @@ bool SniperProfiling::finalize()
     delete m_beginAlgHdl;
     delete m_endAlgHdl;
 
-    //hold the lock so that other logs will not insert into the profiling messages in multi-threading context 
+    //hold the lock so that other logs will not insert into the profiling messages in multi-threading context
     SniperLog::Logger::lock();
 
     //print statical times
@@ -172,8 +189,8 @@ bool SniperProfiling::finalize()
     *SniperLog::LogStream << std::setiosflags(std::ios::fixed|std::ios::showpoint)
                           << std::setprecision(5)
                           << std::setw(15) << std::left << "Name"
-                          << std::setw(15) << "Num of calls" 
-                          << std::setw(15) << "Total(ms)" 
+                          << std::setw(15) << "Num of calls"
+                          << std::setw(15) << "Total(ms)"
                           << std::setw(15) << "Mean(ms)"
                           << std::setw(15) << "RMS(ms)"
                           << std::endl;
@@ -203,7 +220,7 @@ bool SniperProfiling::finalize()
     delete m_evtTimer;
     for (auto& it : m_algTimer)
         delete it.second;
-    
+
     LogInfo << "finalized successfully" << std::endl;
     return true;
 }
