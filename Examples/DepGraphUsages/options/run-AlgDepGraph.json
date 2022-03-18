@@ -1,0 +1,82 @@
+{
+  "sniper": {
+    "LoadDlls": [ "libDepGraphUsages.so" , "libAlgGraphLib.so"],
+    "LogLevel": 2
+  },
+  "description": "an example to use algorithm dependence graph",
+  "identifier": "AlgGraph/g",
+  "properties": {
+    "EvtMax": 2,
+    "LogLevel": 2
+  },
+  "services": [],
+  "algorithms": [],
+  "nodes": [
+    {
+      "identifier": "TestAlg/algA",
+      "properties": {
+        "INFO": "I'm algA"
+      }
+    },
+    {
+      "identifier": "TestAlg/algB",
+      "properties": {
+        "INFO": "I'm algB"
+      }
+    },
+    {
+      "identifier": "TestAlg/algC",
+      "properties": {
+        "INFO": "I'm algC"
+      }
+    },
+    {
+      "identifier": "TestAlg/algD",
+      "properties": {
+        "INFO": "I'm algD"
+      }
+    },
+    {
+      "identifier": "TestAlg/algE",
+      "properties": {
+        "INFO": "I'm algE"
+      }
+    },
+    {
+      "identifier": "TestAlg/algF",
+      "properties": {
+        "INFO": "I'm algF"
+      }
+    },
+    {
+      "identifier": "TestAlg/algG",
+      "properties": {
+        "INFO": "I'm algG"
+      }
+    },
+    {
+      "identifier": "TestAlg/algH",
+      "properties": {
+        "INFO": "I'm algH"
+      }
+    },
+    {
+      "identifier": "TestAlg/algI",
+      "properties": {
+        "INFO": "I'm algI"
+      }
+    }
+  ],
+  "edges": [
+    "algA-algB",
+    "algA-algE",
+    "algB-algC",
+    "algB-algD",
+    "algC-algH",
+    "algD-algG",
+    "algE-algF",
+    "algF-algG",
+    "algG-algH",
+    "algH-algI"
+  ]
+}
