@@ -31,3 +31,8 @@ void export_Sniper_DagTask()
         .def("done", &DagTask::done)
     ;
 }
+
+BOOST_PYTHON_MODULE(libDagTask)
+{
+    export_Sniper_DagTask();
+}
