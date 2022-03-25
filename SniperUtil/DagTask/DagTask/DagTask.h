@@ -15,27 +15,28 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef SNIPER_ALG_GRAPH_H
-#define SNIPER_ALG_GRAPH_H
+#ifndef SNIPER_DAG_TASK_H
+#define SNIPER_DAG_TASK_H
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 
-#include "AlgGraphBase.h"
+#include "SniperKernel/TopTask.h"
 
 struct AlgNode;
 class AlgBase;
 class SniperJSON;
 
-class AlgGraph : public AlgGraphBase {
+class DagTask final : public TopTask {
 
 public:
-    AlgGraph(const std::string& name);
-    virtual ~AlgGraph();
+    DagTask(const std::string& name);
+    virtual ~DagTask();
 
-    AlgBase* insertNode(const std::string& alg) override;
-    bool makeEdge(const std::string& alg1, const std::string& alg2) override;
-    bool done() override;
+    AlgBase* insertNode(const std::string& alg);
+    bool makeEdge(const std::string& alg1, const std::string& alg2);
+    bool done();
 
     //the json value of this object
     virtual SniperJSON json() override;

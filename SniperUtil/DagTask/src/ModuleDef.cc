@@ -15,13 +15,17 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "AlgGraph/AlgGraphBase.h"
+#include <boost/python.hpp>
 
-AlgGraphBase::AlgGraphBase(const std::string& name)
-        : Task(name) {
-
+boost::python::object &BoostPyJsonModule()
+{
+    static auto jmod = new boost::python::object(boost::python::import("json"));
+    return *jmod;
 }
 
-AlgGraphBase::~AlgGraphBase() {
+void export_Sniper_DagTask();
 
+BOOST_PYTHON_MODULE(libDagTask)
+{
+    export_Sniper_DagTask();
 }

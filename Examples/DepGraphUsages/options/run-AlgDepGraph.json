@@ -1,67 +1,68 @@
 {
   "sniper": {
-    "LoadDlls": [ "libDepGraphUsages.so" , "libAlgGraphLib.so"],
+    "LoadDlls": [ "libDepGraphUsages.so", "libDagTaskLib.so" ],
     "LogLevel": 2
   },
   "description": "an example to use algorithm dependence graph",
-  "identifier": "AlgGraph/g",
+  "identifier": "DagTask/g",
   "properties": {
     "EvtMax": 2,
     "LogLevel": 2
   },
   "services": [],
   "algorithms": [],
+  "subtasks": [],
   "nodes": [
     {
-      "identifier": "TestAlg/algA",
+      "identifier": "GraphTestAlg/algA",
       "properties": {
         "INFO": "I'm algA"
       }
     },
     {
-      "identifier": "TestAlg/algB",
+      "identifier": "GraphTestAlg/algB",
       "properties": {
         "INFO": "I'm algB"
       }
     },
     {
-      "identifier": "TestAlg/algC",
+      "identifier": "GraphTestAlg/algC",
       "properties": {
         "INFO": "I'm algC"
       }
     },
     {
-      "identifier": "TestAlg/algD",
+      "identifier": "GraphTestAlg/algD",
       "properties": {
         "INFO": "I'm algD"
       }
     },
     {
-      "identifier": "TestAlg/algE",
+      "identifier": "GraphTestAlg/algE",
       "properties": {
         "INFO": "I'm algE"
       }
     },
     {
-      "identifier": "TestAlg/algF",
+      "identifier": "GraphTestAlg/algF",
       "properties": {
         "INFO": "I'm algF"
       }
     },
     {
-      "identifier": "TestAlg/algG",
+      "identifier": "GraphTestAlg/algG",
       "properties": {
         "INFO": "I'm algG"
       }
     },
     {
-      "identifier": "TestAlg/algH",
+      "identifier": "GraphTestAlg/algH",
       "properties": {
         "INFO": "I'm algH"
       }
     },
     {
-      "identifier": "TestAlg/algI",
+      "identifier": "GraphTestAlg/algI",
       "properties": {
         "INFO": "I'm algI"
       }

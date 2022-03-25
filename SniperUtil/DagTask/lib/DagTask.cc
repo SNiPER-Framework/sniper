@@ -16,31 +16,29 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <queue>
-#include <vector>
 
 #include "SniperKernel/AlgBase.h"
+#include "SniperKernel/DeclareDLE.h"
 #include "SniperKernel/DLElement.h"
-#include "SniperKernel/ExecUnit.h"
 #include "SniperKernel/SniperJSON.h"
 #include "SniperKernel/SniperLog.h"
-#include "SniperKernel/SvcFactory.h"
 #include "SniperPrivate/DLEFactory.h"
-#include "SniperPrivate/SharedElemMgr.h"
-#include "AlgGraph/AlgGraph.h"
+#include "DagTask/DagTask.h"
+
 #include "AlgNode.h"
 
-DECLARE_SERVICE(AlgGraph);
+SNIPER_DECLARE_DLE(DagTask);
 
-AlgGraph::AlgGraph(const std::string& name) : AlgGraphBase(name) {
-    m_tag = "AlgGraph";
+DagTask::DagTask(const std::string& name) : TopTask(name) {
+    m_tag = "DagTask";
 }
 
-AlgGraph::~AlgGraph() {
+DagTask::~DagTask() {
     for (auto p : m_algPtr)
         delete p.second;
 }
 
-AlgBase* AlgGraph::insertNode(const std::string& alg) {
+AlgBase* DagTask::insertNode(const std::string& alg) {
     std::string name;
     // Create AlgBase* to return
     DLElement* obj = DLEFactory::instance().create(alg);
@@ -56,7 +54,7 @@ AlgBase* AlgGraph::insertNode(const std::string& alg) {
     return nullptr;
 }
 
-bool AlgGraph::makeEdge(const std::string& alg1, const std::string& alg2) {
+bool DagTask::makeEdge(const std::string& alg1, const std::string& alg2) {
     if (m_algPtr.find(alg1) == m_algPtr.end() || m_algPtr.find(alg2) == m_algPtr.end()) {
         LogError << "Can't create edge between " << alg1 << "and" << alg2
                  << ". Please check algs has been inserted." << std::endl;
@@ -69,8 +67,8 @@ bool AlgGraph::makeEdge(const std::string& alg1, const std::string& alg2) {
     return true;
 }
 
-SniperJSON AlgGraph::json() {
-    SniperJSON j = Task::json();
+SniperJSON DagTask::json() {
+    SniperJSON j = TopTask::json();
     j["ordered_keys"].push_back(SniperJSON().from("nodes"));
     j["ordered_keys"].push_back(SniperJSON().from("edges"));
     if (!m_nodes.empty()) {
@@ -84,13 +82,14 @@ SniperJSON AlgGraph::json() {
                                  + '-' + e->realAlg->objName() + '"');
         }
     }
-    j.erase("algorithms");
+    auto& jalgs = j["algorithms"];
+    jalgs = SniperJSON::loads("[]");
     return j;
 }
 
-void AlgGraph::eval(const SniperJSON& json) {
+void DagTask::eval(const SniperJSON& json) {
     // eval for base class
-    Task::eval(json);
+    TopTask::eval(json);
 
     // eval nodes and edges
     auto& nodes = json["nodes"];
@@ -114,36 +113,36 @@ void AlgGraph::eval(const SniperJSON& json) {
     this->done();
 }
 
-bool AlgGraph::config() {
-    bool stat = Task::config();
+bool DagTask::config() {
+    bool stat = TopTask::config();
     if (!stat)
         m_snoopy.setErr();
     return stat;
 }
 
-bool AlgGraph::initialize() {
-    bool stat = Task::initialize();
+bool DagTask::initialize() {
+    bool stat = TopTask::initialize();
     if (!stat)
         m_snoopy.setErr();
     return stat;
 }
 
-bool AlgGraph::finalize() {
-    bool stat = Task::finalize();
+bool DagTask::finalize() {
+    bool stat = TopTask::finalize();
     if (!stat)
         m_snoopy.setErr();
     return stat;
 }
 
-bool AlgGraph::execute() {
+bool DagTask::execute() {
 
-    bool stat = Task::execute();
+    bool stat = TopTask::execute();
     if (!stat)
         m_snoopy.setErr();
     return stat;
 }
 
-bool AlgGraph::done() {
+bool DagTask::done() {
     bool flag = true;
     // The real order in which the algorithm is executed.
     std::vector<AlgNode*> realSeq;
@@ -156,7 +155,7 @@ bool AlgGraph::done() {
     return flag;
 }
 
-void AlgGraph::getSequence(std::vector<AlgNode*>& realSeq) {
+void DagTask::getSequence(std::vector<AlgNode*>& realSeq) {
     // AlgNodes that can be traversed now.
     std::queue<AlgNode*> zeroInQue;
     // Get starting node

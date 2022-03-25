@@ -1,4 +1,4 @@
-/* Copyright (C) 2021
+/* Copyright (C) 2018-2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
 
@@ -15,35 +15,19 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "DepGraphUsages/TestAlg.h"
-#include "SniperKernel/AlgFactory.h"
+#include <boost/python.hpp>
+#include "DagTask/DagTask.h"
+#include "SniperKernel/AlgBase.h"
 
-DECLARE_ALGORITHM(TestAlg);
+namespace bp = boost::python;
 
-TestAlg::TestAlg(const std::string &name)
-    : AlgBase(name)
+void export_Sniper_DagTask()
 {
-    declProp("INFO", m_info);
-}
-
-TestAlg::~TestAlg()
-{
-}
-
-bool TestAlg::initialize()
-{
-    LogInfo << "initialized successfully" << std::endl;
-    return true;
-}
-
-bool TestAlg::execute()
-{
-    LogDebug << m_info << std::endl;
-    return true;
-}
-
-bool TestAlg::finalize()
-{
-    LogInfo << "finalized successfully" << std::endl;
-    return true;
+    bp::class_<DagTask, bp::bases<TopTask>, boost::noncopyable>
+        ("DagTask", bp::init<const std::string&>())
+        .def("insertNode", &DagTask::insertNode,
+                bp::return_value_policy<bp::reference_existing_object>())
+        .def("makeEdge", &DagTask::makeEdge)
+        .def("done", &DagTask::done)
+    ;
 }

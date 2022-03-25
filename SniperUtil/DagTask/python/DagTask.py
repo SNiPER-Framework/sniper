@@ -2,5 +2,5 @@
 # -*- coding:utf-8 -*-
 
 import Sniper
-Sniper.loadDll("libAlgGraphLib.so")
+Sniper.loadDll("libDagTaskLib.so")
 del Sniper

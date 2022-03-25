@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
 
@@ -15,24 +15,23 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef SNIPER_ALG_GRAPH_BASE_H
-#define SNIPER_ALG_GRAPH_BASE_H
+#ifndef SNIPER_GRAPH_TEST_ALG_H
+#define SNIPER_GRAPH_TEST_ALG_H
 
-#include <string>
+#include "SniperKernel/AlgBase.h"
 
-#include "SniperKernel/Task.h"
-
-class AlgBase;
-
-class AlgGraphBase : public Task {
-
+class GraphTestAlg: public AlgBase
+{
 public:
-    AlgGraphBase(const std::string& name);
-    virtual ~AlgGraphBase();
+    GraphTestAlg(const std::string &name);
+    ~GraphTestAlg();
 
-    virtual AlgBase* insertNode(const std::string& alg) = 0;
-    virtual bool makeEdge(const std::string& alg1, const std::string& alg2) = 0;
-    virtual bool done() = 0;
+    bool initialize();
+    bool execute();
+    bool finalize();
+
+private:
+    std::string m_info;
 };
 
 #endif
