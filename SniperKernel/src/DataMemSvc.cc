@@ -33,17 +33,17 @@ DataMemSvc::~DataMemSvc()
 
 IDataBlock* DataMemSvc::find(const std::string& name)
 {
-    std::map<std::string, IDataBlock*>::iterator it = m_mems.find(name);
+    auto it = m_mems.find(name);
     if ( it != m_mems.end() ) {
-        return it->second;
+        return it->second.first;
     }
     return (IDataBlock*)0;
 }
 
-bool DataMemSvc::regist(const std::string& name, IDataBlock* mem)
+bool DataMemSvc::regist(const std::string& name, IDataBlock* mem, bool owned)
 {
     if ( m_mems.find(name) == m_mems.end() ) {
-        m_mems.insert(std::make_pair(name, mem));
+        m_mems.insert(std::make_pair(name, std::make_pair(mem, owned)));
         return true;
     }
     LogError << name << " is already registered here!" << std::endl;
@@ -57,10 +57,10 @@ bool DataMemSvc::initialize()
 
 bool DataMemSvc::finalize()
 {
-    std::map<std::string, IDataBlock*>::iterator it = m_mems.begin();
-    while ( it != m_mems.end() ) {
-        delete it->second;
-        ++it;
+    for (auto &it : m_mems)
+    {
+        //delete the DataBlock if this service owns it
+        if (it.second.second) delete it.second.first;
     }
     m_mems.clear();
 

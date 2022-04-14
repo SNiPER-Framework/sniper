@@ -33,7 +33,7 @@ class DataMemSvc : public SvcBase
         IDataBlock*  find(const std::string& name);
 
         //regist a DataBlock to this service
-        bool regist(const std::string& name, IDataBlock* mem);
+        bool regist(const std::string& name, IDataBlock* mem, bool owned = true);
 
         //initialize and finalize
         bool initialize();
@@ -42,7 +42,7 @@ class DataMemSvc : public SvcBase
 
     private :
 
-        std::map<std::string, IDataBlock*> m_mems;
+        std::map<std::string, std::pair<IDataBlock*, bool>> m_mems;
 };
 
 #endif
