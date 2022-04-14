@@ -39,6 +39,6 @@ DLElement *SniperCreateDLE_T(const std::string &name)
 }
 
 #define SNIPER_DECLARE_DLE(DLEClass) \
-SniperBookDLE SniperBook_##DLEClass##_(#DLEClass, &SniperCreateDLE_T<DLEClass>)
+static SniperBookDLE SniperBook_##DLEClass##_(#DLEClass, &SniperCreateDLE_T<DLEClass>)
 
 #endif
