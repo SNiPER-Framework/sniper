@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
     import DagTask
     g = DagTask.DagTask("g")
-    g.setEvtMax(2)
+    g.setEvtMax(5)
     g.setDescription("an example to use algorithm dependence graph")
 
 

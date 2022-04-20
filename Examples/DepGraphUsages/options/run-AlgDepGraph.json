@@ -6,7 +6,7 @@
   "description": "an example to use algorithm dependence graph",
   "identifier": "DagTask/g",
   "properties": {
-    "EvtMax": 2,
+    "EvtMax": 5,
     "LogLevel": 2
   },
   "services": [],
