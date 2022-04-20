@@ -1,4 +1,4 @@
-/* Copyright (C) 2021
+/* Copyright (C) 2018-2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
 
@@ -15,35 +15,12 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "DepGraphUsages/GraphTestAlg.h"
-#include "SniperKernel/AlgFactory.h"
+#include "SniperPrivate/AlgNode.h"
 
-DECLARE_ALGORITHM(GraphTestAlg);
-
-GraphTestAlg::GraphTestAlg(const std::string &name)
-    : AlgBase(name)
-{
-    declProp("INFO", m_info);
+AlgNode::AlgNode(AlgBase* alg) : realAlg(alg) {
+    preNum = 0;
 }
 
-GraphTestAlg::~GraphTestAlg()
-{
-}
+AlgNode::~AlgNode() {
 
-bool GraphTestAlg::initialize()
-{
-    LogInfo << "initialized successfully" << std::endl;
-    return true;
-}
-
-bool GraphTestAlg::execute()
-{
-    LogDebug << m_info << std::endl;
-    return true;
-}
-
-bool GraphTestAlg::finalize()
-{
-    LogInfo << "finalized successfully" << std::endl;
-    return true;
 }

@@ -18,14 +18,13 @@
 #include <queue>
 
 #include "SniperKernel/AlgBase.h"
+#include "SniperKernel/DagTask.h"
 #include "SniperKernel/DeclareDLE.h"
 #include "SniperKernel/DLElement.h"
 #include "SniperKernel/SniperJSON.h"
 #include "SniperKernel/SniperLog.h"
+#include "SniperPrivate/AlgNode.h"
 #include "SniperPrivate/DLEFactory.h"
-#include "DagTask/DagTask.h"
-
-#include "AlgNode.h"
 
 SNIPER_DECLARE_DLE(DagTask);
 

@@ -1,6 +1,6 @@
 {
   "sniper": {
-    "LoadDlls": [ "libDepGraphUsages.so", "libDagTaskLib.so" ],
+    "LoadDlls": [ "libDepGraphUsages.so" ],
     "LogLevel": 2
   },
   "description": "an example to use algorithm dependence graph",

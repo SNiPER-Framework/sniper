@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
 
@@ -15,24 +15,35 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include <boost/python.hpp>
-#include "DagTask/DagTask.h"
-#include "SniperKernel/AlgBase.h"
+#include "GraphTestAlg.h"
+#include "SniperKernel/AlgFactory.h"
 
-namespace bp = boost::python;
+DECLARE_ALGORITHM(GraphTestAlg);
 
-void export_Sniper_DagTask()
+GraphTestAlg::GraphTestAlg(const std::string &name)
+    : AlgBase(name)
 {
-    bp::class_<DagTask, bp::bases<TopTask>, boost::noncopyable>
-        ("DagTask", bp::init<const std::string&>())
-        .def("insertNode", &DagTask::insertNode,
-                bp::return_value_policy<bp::reference_existing_object>())
-        .def("makeEdge", &DagTask::makeEdge)
-        .def("done", &DagTask::done)
-    ;
+    declProp("INFO", m_info);
 }
 
-BOOST_PYTHON_MODULE(libDagTask)
+GraphTestAlg::~GraphTestAlg()
 {
-    export_Sniper_DagTask();
+}
+
+bool GraphTestAlg::initialize()
+{
+    LogInfo << "initialized successfully" << std::endl;
+    return true;
+}
+
+bool GraphTestAlg::execute()
+{
+    LogDebug << m_info << std::endl;
+    return true;
+}
+
+bool GraphTestAlg::finalize()
+{
+    LogInfo << "finalized successfully" << std::endl;
+    return true;
 }

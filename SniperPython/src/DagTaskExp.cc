@@ -15,12 +15,19 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "AlgNode.h"
+#include <boost/python.hpp>
+#include "SniperKernel/AlgBase.h"
+#include "SniperKernel/DagTask.h"
 
-AlgNode::AlgNode(AlgBase* alg) : realAlg(alg) {
-    preNum = 0;
-}
+namespace bp = boost::python;
 
-AlgNode::~AlgNode() {
-
+void export_Sniper_DagTask()
+{
+    bp::class_<DagTask, bp::bases<TopTask>, boost::noncopyable>
+        ("DagTask", bp::init<const std::string&>())
+        .def("insertNode", &DagTask::insertNode,
+                bp::return_value_policy<bp::reference_existing_object>())
+        .def("makeEdge", &DagTask::makeEdge)
+        .def("done", &DagTask::done)
+    ;
 }

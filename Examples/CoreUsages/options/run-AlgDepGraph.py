@@ -6,13 +6,9 @@ if __name__ == "__main__":
     import Sniper
     Sniper.setLogLevel(2)
 
-    import DagTask
-    g = DagTask.DagTask("g")
+    g = Sniper.DagTask("g")
     g.setEvtMax(5)
     g.setDescription("an example to use algorithm dependence graph")
-
-
-    import DepGraphUsages
 
     # An algorithm dependence graph:
     #     C ------
@@ -22,8 +18,9 @@ if __name__ == "__main__":
     # A   D ----    /
     #  \         \ /
     #   E -- F -- G
-    # One correct sequence: A-B-E-C-D-F-G-H-I
+    # One possible correct sequence: A-B-E-C-D-F-G-H-I
 
+    import SniperCoreUsages
     algI = g.insertNode("GraphTestAlg/algI")
     algH = g.insertNode("GraphTestAlg/algH")
     algG = g.insertNode("GraphTestAlg/algG")
