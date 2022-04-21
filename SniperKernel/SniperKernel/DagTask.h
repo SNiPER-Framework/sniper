@@ -22,32 +22,26 @@
 #include <unordered_map>
 #include <vector>
 
-#include "SniperKernel/TopTask.h"
+#include "SniperKernel/DagBase.h"
 
 struct AlgNode;
-class AlgBase;
+//class AlgBase;
 class SniperJSON;
 
-class DagTask final : public TopTask {
+class DagTask final : public DagBase {
 
 public:
     DagTask(const std::string& name);
     virtual ~DagTask();
 
-    AlgBase* insertNode(const std::string& alg);
-    bool makeEdge(const std::string& alg1, const std::string& alg2);
-    bool done();
+    virtual AlgBase* insertNode(const std::string& alg) override;
+    virtual bool makeEdge(const std::string& alg1, const std::string& alg2) override;
+    virtual bool done() override;
 
     //the json value of this object
     virtual SniperJSON json() override;
     // eval this graph object from json
     virtual void eval(const SniperJSON &json) override;
-
-protected:
-    virtual bool config() override;
-    virtual bool initialize() override;
-    virtual bool finalize() override;
-    virtual bool execute() override;
 
 private:
     // Record the sequence of nodes being inserted.

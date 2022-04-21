@@ -28,7 +28,7 @@
 
 SNIPER_DECLARE_DLE(DagTask);
 
-DagTask::DagTask(const std::string& name) : TopTask(name) {
+DagTask::DagTask(const std::string& name) : DagBase(name) {
     m_tag = "DagTask";
 }
 
@@ -110,35 +110,6 @@ void DagTask::eval(const SniperJSON& json) {
     }
 
     this->done();
-}
-
-bool DagTask::config() {
-    bool stat = TopTask::config();
-    if (!stat)
-        m_snoopy.setErr();
-    return stat;
-}
-
-bool DagTask::initialize() {
-    bool stat = TopTask::initialize();
-    if (!stat)
-        m_snoopy.setErr();
-    return stat;
-}
-
-bool DagTask::finalize() {
-    bool stat = TopTask::finalize();
-    if (!stat)
-        m_snoopy.setErr();
-    return stat;
-}
-
-bool DagTask::execute() {
-
-    bool stat = TopTask::execute();
-    if (!stat)
-        m_snoopy.setErr();
-    return stat;
 }
 
 bool DagTask::done() {

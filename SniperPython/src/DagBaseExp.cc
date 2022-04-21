@@ -17,17 +17,37 @@
 
 #include <boost/python.hpp>
 #include "SniperKernel/AlgBase.h"
-#include "SniperKernel/DagTask.h"
+#include "SniperKernel/DagBase.h"
 
 namespace bp = boost::python;
 
-void export_Sniper_DagTask()
+struct DagBaseWrap : DagBase, bp::wrapper<DagBase>
 {
-    bp::class_<DagTask, bp::bases<DagBase>, boost::noncopyable>
-        ("DagTask", bp::init<const std::string&>())
-        .def("insertNode", &DagTask::insertNode,
+    DagBaseWrap(const std::string& name)
+        : DagBase(name)
+    {
+    }
+
+    AlgBase* insertNode(const std::string& alg) {
+        return this->get_override("insertNode")(alg);
+    }
+
+    bool makeEdge(const std::string& alg1, const std::string& alg2) {
+        return this->get_override("makeEdge")(alg1, alg2);
+    }
+
+    bool done() {
+        return this->get_override("done")();
+    }
+};
+
+void export_Sniper_DagBase()
+{
+    bp::class_<DagBaseWrap, bp::bases<TopTask>, boost::noncopyable>
+        ("DagBase", bp::init<const std::string&>())
+        .def("insertNode", bp::pure_virtual(&DagBase::insertNode),
                 bp::return_value_policy<bp::reference_existing_object>())
-        .def("makeEdge", &DagTask::makeEdge)
-        .def("done", &DagTask::done)
+        .def("makeEdge", bp::pure_virtual(&DagBase::makeEdge))
+        .def("done", bp::pure_virtual(&DagBase::done))
     ;
 }
