@@ -25,7 +25,6 @@
 #include "SniperKernel/DagBase.h"
 
 struct AlgNode;
-//class AlgBase;
 class SniperJSON;
 
 class DagTask final : public DagBase {
