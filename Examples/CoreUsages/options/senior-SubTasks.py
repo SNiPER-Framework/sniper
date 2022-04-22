@@ -18,7 +18,9 @@ if __name__ == "__main__":
     t1.createAlg("DummyAlg").property("INFO").set("SubT1 execute ")
 
     t2 = top.createTask("Task/SubT2")
-    t2.createSvc("DataIOSvc")
+    md = t2.createSvc("MappedDataSvc")
+    md.regist(t1, "output", "input")
+    md.regist(t1, "output", "output")
     t2.createAlg("DummyAlg").property("INFO").set("SubT2 execute ")
 
     top.show()

@@ -42,7 +42,7 @@ bool SubTasksAlg::execute()
 {
     LogDebug << "Begin Event " << m_count << std::endl;
 
-    if (m_count % 2 != 0)
+    if (m_count % 2 == 0)
     {
         LogDebug << "fire sub-task SubT1" << std::endl;
         m_i1.fire(*m_par);
