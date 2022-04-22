@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2021
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
 
@@ -15,41 +15,23 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef SNIPER_PROFILING_H
-#define SNIPER_PROFILING_H
+#ifndef SNIPER_GRAPH_TEST_ALG_H
+#define SNIPER_GRAPH_TEST_ALG_H
 
-#include "SniperKernel/SvcBase.h"
-#include "SniperKernel/SniperTimerSvc.h"
-#include <vector>
-#include <map>
-#include <string>
+#include "SniperKernel/AlgBase.h"
 
-namespace SnierProfilingNS
-{
-    struct BeginEvtHandler;
-    struct EndEvtHandler;
-    struct BeginAlgHandler;
-    struct EndAlgHandler;
-}
-namespace sp = SnierProfilingNS;
-class SniperProfiling : public SvcBase
+class GraphTestAlg: public AlgBase
 {
 public:
-    SniperProfiling(const std::string& name) : SvcBase(name) {}
-    ~SniperProfiling() {}
+    GraphTestAlg(const std::string &name);
+    ~GraphTestAlg();
 
     bool initialize();
+    bool execute();
     bool finalize();
 
 private:
-    SniperTimer* m_evtTimer;
-    std::vector<std::string> m_algName;
-    std::map<std::string, SniperTimer*> m_algTimer;
-
-    sp::BeginEvtHandler* m_beginEvtHdl;
-    sp::EndEvtHandler*   m_endEvtHdl;
-    sp::BeginAlgHandler* m_beginAlgHdl;
-    sp::EndAlgHandler*   m_endAlgHdl;
+    std::string m_info;
 };
 
 #endif

@@ -15,42 +15,40 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef SNIPER_TOP_TASK_H
-#define SNIPER_TOP_TASK_H
+#ifndef SNIPER_DAG_TASK_H
+#define SNIPER_DAG_TASK_H
 
-#include "SniperKernel/Task.h"
+#include <string>
+#include <unordered_map>
+#include <vector>
 
-class TopTask : public Task
-{
+#include "SniperKernel/DagBase.h"
+
+struct AlgNode;
+class SniperJSON;
+
+class DagTask final : public DagBase {
+
 public:
-    TopTask(const std::string &name);
-    virtual ~TopTask();
+    DagTask(const std::string& name);
+    virtual ~DagTask();
 
-    // handlers for sub-tasks
-    Task *createTask(const std::string &taskName);
-    Task *addTask(Task *task);
-    void clearTasks() { m_tasks.clear(); }
-
-    // create an element by its type and name
-    DLElement *create(const std::string &type, const std::string &name) override;
-    // find an owned element
-    DLElement *find(const std::string &name) override;
-    // remove an owned element
-    void remove(const std::string &name) override;
+    virtual AlgBase* insertNode(const std::string& alg) override;
+    virtual bool makeEdge(const std::string& alg1, const std::string& alg2) override;
+    virtual bool done() override;
 
     //the json value of this object
     virtual SniperJSON json() override;
-    // eval this Task from json
+    // eval this graph object from json
     virtual void eval(const SniperJSON &json) override;
 
-protected:
-    // override of base class
-    bool config() override;
-    bool initialize() override;
-    bool finalize() override;
-
 private:
-    DleSupervisor m_tasks;
+    // Record the sequence of nodes being inserted.
+    std::vector<std::string> m_nodes;
+    // Record algs and their corresponding pointers.
+    std::unordered_map<std::string, AlgNode*> m_algPtr;
+    // Calculate the real sequence.
+    void getSequence(std::vector<AlgNode*>& realSeq);
 };
 
 #endif
