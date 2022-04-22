@@ -22,19 +22,19 @@
 #include <algorithm>
 
 IIncidentHandler::IIncidentHandler(ExecUnit &domain)
-    : m_domain(domain),
-      m_name("IncidentHandler"),
-      m_scope(domain.scope() + domain.objName() + ':'),
+    : NamedElement(domain.scope()+domain.objName()+':', "IncidentHandler"),
+      m_domain(domain),
       m_id(long(domain.getRoot()))
 {
+    m_logLevel = domain.logLevel();
 }
 
 IIncidentHandler::IIncidentHandler(ExecUnit *domain)
-    : m_domain(*domain),
-      m_name("IncidentHandler"),
-      m_scope(domain->scope() + domain->objName() + ':'),
+    : NamedElement(domain->scope()+domain->objName()+':', "IncidentHandler"),
+      m_domain(*domain),
       m_id(long(domain->getRoot()))
 {
+    m_logLevel = domain->logLevel();
 }
 
 IIncidentHandler::~IIncidentHandler()
