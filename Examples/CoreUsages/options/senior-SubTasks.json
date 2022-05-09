@@ -43,7 +43,11 @@
       },
       "services": [
         {
-          "identifier": "DataIOSvc/DataIOSvc"
+          "identifier": "MappedDataSvc/MappedDataSvc",
+          "map": {
+            "input": "TopT:SubT1:output",
+            "output": "TopT:SubT1:output"
+          }
         }
       ],
       "algorithms": [

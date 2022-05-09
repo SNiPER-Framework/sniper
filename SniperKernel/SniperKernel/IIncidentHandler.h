@@ -18,13 +18,13 @@
 #ifndef SNIPER_I_INCIDENT_HANDLER_H
 #define SNIPER_I_INCIDENT_HANDLER_H
 
-#include <string>
+#include "SniperKernel/NamedElement.h"
 #include <list>
 
 class ExecUnit;
 class Incident;
 
-class IIncidentHandler
+class IIncidentHandler : public NamedElement
 {
 public:
     IIncidentHandler(ExecUnit &domain);
@@ -40,15 +40,10 @@ public:
 
     void listening();
 
-    const std::string &objName() { return m_name; }
-    const std::string &scope() { return m_scope; }
-
 protected:
     ExecUnit &m_domain;
-    std::string m_name;
 
 private:
-    std::string m_scope;
     long m_id;
     std::list<std::string> m_msg;
 };

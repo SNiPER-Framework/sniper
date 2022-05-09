@@ -32,6 +32,7 @@ void export_Sniper_SvcBase();
 void export_Sniper_AlgBase();
 void export_Sniper_ToolBase();
 void export_Sniper_DataMemSvc();
+void export_Sniper_MappedDataSvc();
 void export_Sniper_ExecUnit();
 void export_Sniper_Task();
 void export_Sniper_Workflow();
@@ -57,6 +58,7 @@ BOOST_PYTHON_MODULE(libSniperPython)
     export_Sniper_AlgBase();
     export_Sniper_ToolBase();
     export_Sniper_DataMemSvc();
+    export_Sniper_MappedDataSvc();
     export_Sniper_ExecUnit();
     export_Sniper_Task();
     export_Sniper_Workflow();

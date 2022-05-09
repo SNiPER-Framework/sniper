@@ -125,6 +125,6 @@ SniperJSON SharedElem<DLEClass>::json_r()
 }
 
 #define DECLARE_CAN_BE_SHARED(DLEClass) \
-SniperBookDLE SniperBook_Shared_##DLEClass##_("SharedElem<"#DLEClass">", &SniperCreateDLE_T<SharedElem<DLEClass>>)
+static SniperBookDLE SniperBook_Shared_##DLEClass##_("SharedElem<"#DLEClass">", &SniperCreateDLE_T<SharedElem<DLEClass>>)
 
 #endif

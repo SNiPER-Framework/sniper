@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2018-2022
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -54,6 +54,11 @@ struct DLElementWrap : DLElement, bp::wrapper<DLElement>
     }
 };
 
+void DLElementExp_setProperties(DLElement &obj, const std::string &str)
+{
+    obj.setProperties(SniperJSON(str));
+}
+
 std::string DLElementExp_json(DLElement &obj)
 {
     return obj.json().str();
@@ -82,6 +87,7 @@ void export_Sniper_DLElement()
              return_value_policy<copy_const_reference>())
         .def("setTag", &DLElement::setTag)
         .def("setDescription", &DLElement::setDescription)
+        .def("setProperties", DLElementExp_setProperties)
         .def("getParent", &DLElement::getParent,
              return_value_policy<reference_existing_object>())
         //.def("setParent",     &DLElement::setParent)

@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2018-2022
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -37,6 +37,14 @@ ExecUnit *DLElement::getRoot()
         p = p->m_par;
     }
     return dynamic_cast<ExecUnit *>(p);
+}
+
+void DLElement::setProperties(const SniperJSON &json)
+{
+    for (auto it = json.map_begin(); it != json.map_end(); ++it)
+    {
+        this->property(it->first)->set(it->second.str(-1));
+    }
 }
 
 void DLElement::setParent(ExecUnit *par)
@@ -104,11 +112,7 @@ void DLElement::eval(const SniperJSON &json)
     idest = json.find("properties");
     if (idest != json.map_end())
     {
-        const SniperJSON &jprop = idest->second;
-        for (auto it = jprop.map_begin(); it != jprop.map_end(); ++it)
-        {
-            property(it->first)->set(it->second.str(-1));
-        }
+        this->setProperties(idest->second);
     }
 }
 
