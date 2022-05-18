@@ -1,10 +1,10 @@
 from PySide6.QtGui import QPainter
 from PySide6.QtCharts import QChart, QChartView
 from PySide6.QtWidgets import QMainWindow, QTabWidget
-from CPUMonitor import CPUMonitor
-from MemMonitor import MemMonitor
+from SniperMonitor.CPUMonitor import CPUMonitor
+from SniperMonitor.MemMonitor import MemMonitor
 
-class SniperMonitor(QMainWindow):
+class MainMonitor(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
 

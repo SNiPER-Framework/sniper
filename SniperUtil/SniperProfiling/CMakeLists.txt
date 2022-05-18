@@ -16,4 +16,6 @@ install(DIRECTORY SniperProfiling DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 if(USE_PYTHON)
     # install
     install(DIRECTORY python/SniperProfiling DESTINATION ${CMAKE_INSTALL_PYTHONDIR})
+    install(FILES python/SniperMonitor/MonitorRunner.py DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(DIRECTORY python/SniperMonitor/SniperMonitor DESTINATION ${CMAKE_INSTALL_PYTHONDIR})
 endif(USE_PYTHON)
