@@ -25,3 +25,12 @@ This is the release notes for the SNiPER project.
   - Better multithreading computing supports, includs:
     - a DLElement inherited class instance can be easily shared by multiple tasks running in different threads
     - a workable thread-safe RootWriter for TTrees
+
+## v2.2
+
+- Fixes
+  - Fix the Incident subtypes that transferred to another task
+
+- New features
+  - Add MappedDataSvc to shared same DataBlocks in multiple tasks
+  - A prototype of GUI resource monitor based on PySide6
