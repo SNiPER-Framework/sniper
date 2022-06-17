@@ -28,7 +28,9 @@ void WhiteBoard::mark(ExecUnit* task)
     if ( task->isRoot() ) {
         IncidentMgr::create(*task);
     }
-    s_wbObj.m_list.push_back( new TaskTrigger(task) );
+    else {
+        s_wbObj.m_list.push_back( new TaskTrigger(task) );
+    }
 }
 
 void WhiteBoard::clear()

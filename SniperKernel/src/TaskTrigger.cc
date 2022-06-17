@@ -19,7 +19,7 @@
 #include "SniperKernel/TaskWatchDog.h"
 
 TaskTrigger::TaskTrigger(ExecUnit* task)
-    : IIncidentHandler(task->getRoot()),
+    : IIncidentHandler(task->getParent()),
       m_dog(task->Snoopy())
 {
     regist(task->objName());
