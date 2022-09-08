@@ -4,7 +4,7 @@
 if __name__ == "__main__":
 
     import Sniper
-    Sniper.setLogLevel(2)
+    Sniper.setLogLevel(3)
     task = Sniper.Task("task")
     task.setDescription("an example to use profiling")
     task.setEvtMax(5)
@@ -12,6 +12,7 @@ if __name__ == "__main__":
     import SniperProfiling
     svc1 = task.createSvc("SniperProfiling")
     svc1.setDescription("a service for providing some profiles")
+    svc1.setLogLevel(2)
 
     import SniperCoreUsages
     svc2 = task.createSvc("DummySvc/SharedSvc")

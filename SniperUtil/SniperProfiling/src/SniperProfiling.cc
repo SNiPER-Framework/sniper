@@ -130,7 +130,7 @@ bool sp::EndAlgHandler::handle(Incident &incident)
 bool SniperProfiling::initialize()
 {
     Task* taskPtr = dynamic_cast<Task*>(m_par);
-    const SniperJSON& taskJson = taskPtr->json();
+    SniperJSON taskJson = taskPtr->json();
     const SniperJSON& algVec = taskJson["algorithms"];
 
     //get event timer
@@ -139,7 +139,7 @@ bool SniperProfiling::initialize()
     //get names of algs and store them
     for (auto it = algVec.vec_begin(); it != algVec.vec_end(); it++)
     {
-        const std::string& idtf = (*it)["identifier"].get<std::string>();
+        std::string idtf = (*it)["identifier"].get<std::string>();
         const std::string&& algName = idtf.substr(idtf.find('/') + 1, idtf.size());
         m_algName.emplace_back(algName);
         m_algTimer[algName] = new SniperTimer(algName);
@@ -149,7 +149,7 @@ bool SniperProfiling::initialize()
     m_beginEvtHdl = new sp::BeginEvtHandler(m_par, m_evtTimer);
     m_beginEvtHdl->regist("BeginEvent");
 
-    // //create and regist the handler for EndEvent
+    //create and regist the handler for EndEvent
     m_endEvtHdl = new sp::EndEvtHandler(m_par, m_evtTimer);
     m_endEvtHdl->regist("EndEvent");
 
@@ -160,6 +160,10 @@ bool SniperProfiling::initialize()
     //create and regist the handler for EndAlg
     m_endAlgHdl = new sp::EndAlgHandler(m_par, m_algTimer);
     m_endAlgHdl->regist("EndAlg");
+
+    //use the same log level in EndEvent and EndAlg handlers
+    m_endEvtHdl->setLogLevel(this->logLevel());
+    m_endAlgHdl->setLogLevel(this->logLevel());
 
     LogInfo << m_description << std::endl;
 
@@ -183,36 +187,36 @@ bool SniperProfiling::finalize()
     SniperLog::Logger::lock();
 
     //print statical times
-    *SniperLog::LogStream << "########################## SniperProfiling ##########################\n";
+    *SniperLog::LogStream << "############################## SniperProfiling ##############################\n";
 
     //print time of events
     *SniperLog::LogStream << std::setiosflags(std::ios::fixed|std::ios::showpoint)
                           << std::setprecision(5)
-                          << std::setw(15) << std::left << "Name"
-                          << std::setw(15) << "Num of calls"
+                          << std::setw(25) << std::left << "Name"
+                          << std::setw(12) << "Count"
                           << std::setw(15) << "Total(ms)"
-                          << std::setw(15) << "Mean(ms)"
-                          << std::setw(15) << "RMS(ms)"
+                          << std::setw(13) << "Mean(ms)"
+                          << std::setw(13) << "RMS(ms)"
                           << std::endl;
 
     //print time of algs
     for (const auto& it : m_algName)
     {
-        *SniperLog::LogStream << std::setw(15) << std::left << it
-                              << std::setw(15) << (m_algTimer[it])->number_of_measurements()
+        *SniperLog::LogStream << std::setw(25) << std::left << it
+                              << std::setw(12) << (m_algTimer[it])->number_of_measurements()
                               << std::setw(15) << (m_algTimer[it])->number_of_measurements() * (m_algTimer[it])->mean()
-                              << std::setw(15) << (m_algTimer[it])->mean()
-                              << std::setw(15) << (m_algTimer[it])->rms()
+                              << std::setw(13) << (m_algTimer[it])->mean()
+                              << std::setw(13) << (m_algTimer[it])->rms()
                               << std::endl;
     }
 
-    *SniperLog::LogStream << std::setw(15) << std::left << "event"
-                          << std::setw(15) << m_evtTimer->number_of_measurements()
+    *SniperLog::LogStream << std::left << "Sum of " << std::setw(18) << getParent()->objName()
+                          << std::setw(12) << m_evtTimer->number_of_measurements()
                           << std::setw(15) << m_evtTimer->number_of_measurements() * m_evtTimer->mean()
-                          << std::setw(15) << m_evtTimer->mean()
-                          << std::setw(15) << m_evtTimer->rms()
+                          << std::setw(13) << m_evtTimer->mean()
+                          << std::setw(13) << m_evtTimer->rms()
                           << std::endl << std::defaultfloat;
-    *SniperLog::LogStream << "#####################################################################\n";
+    *SniperLog::LogStream << "#############################################################################\n";
 
     // release the lock for logs
     SniperLog::Logger::unlock();

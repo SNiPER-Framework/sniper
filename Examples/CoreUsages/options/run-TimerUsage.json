@@ -1,18 +1,21 @@
 {
   "sniper": {
     "LoadDlls": [ "libSniperProfilingLib.so", "libSniperCoreUsages.so" ],
-    "LogLevel": 2
+    "LogLevel": 3
   },
   "description": "an example to use profiling",
   "identifier": "Task/task",
   "properties": {
     "EvtMax": 5,
-    "LogLevel": 2
+    "LogLevel": 3
   },
   "services": [
     {
       "description": "a service for providing some profiles",
-      "identifier": "SniperProfiling/SniperProfiling"
+      "identifier": "SniperProfiling/SniperProfiling",
+      "properties": {
+        "LogLevel": 2
+      }
     },
     {
       "description": "a service instance that can be share by all algorithms",
