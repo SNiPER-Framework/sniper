@@ -18,7 +18,8 @@
 #include "SniperKernel/SniperJSON.h"
 #include "SniperKernel/Sniper.h"
 #include "SniperKernel/Task.h"
-#include <boost/python.hpp>
+#include <boost/python/class.hpp>
+#include <boost/python/def.hpp>
 
 extern boost::python::object &BoostPyJsonModule();
 

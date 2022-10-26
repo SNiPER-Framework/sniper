@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2022
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -15,19 +15,13 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "SniperPython/PyDataStore.h"
+#include "SniperKernel/SniperJSON.h"
 #include <boost/python/class.hpp>
-#include <boost/python/copy_non_const_reference.hpp>
-#include <memory>
 
-void export_SniperPython_PyDataStore()
+void export_Sniper_SniperJSON()
 {
     using namespace boost::python;
 
-    class_<PyDataStore, std::shared_ptr<PyDataStore>, bases<IDataBlock>, boost::noncopyable>
-        ("PyDataStore", no_init)
-        .def("data",      &PyDataStore::data,
-                return_value_policy<copy_non_const_reference>())
-        .def("clear",     &PyDataStore::clear)
-        ;
+    class_<SniperJSON>("SniperJSON", init<const std::string&>())
+        .def("str", &SniperJSON::str);
 }

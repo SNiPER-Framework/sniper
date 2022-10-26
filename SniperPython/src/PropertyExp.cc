@@ -16,7 +16,7 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/Property.h"
-#include <boost/python.hpp>
+#include <boost/python/class.hpp>
 
 namespace bp = boost::python;
 

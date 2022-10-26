@@ -15,7 +15,9 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include <boost/python.hpp>
+#include <boost/python/object.hpp>
+#include <boost/python/import.hpp>
+#include <boost/python/module.hpp>
 
 boost::python::object &BoostPyJsonModule()
 {
@@ -46,6 +48,7 @@ void export_Sniper_Timer();
 void export_Sniper_TimerSvc();
 void export_Sniper_DagTask();
 void export_Sniper_DagBase();
+void export_Sniper_SniperJSON();
 
 BOOST_PYTHON_MODULE(libSniperPython)
 {
@@ -72,4 +75,5 @@ BOOST_PYTHON_MODULE(libSniperPython)
     export_Sniper_TimerSvc();
     export_Sniper_DagBase();
     export_Sniper_DagTask();
+    export_Sniper_SniperJSON();
 }

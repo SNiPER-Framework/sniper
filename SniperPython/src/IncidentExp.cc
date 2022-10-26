@@ -15,9 +15,10 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include <boost/python.hpp>
 #include "SniperKernel/Incident.h"
 #include "SniperKernel/ExecUnit.h"
+#include <boost/python/class.hpp>
+#include <boost/python/copy_const_reference.hpp>
 
 void export_Sniper_Incident()
 {

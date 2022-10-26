@@ -1,11 +1,12 @@
-#include <boost/python.hpp>
 #include "SniperKernel/SniperTimer.h"
+#include <boost/python/class.hpp>
+#include <boost/python/copy_const_reference.hpp>
 
 namespace bp = boost::python;
 
 void export_Sniper_Timer()
 {
-    bp::class_<SniperTimer, boost::shared_ptr<SniperTimer> >
+    bp::class_<SniperTimer, std::shared_ptr<SniperTimer> >
         ("SniperTimer", bp::init<std::string>())
         .def("start", &SniperTimer::start)
         .def("stop", &SniperTimer::stop)

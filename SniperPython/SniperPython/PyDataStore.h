@@ -19,7 +19,9 @@
 #define PY_DATA_STORE_H
 
 #include "SniperKernel/IDataBlock.h"
-#include <boost/python.hpp>
+#include <boost/python/dict.hpp>
+#include <boost/python/list.hpp>
+#include <boost/python/extract.hpp>
 #include <vector>
 #include <map>
 

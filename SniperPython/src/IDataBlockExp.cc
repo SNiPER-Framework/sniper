@@ -15,8 +15,8 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include <boost/python.hpp>
 #include "SniperKernel/IDataBlock.h"
+#include <boost/python/class.hpp>
 
 void export_Sniper_IDataBlock()
 {

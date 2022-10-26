@@ -15,10 +15,11 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include <boost/python.hpp>
 #include "SniperKernel/IIncidentHandler.h"
 #include "SniperKernel/Incident.h"
 #include "SniperKernel/Task.h"
+#include <boost/python/class.hpp>
+#include <boost/python/pure_virtual.hpp>
 
 namespace bp = boost::python;
 

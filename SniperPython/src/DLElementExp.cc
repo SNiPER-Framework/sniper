@@ -17,7 +17,9 @@
 
 #include "SniperKernel/DLElement.h"
 #include "SniperKernel/Task.h"
-#include <boost/python.hpp>
+#include <boost/python/class.hpp>
+#include <boost/python/pure_virtual.hpp>
+#include <boost/python/copy_const_reference.hpp>
 
 namespace bp = boost::python;
 

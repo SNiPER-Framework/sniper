@@ -18,7 +18,7 @@
 #include "SniperKernel/Task.h"
 #include "SniperKernel/SvcBase.h"
 #include "SniperKernel/AlgBase.h"
-#include <boost/python.hpp>
+#include <boost/python/class.hpp>
 
 namespace bp = boost::python;
 

@@ -17,14 +17,14 @@
 
 #include "SniperKernel/DataMemSvc.h"
 #include "SniperKernel/IDataBlock.h"
-#include <boost/python.hpp>
-#include "boost/make_shared.hpp"
+#include <boost/python/class.hpp>
+#include <memory>
 
 void export_Sniper_DataMemSvc()
 {
     using namespace boost::python;
 
-    class_<DataMemSvc, boost::shared_ptr<DataMemSvc>, bases<SvcBase>, boost::noncopyable>
+    class_<DataMemSvc, std::shared_ptr<DataMemSvc>, bases<SvcBase>, boost::noncopyable>
         ("DataMemSvc", no_init)
         .def("find",       &DataMemSvc::find,
                 return_value_policy<reference_existing_object>())

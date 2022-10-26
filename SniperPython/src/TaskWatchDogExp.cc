@@ -16,7 +16,8 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/TaskWatchDog.h"
-#include <boost/python.hpp>
+#include <boost/python/class.hpp>
+#include <boost/python/copy_const_reference.hpp>
 
 void export_Sniper_TaskWatchDog()
 {

@@ -17,7 +17,8 @@
 
 #include "SniperKernel/AlgBase.h"
 #include "SniperKernel/ToolBase.h"
-#include <boost/python.hpp>
+#include <boost/python/class.hpp>
+#include <boost/python/pure_virtual.hpp>
 
 namespace bp = boost::python;
 

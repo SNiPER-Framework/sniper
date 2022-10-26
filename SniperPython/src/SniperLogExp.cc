@@ -16,7 +16,8 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/SniperLog.h"
-#include <boost/python.hpp>
+#include <boost/python/class.hpp>
+#include <boost/python/str.hpp>
 
 namespace SniperLogExp
 {
