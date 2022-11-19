@@ -74,13 +74,22 @@ bool MappedDataSvc::finalize()
 SniperJSON MappedDataSvc::json()
 {
     SniperJSON json = SvcBase::json();
-    json["map"].from(m_dataMap);
+    json["properties"].from(m_dataMap);
 
     return json;
 }
 
 void MappedDataSvc::eval(const SniperJSON &json)
 {
-    SvcBase::eval(json);
-    m_dataMap = json["map"].get<std::map<std::string, std::string>>();
+    SniperJSON _json = json;
+    auto& properties = _json["properties"];
+
+    for (auto it = properties.map_begin(); it != properties.map_end(); ++it)
+    {
+        auto& key = it->first;
+        m_dataMap[key] = properties[key].get<std::string>();
+    }
+
+    _json.erase("properties");
+    SvcBase::eval(_json);
 }

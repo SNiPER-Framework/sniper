@@ -44,7 +44,7 @@
       "services": [
         {
           "identifier": "MappedDataSvc/MappedDataSvc",
-          "map": {
+          "properties": {
             "input": "TopT:SubT1:output",
             "output": "TopT:SubT1:output"
           }
