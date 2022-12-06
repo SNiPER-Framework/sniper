@@ -27,6 +27,7 @@
 #include <fstream>
 #include <dlfcn.h>
 #include <time.h>
+#include <mutex>
 
 namespace SniperLog
 {
@@ -135,14 +136,16 @@ void Sniper::setLogStdout()
 
 void Sniper::loadDll(const char *dll)
 {
+    static std::mutex loadDllMutex;
+    std::unique_lock<std::mutex> lock(loadDllMutex);
+
+    auto &dlls = Sniper::LoadDlls;
+    if (std::find(dlls.begin(), dlls.end(), dll) != dlls.end()) return;
+
     void *dl_handler = dlopen(dll, RTLD_LAZY | RTLD_GLOBAL);
     if (dl_handler)
     {
-        auto &dlls = Sniper::LoadDlls;
-        if (std::find(dlls.begin(), dlls.end(), dll) == dlls.end())
-        {
-            dlls.push_back(dll);
-        }
+        dlls.push_back(dll);
     }
     else
     {
@@ -211,6 +214,7 @@ void Sniper::Config::eval(const std::string &json_str)
         "LogFile",
         "LoadDlls",
         "SharedElems"};
+    static std::mutex createSharedElemMutex;
 
     SniperJSON json(json_str);
     JSONParser jp(json);
@@ -238,9 +242,31 @@ void Sniper::Config::eval(const std::string &json_str)
         Sniper::loadDll(dll.c_str());
     }
 
+    //This snippet is for the situation when joson config is parsed concurrently by several thread
+    //Make sure that all sharedElems are created only once, and put in sharedElemMgr in the order of the "index"
+    std::unique_lock<std::mutex> lock(createSharedElemMutex);
     auto& _shared_elems = json["SharedElems"];
-    for (auto it = _shared_elems.vec_begin(); it != _shared_elems.vec_end(); ++it )
+    for (auto it = _shared_elems.vec_begin(); it != _shared_elems.vec_end(); ++it)
     {
+        int _index = (*it)["index"].get<int>();
+        if (_index > SharedElemMgr::number_of_elements())
+        {
+            LogFatal << "Improper sharedElem index. Please check josn file" << std::endl;
+            throw ContextMsgException(std::string("Failed to create sharedElem. Improper sharedElem index"));
+        }
+        else if (_index < SharedElemMgr::number_of_elements())//the elem is already put in shearedElemMgr. Check if the "index" matches its name.
+        {
+            std::string _name = (*it)["identifier"].get<std::string>();
+            SharedElemBase *_obj = reinterpret_cast<SharedElemBase *>(SharedElemMgr::get(_index));
+            if (_name != _obj->json_r()["identifier"].get<std::string>())
+            {
+                LogFatal << "The sharedElem index do not match its name" << std::endl;
+                throw ContextMsgException(std::string("The sharedElem index do not match its name"));
+            }
+
+            continue;
+        }
+
         auto pobj = DLEFactory::instance().create((*it)["identifier"].get<std::string>());
         pobj->eval(*it);
     }
