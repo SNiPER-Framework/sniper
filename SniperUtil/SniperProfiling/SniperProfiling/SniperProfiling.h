@@ -23,6 +23,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <fstream>
 
 namespace SnierProfilingNS
 {
@@ -35,8 +36,8 @@ namespace sp = SnierProfilingNS;
 class SniperProfiling : public SvcBase
 {
 public:
-    SniperProfiling(const std::string& name) : SvcBase(name) {}
-    ~SniperProfiling() {}
+    SniperProfiling(const std::string& name);
+    virtual ~SniperProfiling();
 
     bool initialize();
     bool finalize();
@@ -50,6 +51,13 @@ private:
     sp::EndEvtHandler*   m_endEvtHdl;
     sp::BeginAlgHandler* m_beginAlgHdl;
     sp::EndAlgHandler*   m_endAlgHdl;
+
+    // for writing details to a text file
+    friend sp::EndEvtHandler;
+    void dumpDetails();
+
+    bool m_saveDetails;
+    std::ofstream* m_fDetails;
 };
 
 #endif

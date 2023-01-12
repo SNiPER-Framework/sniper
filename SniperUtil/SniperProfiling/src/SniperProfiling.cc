@@ -54,13 +54,16 @@ bool sp::BeginEvtHandler::handle(Incident &incident)
 
 struct sp::EndEvtHandler : public IIncidentHandler
 {
-    EndEvtHandler(ExecUnit *domain, SniperTimer* evtTimer)
-        : IIncidentHandler(domain), h_evtTimer(evtTimer)
+    EndEvtHandler(ExecUnit *domain, SniperTimer* evtTimer, SniperProfiling* profiling)
+        : IIncidentHandler(domain),
+          h_evtTimer(evtTimer),
+          m_profiling(profiling)
     {
         m_name = "EndEvtHandler";
     }
 
     SniperTimer* h_evtTimer;
+    SniperProfiling* m_profiling;
 
     bool handle(Incident &incident) override;
 };
@@ -70,6 +73,10 @@ bool sp::EndEvtHandler::handle(Incident &incident)
     h_evtTimer->stop();
 
     LogDebug << "The event " << "tooks " << h_evtTimer->elapsed() << "ms" << std::endl;
+
+    if (m_profiling) {
+        m_profiling->dumpDetails();
+    }
 
     return true;
 }
@@ -127,6 +134,17 @@ bool sp::EndAlgHandler::handle(Incident &incident)
     return true;
 }
 
+SniperProfiling::SniperProfiling(const std::string &name)
+    : SvcBase(name),
+      m_fDetails(nullptr)
+{
+    declProp("SaveDetails", m_saveDetails = false);
+}
+
+SniperProfiling::~SniperProfiling()
+{
+}
+
 bool SniperProfiling::initialize()
 {
     Task* taskPtr = dynamic_cast<Task*>(m_par);
@@ -150,7 +168,7 @@ bool SniperProfiling::initialize()
     m_beginEvtHdl->regist("BeginEvent");
 
     //create and regist the handler for EndEvent
-    m_endEvtHdl = new sp::EndEvtHandler(m_par, m_evtTimer);
+    m_endEvtHdl = new sp::EndEvtHandler(m_par, m_evtTimer, m_saveDetails ? this : nullptr);
     m_endEvtHdl->regist("EndEvent");
 
     //create and regist the handler for BeginAlg
@@ -167,11 +185,31 @@ bool SniperProfiling::initialize()
 
     LogInfo << m_description << std::endl;
 
+    if ( m_saveDetails ) {
+        std::string fname = m_par->scope() + m_par->objName() + '_' + std::to_string(getpid()) + ".profiling";
+        auto pos = fname.find(':');
+        while (pos != fname.npos)
+        {
+            fname.replace(pos, 1, "_");
+            pos = fname.find(':');
+        }
+        m_fDetails = new std::ofstream(fname);
+        for (const auto &it : m_algName) {
+            *m_fDetails << std::left << std::setw(12) << it << " ";
+        }
+        *m_fDetails << "Event" << std::endl;
+    }
+
     return true;
 }
 
 bool SniperProfiling::finalize()
 {
+    if ( m_fDetails ) {
+        m_fDetails->close();
+        delete m_fDetails;
+    }
+
     //unregist and delete the handlers
     m_beginEvtHdl->unregist("BeginEvent");
     m_endEvtHdl->unregist("EndEvent");
@@ -227,4 +265,13 @@ bool SniperProfiling::finalize()
 
     LogInfo << "finalized successfully" << std::endl;
     return true;
+}
+
+void SniperProfiling::dumpDetails()
+{
+    for (const auto &it : m_algName)
+    {
+        *m_fDetails << std::setw(13) << m_algTimer[it]->elapsed();
+    }
+    *m_fDetails << std::setw(13) << m_evtTimer->elapsed() << std::endl;
 }
