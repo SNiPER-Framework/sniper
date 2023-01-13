@@ -257,7 +257,7 @@ void Sniper::Config::eval(const std::string &json_str)
         else if (_index < SharedElemMgr::number_of_elements())//the elem is already put in shearedElemMgr. Check if the "index" matches its name.
         {
             std::string _name = (*it)["identifier"].get<std::string>();
-            SharedElemBase *_obj = reinterpret_cast<SharedElemBase *>(SharedElemMgr::get(_index));
+            SharedElemBase *_obj = dynamic_cast<SharedElemBase *>(SharedElemMgr::get(_index));
             if (_name != _obj->json_r()["identifier"].get<std::string>())
             {
                 LogFatal << "The sharedElem index do not match its name" << std::endl;
