@@ -57,6 +57,7 @@ private:
     void dumpDetails();
 
     bool m_saveDetails;
+    std::string m_fname;
     std::ofstream* m_fDetails;
 };
 

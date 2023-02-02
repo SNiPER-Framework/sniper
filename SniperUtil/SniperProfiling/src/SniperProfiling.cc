@@ -186,14 +186,14 @@ bool SniperProfiling::initialize()
     LogInfo << m_description << std::endl;
 
     if ( m_saveDetails ) {
-        std::string fname = m_par->scope() + m_par->objName() + '_' + std::to_string(getpid()) + ".profiling";
-        auto pos = fname.find(':');
-        while (pos != fname.npos)
+        m_fname = m_par->scope() + m_par->objName() + '_' + std::to_string(getpid()) + ".profiling";
+        auto pos = m_fname.find(':');
+        while (pos != m_fname.npos)
         {
-            fname.replace(pos, 1, "_");
-            pos = fname.find(':');
+            m_fname.replace(pos, 1, "_");
+            pos = m_fname.find(':');
         }
-        m_fDetails = new std::ofstream(fname);
+        m_fDetails = new std::ofstream(m_fname);
         for (const auto &it : m_algName) {
             *m_fDetails << std::left << std::setw(12) << it << " ";
         }
@@ -254,6 +254,10 @@ bool SniperProfiling::finalize()
                           << std::setw(13) << m_evtTimer->mean()
                           << std::setw(13) << m_evtTimer->rms()
                           << std::endl << std::defaultfloat;
+    if (m_saveDetails)
+    {
+        *SniperLog::LogStream << "The details for each event are written to file: " << m_fname << "\n";
+    }
     *SniperLog::LogStream << "#############################################################################\n";
 
     // release the lock for logs
