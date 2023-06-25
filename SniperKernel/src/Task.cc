@@ -50,7 +50,7 @@ Task::~Task()
     m_snoopy.terminate();
 }
 
-void Task::setEvtMax(int evtMax_)
+void Task::setEvtMax(long evtMax_)
 {
     m_evtMax = evtMax_;
     m_limited = (m_evtMax >= 0);

@@ -29,5 +29,6 @@ if(USE_PYTHON)
         options/senior-StopRun.py
         options/senior-SubTasks.py
         options/senior-1Svc2Tasks.py
+        options/senior-MtSniper.py
     )
 endif()

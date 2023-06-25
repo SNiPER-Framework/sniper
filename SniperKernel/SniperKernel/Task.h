@@ -37,8 +37,8 @@ public:
     virtual ~Task();
 
     //set and get the max event number to be processed
-    void setEvtMax(int evtMax);
-    int evtMax() { return m_evtMax; }
+    void setEvtMax(long evtMax);
+    long evtMax() { return m_evtMax; }
 
     //set the log level of this domain
     void setLogLevel(int level) final;
@@ -73,8 +73,8 @@ protected:
 protected:
     //member data
     bool m_limited;
-    int m_evtMax;
-    int m_done;
+    long m_evtMax;
+    long m_done;
     TaskWatchDog m_snoopy;
 
 protected:

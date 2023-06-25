@@ -8,7 +8,7 @@ target_include_directories(SniperKernel PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     PRIVATE $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>)
-target_link_libraries(SniperKernel PUBLIC dl)
+target_link_libraries(SniperKernel PUBLIC dl pthread)
 
 # install
 install(TARGETS SniperKernel
