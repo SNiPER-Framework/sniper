@@ -21,7 +21,9 @@
 MtsPrimaryTask::MtsPrimaryTask()
     : m_evtMax(-1),
       m_done(0),
-      m_count(0)
+      m_itask(nullptr),
+      m_otask(nullptr),
+      m_sniperTaskPool(nullptr)
 {
     m_name = "MtsPrimaryTask";
 }
@@ -34,13 +36,19 @@ MtsPrimaryTask::~MtsPrimaryTask()
 int MtsPrimaryTask::exec()
 {
     static const bool infinite = m_evtMax < 0;
+    static std::atomic_long count{0};  //it's different to m_done
 
-    int count = m_count++;
-    if (count < m_evtMax || infinite)
+    if (infinite || count++ < m_evtMax)
     {
-        LogInfo << "execute a primary task, count " << count << std::endl;
-        ++m_done;
-        return 0;
+        auto task = m_sniperTaskPool->allocate();
+        if (task->Snoopy().run_once())
+        {
+            m_sniperTaskPool->deallocate(task);
+            long done = ++m_done;
+            LogInfo << "processed event: " << done << std::endl;
+            return 0;
+        }
+        return -1; // error
     }
 
     return -9; // reach the evtMax

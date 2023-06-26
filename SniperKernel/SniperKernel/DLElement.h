@@ -47,6 +47,9 @@ public:
     // set the tag
     void setTag(const std::string &tag_) { m_tag = tag_; }
 
+    // set the scope string if it has no parent, for better SniperLog
+    void setScopeString(const std::string &scope_);
+
     // set the description
     void setDescription(const std::string &desc) { m_description = desc; }
 

@@ -19,6 +19,8 @@
 #define SNIPER_MTS_PRIMARY_TASK_H
 
 #include "SniperKernel/MtsMicroTask.h"
+#include "SniperKernel/SniperObjPool.h"
+#include "SniperKernel/Task.h"
 #include <atomic>
 
 class MtsPrimaryTask final : public MtsMicroTask
@@ -29,12 +31,23 @@ public:
 
     void setEvtMax(long evtMax) { m_evtMax = evtMax; }
 
+    // set the SNiPER Tasks for data processing
+    void setInputTask(Task *itask) { m_itask = itask; }
+    void setOutputTask(Task *otask) { m_otask = otask; }
+    void setMainTaskPool(SniperObjPool<Task> *mtaskpool) { m_sniperTaskPool = mtaskpool; }
+
+    // do the data processing as a MicroTask once
     virtual int exec() override;
 
 private:
-    long m_evtMax;
-    long m_done;  //the processed event number
-    std::atomic_int m_count;
+    long m_evtMax; // the max event number to be processed
+    std::atomic_long m_done; // the event number has been processed
+
+    // the SNiPER Tasks for I/O
+    Task *m_itask;
+    Task *m_otask;
+    // for all the SNiPER main Task copies
+    SniperObjPool<Task> *m_sniperTaskPool;
 };
 
 #endif

@@ -39,6 +39,18 @@ ExecUnit *DLElement::getRoot()
     return dynamic_cast<ExecUnit *>(p);
 }
 
+void DLElement::setScopeString(const std::string &scope_)
+{
+    if (m_par == nullptr)
+    {
+        m_scope = scope_;
+    }
+    else
+    {
+        LogWarn << "this object has a parent, cannot set its scope string manually" << std::endl;
+    }
+}
+
 void DLElement::setProperties(const SniperJSON &json)
 {
     for (auto it = json.map_begin(); it != json.map_end(); ++it)

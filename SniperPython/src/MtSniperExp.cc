@@ -25,6 +25,12 @@ void export_Sniper_MtSniper()
     class_<MtSniper, bases<DLElement>, boost::noncopyable>("MtSniper")
         .def("setNumThreads", &MtSniper::setNumThreads)
         .def("setEvtMax", &MtSniper::setEvtMax)
+        .def("createInputTask", &MtSniper::createInputTask,
+                return_value_policy<reference_existing_object>())
+        .def("createOutputTask", &MtSniper::createOutputTask,
+                return_value_policy<reference_existing_object>())
+        .def("createMainTask", &MtSniper::createMainTask,
+                return_value_policy<reference_existing_object>())
         .def("run", &MtSniper::run);
 }
 

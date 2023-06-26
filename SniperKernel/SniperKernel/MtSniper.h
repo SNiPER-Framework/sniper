@@ -18,7 +18,7 @@
 #ifndef SNIPER_MT_SNIPER_H
 #define SNIPER_MT_SNIPER_H
 
-#include "SniperKernel/DLElement.h"
+#include "SniperKernel/Task.h"
 #include "SniperKernel/MtsMicroTaskQueue.h"
 #include "SniperPrivate/MtsWorkerPool.h"
 
@@ -29,32 +29,40 @@ public:
     MtSniper();
     virtual ~MtSniper();
 
-    // implement the pure virtual interfaces in DLElement
-    virtual bool initialize() override;
-    virtual bool finalize() override;
-
     // public methods
     void setNumThreads(unsigned int nthreads) { m_nthrds = nthreads; }
     void setEvtMax(long evtMax) { m_evtMax = evtMax; }
 
-    // set the primary micro task for MtSniper
-    void setPrimaryTask(MtsMicroTask *task) { m_taskQueue->setPrimaryTask(task); }
+    // set the primary micro task (not a SNiPER Task) for MtSniper
+    void setPrimaryTask(MtsMicroTask *task);
 
-    // set the SNiPER Tasks for data processing
-    void setInputTask();
-    void setOutputTask();
-    void setWorkerTask();
+    // create the SNiPER Tasks for data processing
+    Task *createInputTask(const std::string &identifier);
+    Task *createOutputTask(const std::string &identifier);
+    Task *createMainTask(const std::string &identifier);
 
     // create and start workers
-    void run();
+    bool run();
 
 protected:
+    Task *createSniperTask(const std::string &identifier);
+
+    // implement the pure virtual interfaces in DLElement
+    virtual bool initialize() override;
+    virtual bool finalize() override;
+
     // properties
     unsigned int m_nthrds;
     long m_evtMax;
 
-    MtsMicroTaskQueue *m_taskQueue;
+    bool m_hasExternalPrimaryTask;
+
+    Task* m_itask;
+    Task* m_otask;
+
+    MtsMicroTaskQueue *m_microTaskQueue;
     MtsWorkerPool *m_workerPool;
+    SniperObjPool<Task> *m_sniperTaskPool; // for all the main task copies
 };
 
 #endif
