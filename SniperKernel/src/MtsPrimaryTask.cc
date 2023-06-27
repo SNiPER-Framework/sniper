@@ -45,10 +45,17 @@ int MtsPrimaryTask::exec()
         {
             m_sniperTaskPool->deallocate(task);
             long done = ++m_done;
-            LogInfo << "processed event: " << done << std::endl;
+            LogDebug << "processed event: " << done << std::endl;
             return 0;
         }
         return -1; // error
+    }
+    else {
+        auto task = m_sniperTaskPool->allocate();
+        if (task != nullptr)
+        {
+            task->Snoopy().finalize();
+        }
     }
 
     return -9; // reach the evtMax

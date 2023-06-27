@@ -19,6 +19,7 @@
 #include "SniperKernel/SniperLog.h"
 #include "SniperKernel/SniperContext.h"
 #include "SniperKernel/Sniper.h"
+#include "SniperKernel/MtsMicroTask4Sniper.h"
 #include "SniperPrivate/MtsPrimaryTask.h"
 
 MtSniper::MtSniper()
@@ -89,14 +90,31 @@ Task *MtSniper::createMainTask(const std::string &identifier)
 
 bool MtSniper::initialize()
 {
+    auto maxThreads = std::thread::hardware_concurrency();
+    if (maxThreads != 0 && m_nthrds > maxThreads)
+    {
+        LogWarn << "decrease the thread number to the hardware limit: " << maxThreads << std::endl;
+        m_nthrds = maxThreads;
+    }
     sniper_context->set(Sniper::SysMode::MT);
     sniper_context->set_threads(m_nthrds);
 
     {
-        // get the sniper main task instance and create its copies
+        // create the micro tasks for IO Task initialize
+        if (m_itask)
+        {
+            m_microTaskQueue->push(new InitializeSniperTask(m_itask));
+        }
+        if (m_otask)
+        {
+            m_microTaskQueue->push(new InitializeSniperTask(m_otask));
+        }
+
+        // get the sniper main Task instance and create its copies and micro tasks for initialize
         auto *mtask = m_sniperTaskPool->allocate();
         if (mtask != nullptr)
         {
+            m_microTaskQueue->push(new InitializeSniperTask(mtask));
             auto jstr4task = mtask->json().str(-1);
             for (int i = m_nthrds; i > 1; --i)
             {
@@ -109,6 +127,7 @@ bool MtSniper::initialize()
                     return false;
                 }
                 ptask->setScopeString(std::string("(")+std::to_string(i)+")");
+                m_microTaskQueue->push(new InitializeSniperTask(ptask));
                 m_sniperTaskPool->deallocate(ptask); // put the new copy to the pool
             }
             m_sniperTaskPool->deallocate(mtask); // put the original instance back to the pool

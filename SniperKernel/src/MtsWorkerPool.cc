@@ -27,12 +27,12 @@ MtsWorker::MtsWorker()
       m_thrd(nullptr)
 {
     m_name += std::to_string(s_id++);
-    LogInfo << "construct MtsWorker " << m_name << std::endl;
+    LogDebug << "construct MtsWorker " << m_name << std::endl;
 }
 
 MtsWorker::~MtsWorker()
 {
-    LogInfo << "destruct MtsWorker " << m_name << std::endl;
+    LogDebug << "destruct MtsWorker " << m_name << std::endl;
 }
 
 void MtsWorker::start()
@@ -46,7 +46,7 @@ void MtsWorker::run()
     static MtsMicroTaskQueue *taskQueue = MtsMicroTaskQueue::instance();
     static MtsWorkerPool *workerPool = MtsWorkerPool::instance();
 
-    LogInfo << "start worker " << m_name << std::endl;
+    LogDebug << "start worker " << m_name << std::endl;
 
     // loop the micro tasks in the queue until ...
     while (taskQueue->concurrentPop()->exec() == 0)
