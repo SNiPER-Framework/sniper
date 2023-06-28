@@ -24,13 +24,19 @@
 class InitializeSniperTask : public MtsMicroTask
 {
 public:
-    InitializeSniperTask(Task *task) : m_sniperTask(task) {}
+    InitializeSniperTask(Task *task, bool isMain)
+        : m_sniperTask(task),
+          m_isMain(isMain)
+    {
+    }
+
     virtual ~InitializeSniperTask() = default;
 
     virtual int exec() override;
 
 private:
     Task *m_sniperTask;
+    bool m_isMain;
 };
 
 #endif

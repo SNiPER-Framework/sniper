@@ -31,6 +31,8 @@ void export_Sniper_MtSniper()
                 return_value_policy<reference_existing_object>())
         .def("createMainTask", &MtSniper::createMainTask,
                 return_value_policy<reference_existing_object>())
+        .def("createGlobalBuffer", &MtSniper::createGlobalBuffer,
+                return_value_policy<reference_existing_object>())
         .def("run", &MtSniper::run);
 }
 

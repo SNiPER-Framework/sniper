@@ -15,37 +15,19 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef SNIPER_ATOMIC_FLAG_LOCK_GUARD_H
-#define SNIPER_ATOMIC_FLAG_LOCK_GUARD_H
+#ifndef SNIPER_MT_SNIPER_CONTEXT_H
+#define SNIPER_MT_SNIPER_CONTEXT_H
 
-#include <atomic>
+class DLElement;
 
-class AtomicFlagLockGuard final
+namespace Sniper
 {
-public:
-    AtomicFlagLockGuard(std::atomic_flag &src)
-        : m_ref(src)
+    struct MtContext
     {
-        while (m_ref.test_and_set())
-            continue;
-    }
+        DLElement *global_buffer;
+    };
+} // namespace Sniper
 
-    AtomicFlagLockGuard(bool /*externallyLocked*/, std::atomic_flag &src)
-        : m_ref(src)
-    {
-    }
-
-    ~AtomicFlagLockGuard()
-    {
-        m_ref.clear();
-    }
-
-private:
-    std::atomic_flag &m_ref;
-
-    AtomicFlagLockGuard() = delete;
-    AtomicFlagLockGuard(const AtomicFlagLockGuard &) = delete;
-    AtomicFlagLockGuard &operator=(const AtomicFlagLockGuard &) = delete;
-};
+extern Sniper::MtContext *mt_sniper_context;
 
 #endif

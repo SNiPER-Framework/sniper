@@ -41,6 +41,9 @@ public:
     Task *createOutputTask(const std::string &identifier);
     Task *createMainTask(const std::string &identifier);
 
+    // create the global event buffer
+    DLElement *createGlobalBuffer(const std::string &identifier);
+
     // create and start workers
     bool run();
 

@@ -16,12 +16,18 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/MtsMicroTask4Sniper.h"
+#include "SniperKernel/SniperObjPool.h"
 #include "SniperKernel/SniperLog.h"
 
 int InitializeSniperTask::exec()
 {
     auto &snoopy = m_sniperTask->Snoopy();
     snoopy.config() && snoopy.initialize();
+    bool status = snoopy.isErr() ? -1 : 0;
+    if (m_isMain)
+    {
+        SniperObjPool<Task>::instance()->deallocate(m_sniperTask);
+    }
     delete this; // manages itself
-    return snoopy.isErr() ? -1 : 0;
+    return status;
 }
