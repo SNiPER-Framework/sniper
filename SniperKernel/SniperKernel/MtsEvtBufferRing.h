@@ -26,7 +26,7 @@ class MtsEvtBufferRing
 public:
     struct EvtSlot
     {
-        // -1:invalid, 0:ready, 1:being processed, 2:done
+        // -1:Invalid, 0:Ready, 1:BeingProcessed, 2:Done, 9:NoMoreEvent
         long status;
         EvtSlot *next;
         std::any evt;
@@ -35,9 +35,13 @@ public:
     MtsEvtBufferRing(int capacity, int threshold);
     virtual ~MtsEvtBufferRing();
 
+    void setStatus(bool status) { m_status = status; }
+    bool status() { return m_status;}
+
     int size() { return m_size; }
     bool empty() { return m_size == 0; }
-    bool ample() { return m_size > m_threshold; }
+    bool urgent() { return m_status && m_size < m_threshold; }
+    bool thirsty() { return m_status && m_size < m_capacity; }
     bool full() { return m_size == m_capacity; }
 
     //template <typename EvtType>
@@ -54,6 +58,7 @@ private:
 
     EvtSlot *m_store;
 
+    bool m_status;
     int m_capacity;
     int m_threshold;
     std::atomic_int m_size;

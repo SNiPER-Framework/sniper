@@ -27,6 +27,7 @@ public:
     {
         OK = 0,
         Failed,
+        NoTask,
         NoMoreEvt
     };
 

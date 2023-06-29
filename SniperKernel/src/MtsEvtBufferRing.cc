@@ -18,7 +18,8 @@
 #include "SniperKernel/MtsEvtBufferRing.h"
 
 MtsEvtBufferRing::MtsEvtBufferRing(int capacity, int threshold)
-    : m_capacity(capacity),
+    : m_status(true),
+      m_capacity(capacity),
       m_threshold(threshold),
       m_size(0),
       m_lock(ATOMIC_FLAG_INIT)

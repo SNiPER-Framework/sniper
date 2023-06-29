@@ -21,6 +21,7 @@
 #include "SniperKernel/MtsMicroTask.h"
 #include "SniperKernel/SniperObjPool.h"
 #include "SniperKernel/Task.h"
+#include "SniperKernel/MtSniperContext.h"
 #include <atomic>
 
 class MtsPrimaryTask final : public MtsMicroTask
@@ -40,14 +41,26 @@ public:
     virtual Status exec() override;
 
 private:
+    Status execInputTask();
+    Status execOutputTask();
+    Status execMainTask(MtsEvtBufferRing::EvtSlot *slot);
+
     long m_evtMax; // the max event number to be processed
     std::atomic_long m_done; // the event number has been processed
 
     // the SNiPER Tasks for I/O
     Task *m_itask;
     Task *m_otask;
+
+    // atomic_flag as locks
+    std::atomic_flag m_ilock;
+    std::atomic_flag m_olock;
+
     // for all the SNiPER main Task copies
     SniperObjPool<Task> *m_sniperTaskPool;
+
+    // helpers
+    MtsEvtBufferRing* m_gb;
 };
 
 #endif
