@@ -32,7 +32,7 @@ public:
 
     virtual ~InitializeSniperTask() = default;
 
-    virtual int exec() override;
+    virtual Status exec() override;
 
 private:
     Task *m_sniperTask;

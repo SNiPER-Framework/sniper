@@ -46,6 +46,7 @@ public:
     static MtsWorkerPool *instance();
     static void destroy() { SniperObjPool<MtsWorker>::destroy(); }
 
+    MtsWorker* create();
     MtsWorker* get();
     void put(MtsWorker *w) { deallocate(w); }
     void waitAll();

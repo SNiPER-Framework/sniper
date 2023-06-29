@@ -37,7 +37,7 @@ public:
     void setMainTaskPool(SniperObjPool<Task> *mtaskpool) { m_sniperTaskPool = mtaskpool; }
 
     // do the data processing as a MicroTask once
-    virtual int exec() override;
+    virtual Status exec() override;
 
 private:
     long m_evtMax; // the max event number to be processed

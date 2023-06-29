@@ -26,7 +26,7 @@ MtsWorker::MtsWorker()
     : NamedElement("MtSniper:", "Worker"),
       m_thrd(nullptr)
 {
-    m_name += std::to_string(s_id++);
+    m_name += std::to_string(++s_id);
     LogDebug << "construct MtsWorker " << m_name << std::endl;
 }
 
@@ -49,7 +49,7 @@ void MtsWorker::run()
     LogDebug << "start worker " << m_name << std::endl;
 
     // loop the micro tasks in the queue until ...
-    while (taskQueue->concurrentPop()->exec() == 0)
+    while (taskQueue->concurrentPop()->exec() == MtsMicroTask::Status::OK)
         continue;
 
     // put self back to the pool for reusing
@@ -78,6 +78,13 @@ MtsWorkerPool *MtsWorkerPool::instance()
 MtsWorkerPool::MtsWorkerPool()
     : m_allWorkers(nullptr)
 {
+}
+
+MtsWorker *MtsWorkerPool::create()
+{
+    auto w = new MtsWorker();
+    m_allWorkers.concurrentPush(w);
+    return w;
 }
 
 MtsWorker *MtsWorkerPool::get()

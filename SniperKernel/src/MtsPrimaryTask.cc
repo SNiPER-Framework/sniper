@@ -33,10 +33,49 @@ MtsPrimaryTask::~MtsPrimaryTask()
     LogInfo << "events processed " << m_done << std::endl;
 }
 
-int MtsPrimaryTask::exec()
+MtsMicroTask::Status MtsPrimaryTask::exec()
 {
     static const bool infinite = m_evtMax < 0;
     static std::atomic_long count{0};  //it's different to m_done
+
+    long nexec = 0;
+    //if (gb->ample())
+    //{
+    //    auto evtslot = gb->next();
+    //    if (evtslot != nullptr)
+    //    {
+    //        //xxx set context
+    //        execMainTask();
+    //        ++nexec;
+    //    }
+    //    evtslot = gb->front();
+    //    if (evtslot->status == 2 && m_olock.test_and_set())
+    //    {
+    //        guard(m_olock);
+    //        while (evtslot->status == 2)
+    //        {
+    //            execOutputTask();
+    //            gb->pop_front();
+    //            evtslot = gb->front();
+    //            ++nexec;
+    //        }
+    //    }
+    //}
+
+    //if (nexec == 0 && m_itask.test_and_set())
+    //{
+    //    guard(m_ilock);
+    //    while (!gb->full())
+    //    {
+    //        execInputTask();
+    //        ++nexec;
+    //    }
+    //}
+
+    //if (nexec == 0)
+    //{
+    //    return 9; //nothing to do, wait for new microtasks
+    //}
 
     if (infinite || count++ < m_evtMax)
     {
@@ -46,9 +85,9 @@ int MtsPrimaryTask::exec()
             m_sniperTaskPool->deallocate(task);
             long done = ++m_done;
             LogDebug << "processed event: " << done << std::endl;
-            return 0;
+            return Status::OK;
         }
-        return -1; // error
+        return Status::Failed; // error
     }
     else {
         auto task = m_sniperTaskPool->allocate();
@@ -58,5 +97,5 @@ int MtsPrimaryTask::exec()
         }
     }
 
-    return -9; // reach the evtMax
+    return Status::NoMoreEvt;
 }

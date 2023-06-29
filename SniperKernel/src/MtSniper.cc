@@ -1,17 +1,17 @@
 /* Copyright (C) 2023
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
- 
+
    SNiPER is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
- 
+
    SNiPER is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU Lesser General Public License for more details.
- 
+
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
@@ -23,7 +23,7 @@
 #include "SniperKernel/MtsMicroTask4Sniper.h"
 #include "SniperPrivate/MtsPrimaryTask.h"
 
-Sniper::MtContext* mt_sniper_context = nullptr;
+Sniper::MtContext *mt_sniper_context = nullptr;
 
 MtSniper::MtSniper()
     : DLElement("MtSniper"),
@@ -35,6 +35,8 @@ MtSniper::MtSniper()
 
     declProp("NumThreads", m_nthrds = 4);
     declProp("EvtMax", m_evtMax = -1);
+    declProp("GlobalBufferCapacity", m_gbufCapacity = -1);
+    declProp("GlobalBufferThreshold", m_gbufThreshold = -1);
 
     mt_sniper_context = new Sniper::MtContext;
     mt_sniper_context->global_buffer = nullptr;
@@ -54,6 +56,12 @@ MtSniper::~MtSniper()
     m_microTaskQueue->destroy();
 
     delete mt_sniper_context;
+}
+
+void MtSniper::configGlobalBuffer(int capacity, int threshold)
+{
+    m_gbufCapacity = capacity;
+    m_gbufThreshold = threshold;
 }
 
 void MtSniper::setPrimaryTask(MtsMicroTask *task)
@@ -91,19 +99,10 @@ Task *MtSniper::createMainTask(const std::string &identifier)
     auto mtask = createSniperTask(identifier);
     if (mtask != nullptr)
     {
+        mtask->setScopeString("(1)");
         m_sniperTaskPool->deallocate(mtask);
     }
     return mtask;
-}
-
-DLElement *MtSniper::createGlobalBuffer(const std::string &identifier)
-{
-    mt_sniper_context->global_buffer = Sniper::create(identifier);
-    if (mt_sniper_context->global_buffer == nullptr)
-    {
-        LogError << "Failed to create " << identifier << std::endl;
-    }
-    return mt_sniper_context->global_buffer;
 }
 
 bool MtSniper::initialize()
@@ -117,48 +116,34 @@ bool MtSniper::initialize()
     sniper_context->set(Sniper::SysMode::MT);
     sniper_context->set_threads(m_nthrds);
 
-    if (mt_sniper_context->global_buffer != nullptr)
+    // create the global buffer for MtSniper
+    if (m_gbufThreshold < 0 || m_gbufThreshold >= m_gbufCapacity)
     {
-        mt_sniper_context->global_buffer->initialize();
+        LogWarn << "improper GlobalBuffer capacity and threshold" << std::endl;
+        return false;
+    }
+    mt_sniper_context->global_buffer = new MtsEvtBufferRing(m_gbufCapacity, m_gbufThreshold);
+
+    // create the micro tasks for IO Task initialize
+    m_microTaskQueue->push(new InitializeSniperTask(m_itask, false));
+    m_microTaskQueue->push(new InitializeSniperTask(m_otask, false));
+
+    // get the sniper main Task instance and create its copies and micro tasks for initialize
+    auto *mtask = m_sniperTaskPool->allocate();
+    m_microTaskQueue->push(new InitializeSniperTask(mtask, true));
+    auto jtask = mtask->json();
+    auto identifier = jtask["identifier"].get<std::string>();
+    for (int i = m_nthrds; i > 1; --i)
+    {
+        auto ptask = createSniperTask(identifier);
+        ptask->setScopeString(std::string("(") + std::to_string(i) + ")");
+        ptask->eval(jtask);
+        m_microTaskQueue->push(new InitializeSniperTask(ptask, true));
     }
 
-    {
-        // create the micro tasks for IO Task initialize
-        if (m_itask)
-        {
-            m_microTaskQueue->push(new InitializeSniperTask(m_itask, false));
-        }
-        if (m_otask)
-        {
-            m_microTaskQueue->push(new InitializeSniperTask(m_otask, false));
-        }
-
-        // get the sniper main Task instance and create its copies and micro tasks for initialize
-        auto *mtask = m_sniperTaskPool->allocate();
-        if (mtask != nullptr)
-        {
-            mtask->setScopeString("(1)");
-            m_microTaskQueue->push(new InitializeSniperTask(mtask, true));
-            auto jstr4task = mtask->json().str(-1);
-            for (int i = m_nthrds; i > 1; --i)
-            {
-                auto pobj = Sniper::create(jstr4task);
-                auto ptask = dynamic_cast<Task *>(pobj);
-                if (ptask == nullptr)
-                {
-                    LogError << "Failed to create a copy of the Sniper main Task" << std::endl;
-                    delete pobj;
-                    return false;
-                }
-                ptask->setScopeString(std::string("(")+std::to_string(i)+")");
-                m_microTaskQueue->push(new InitializeSniperTask(ptask, true));
-            }
-        }
-    }
-
+    // use the default primary task if it's not set externally
     if (!m_hasExternalPrimaryTask)
     {
-        // use the default primary task
         auto ptask = new MtsPrimaryTask();
         ptask->setEvtMax(m_evtMax);
         ptask->setInputTask(m_itask);
@@ -174,7 +159,7 @@ bool MtSniper::finalize()
 {
     if (mt_sniper_context->global_buffer != nullptr)
     {
-        mt_sniper_context->global_buffer->finalize();
+        delete mt_sniper_context->global_buffer;
     }
 
     return true;
@@ -188,7 +173,7 @@ bool MtSniper::run()
         LogInfo << "MtSniper initialized and now start workers..." << std::endl;
         for (int i = 0; i < m_nthrds; ++i)
         {
-            auto w = m_workerPool->get();
+            auto w = m_workerPool->create();
             w->start();
         }
 

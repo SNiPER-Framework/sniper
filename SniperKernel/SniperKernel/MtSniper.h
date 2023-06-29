@@ -32,6 +32,7 @@ public:
     // public methods
     void setNumThreads(unsigned int nthreads) { m_nthrds = nthreads; }
     void setEvtMax(long evtMax) { m_evtMax = evtMax; }
+    void configGlobalBuffer(int capacity, int threshold);
 
     // set the primary micro task (not a SNiPER Task) for MtSniper
     void setPrimaryTask(MtsMicroTask *task);
@@ -40,9 +41,6 @@ public:
     Task *createInputTask(const std::string &identifier);
     Task *createOutputTask(const std::string &identifier);
     Task *createMainTask(const std::string &identifier);
-
-    // create the global event buffer
-    DLElement *createGlobalBuffer(const std::string &identifier);
 
     // create and start workers
     bool run();
@@ -57,6 +55,8 @@ protected:
     // properties
     unsigned int m_nthrds;
     long m_evtMax;
+    int m_gbufCapacity;
+    int m_gbufThreshold;
 
     bool m_hasExternalPrimaryTask;
 

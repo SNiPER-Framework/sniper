@@ -23,10 +23,17 @@
 class MtsMicroTask : public NamedElement
 {
 public:
+    enum class Status
+    {
+        OK = 0,
+        Failed,
+        NoMoreEvt
+    };
+
     MtsMicroTask() : NamedElement("MtSniper:", "MtsMicroTask") {}
     virtual ~MtsMicroTask() = default;
 
-    virtual int exec() = 0;
+    virtual Status exec() = 0;
 };
 
 #endif

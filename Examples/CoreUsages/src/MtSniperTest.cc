@@ -15,18 +15,15 @@
    You should have received a copy of the GNU Lesser General Public License
    along with mt.sniper.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "SniperKernel/MtsEvtBufferRing.h"
 #include "SniperKernel/MtSniperContext.h"
 #include "SniperKernel/SniperJSON.h"
 #include "SniperKernel/SvcBase.h"
 #include "SniperKernel/AlgBase.h"
 #include "SniperKernel/ToolBase.h"
 #include "SniperKernel/DeclareDLE.h"
+#include <memory>
 
 typedef SniperJSON JsonEvent;
-
-typedef MtsEvtBufferRing<JsonEvent> GlobalBuffer4JsonEvent;
-SNIPER_DECLARE_DLE(GlobalBuffer4JsonEvent);
 
 ////////////////////////////////////////////////////////////////////////////////
 class FillGlobalBufAlg : public AlgBase
@@ -43,16 +40,18 @@ SNIPER_DECLARE_DLE(FillGlobalBufAlg);
 
 bool FillGlobalBufAlg::execute()
 {
-    static auto gbptr = dynamic_cast<GlobalBuffer4JsonEvent *>(mt_sniper_context->global_buffer);
-    static std::map<std::string, long> cppEvt{{"Event", -1}};
-    static auto ievt = cppEvt.find("Event");
+    static auto gbptr = mt_sniper_context->global_buffer;
+    static std::map<std::string, long> cppEvt{{"EventID", -1}};
+    static auto ievt = cppEvt.find("EventID");
 
-    ++(ievt->second);
+    ++(ievt->second);  //increase the EventID by 1
+    auto pevt = std::make_shared<JsonEvent>(cppEvt);
 
-    JsonEvent* pevt = new JsonEvent();
-    pevt->from(cppEvt);
+    // set the input value
+    double input = 9.9;
+    (*pevt)["input"].from(input);
 
-    gbptr->push_back(std::make_shared<JsonEvent>(pevt));
+    gbptr->push_back(pevt);
 
     return true;
 }

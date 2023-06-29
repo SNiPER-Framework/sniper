@@ -18,13 +18,13 @@
 #ifndef SNIPER_MT_SNIPER_CONTEXT_H
 #define SNIPER_MT_SNIPER_CONTEXT_H
 
-class DLElement;
+#include "SniperKernel/MtsEvtBufferRing.h"
 
 namespace Sniper
 {
     struct MtContext
     {
-        DLElement *global_buffer;
+        MtsEvtBufferRing *global_buffer;
     };
 } // namespace Sniper
 

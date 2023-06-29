@@ -15,15 +15,13 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef SNIPER_MTS_EVENT_QUEUE_H
-#define SNIPER_MTS_EVENT_QUEUE_H
+#ifndef SNIPER_MTS_EVT_BUFFER_RING_H
+#define SNIPER_MTS_EVT_BUFFER_RING_H
 
-#include "SniperKernel/DLElement.h"
 #include "SniperKernel/AtomicFlagLockGuard.h"
-#include <memory>
+#include <any>
 
-template <typename EvtType>
-class MtsEvtBufferRing : public DLElement
+class MtsEvtBufferRing
 {
 public:
     struct EvtSlot
@@ -31,22 +29,20 @@ public:
         // -1:invalid, 0:ready, 1:being processed, 2:done
         long status;
         EvtSlot *next;
-        std::shared_ptr<EvtType> evt;
+        std::any evt;
     };
 
-    //MtsEvtBufferRing(int capacity, int threshold);
-    MtsEvtBufferRing(const std::string &name);
+    MtsEvtBufferRing(int capacity, int threshold);
     virtual ~MtsEvtBufferRing();
-
-    virtual bool initialize() override;
-    virtual bool finalize() override;
 
     int size() { return m_size; }
     bool empty() { return m_size == 0; }
     bool ample() { return m_size > m_threshold; }
     bool full() { return m_size == m_capacity; }
 
-    void push_back(std::shared_ptr<EvtType> pEvt);
+    //template <typename EvtType>
+    //void push_back(EvtType evt);
+    void push_back(std::any evt);
     void pop_front();
     EvtSlot *front() { return m_begin; }
     EvtSlot *next();
@@ -62,81 +58,19 @@ private:
     int m_threshold;
     std::atomic_int m_size;
     std::atomic_flag m_lock;
+
+    MtsEvtBufferRing() = delete;
 };
 
-template <typename EvtType>
-MtsEvtBufferRing<EvtType>::MtsEvtBufferRing(const std::string &name)
-    : DLElement(name),
-      m_size(0),
-      m_lock(ATOMIC_FLAG_INIT)
-{
-    declProp("capacity", m_capacity = 10);
-    declProp("threshold", m_threshold = 4);
-}
-
-template <typename EvtType>
-MtsEvtBufferRing<EvtType>::~MtsEvtBufferRing()
-{
-}
-
-template <typename EvtType>
-bool MtsEvtBufferRing<EvtType>::initialize()
-{
-    m_store = new EvtSlot[m_capacity];
-    m_begin = m_store;
-    m_end = m_store + m_capacity;
-    for (m_cursor = m_begin; m_cursor != m_end; ++m_cursor)
-    {
-        m_cursor->status = -1;
-        m_cursor->next = m_cursor + 1;
-        m_cursor->evt = nullptr;
-    }
-    (--m_cursor)->next = m_begin;
-    m_cursor = m_end = m_begin;
-
-    return true;
-}
-
-template <typename EvtType>
-bool MtsEvtBufferRing<EvtType>::finalize()
-{
-    delete[] m_store;
-    return true;
-}
-
-template <typename EvtType>
-void MtsEvtBufferRing<EvtType>::push_back(std::shared_ptr<EvtType> pEvt)
-{
-    // should be invoked only in InputTask without concurrency
-    // and full() must be checked (is false) before invoking
-    m_end->evt.swap(pEvt);
-    m_end->status = 0;
-    m_end = m_end->next;
-    ++m_size;
-}
-
-template <typename EvtType>
-void MtsEvtBufferRing<EvtType>::pop_front()
-{
-    // should be invoked only in OutputTask without concurrency
-    // and front()->status must be checked (==2) before invoking
-    m_begin->evt = nullptr;
-    m_begin->status = -1;
-    m_begin = m_begin->next;
-    --m_size;
-}
-
-template <typename EvtType>
-typename MtsEvtBufferRing<EvtType>::EvtSlot *MtsEvtBufferRing<EvtType>::next()
-{
-    EvtSlot *pcur = nullptr;
-    AtomicFlagLockGuard guard(m_lock);
-    if (m_cursor->status == 0)
-    {
-        pcur = m_cursor;
-        m_cursor = m_cursor->next;
-    }
-    return pcur;
-}
+//template <typename EvtType>
+//void MtsEvtBufferRing::push_back(EvtType evt)
+//{
+//    // should be invoked only in InputTask without concurrency
+//    // and full() must be checked (is false) before invoking
+//    m_end->evt = evt;
+//    m_end->status = 0;
+//    m_end = m_end->next;
+//    ++m_size;
+//}
 
 #endif
