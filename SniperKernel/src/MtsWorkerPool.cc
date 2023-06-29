@@ -49,8 +49,24 @@ void MtsWorker::run()
     LogDebug << "start worker " << m_name << std::endl;
 
     // loop the micro tasks in the queue until ...
-    while (taskQueue->concurrentPop()->exec() == MtsMicroTask::Status::OK)
-        continue;
+    while (true)
+    {
+        switch (taskQueue->concurrentPop()->exec())
+        {
+        case MtsMicroTask::Status::OK:
+            LogInfo << __LINE__ << std::endl;
+            continue; //continue the loop
+        case MtsMicroTask::Status::NoTask:
+            LogInfo << __LINE__ << std::endl;
+            break;
+        case MtsMicroTask::Status::NoMoreEvt:
+            LogInfo << __LINE__ << std::endl;
+            break;
+        default:  //Failed
+            LogInfo << __LINE__ << std::endl;
+            break;
+        }
+    }
 
     // put self back to the pool for reusing
     workerPool->put(this);
