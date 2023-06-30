@@ -24,12 +24,10 @@
 #include "SniperPrivate/MtsPrimaryTask.h"
 
 Sniper::MtContext *mt_sniper_context = nullptr;
+thread_local std::any* Sniper::MtContext::current_event = nullptr;
 
 MtSniper::MtSniper()
-    : DLElement("MtSniper"),
-      m_hasExternalPrimaryTask(false),
-      m_itask(nullptr),
-      m_otask(nullptr)
+    : DLElement("MtSniper")
 {
     m_tag = "MtSniper";
 
@@ -91,7 +89,7 @@ Task *MtSniper::createInputTask(const std::string &identifier)
 Task *MtSniper::createOutputTask(const std::string &identifier)
 {
     m_otask = createSniperTask(identifier);
-    return m_itask;
+    return m_otask;
 }
 
 Task *MtSniper::createMainTask(const std::string &identifier)
@@ -171,6 +169,9 @@ bool MtSniper::run()
     if (status)
     {
         LogInfo << "MtSniper initialized and now start workers..." << std::endl;
+        // FIXME: a potential problem
+        // If the I/O tasks initialize() is slower than the MainTask initialize(),
+        // the PrimaryTask may be invoked with incomplete I/O tasks
         for (int i = 0; i < m_nthrds; ++i)
         {
             auto w = m_workerPool->create();

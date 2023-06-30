@@ -42,22 +42,21 @@ public:
 
 private:
     Status execInputTask();
-    Status execOutputTask();
     Status execMainTask(MtsEvtBufferRing::EvtSlot *slot);
 
-    long m_evtMax; // the max event number to be processed
-    std::atomic_long m_done; // the event number has been processed
+    long m_evtMax{-1};          // the max event number to be processed
+    std::atomic_long m_done{0}; // the event number has been processed
 
     // the SNiPER Tasks for I/O
-    Task *m_itask;
-    Task *m_otask;
+    Task *m_itask{nullptr};
+    Task *m_otask{nullptr};
 
     // atomic_flag as locks
-    std::atomic_flag m_ilock;
-    std::atomic_flag m_olock;
+    std::atomic_flag m_ilock{ATOMIC_FLAG_INIT};
+    std::atomic_flag m_olock{ATOMIC_FLAG_INIT};
 
     // for all the SNiPER main Task copies
-    SniperObjPool<Task> *m_sniperTaskPool;
+    SniperObjPool<Task> *m_sniperTaskPool{nullptr};
 
     // helpers
     MtsEvtBufferRing* m_gb;

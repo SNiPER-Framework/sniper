@@ -19,12 +19,18 @@
 #define SNIPER_MT_SNIPER_CONTEXT_H
 
 #include "SniperKernel/MtsEvtBufferRing.h"
+#include "SniperKernel/MtsSyncAssistant.h"
 
 namespace Sniper
 {
+    typedef MtsEvtBufferRing::EvtSlot MtSniperEvtSlot;
+    typedef MtsEvtBufferRing::SlotStatus MtsEvtSlotStatus;
+
     struct MtContext
     {
         MtsEvtBufferRing *global_buffer;
+        MtsSyncAssistant global_sync_assistant; // for all workers
+        thread_local static std::any *current_event;
     };
 } // namespace Sniper
 

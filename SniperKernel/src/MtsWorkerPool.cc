@@ -16,9 +16,9 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperPrivate/MtsWorkerPool.h"
-#include "SniperKernel/SniperLog.h"
 #include "SniperKernel/MtsMicroTaskQueue.h"
-#include "SniperPrivate/MtsWorkerPool.h"
+#include "SniperKernel/SniperLog.h"
+#include "SniperKernel/MtSniperContext.h"
 
 std::atomic_int MtsWorker::s_id{0};
 
@@ -45,31 +45,36 @@ void MtsWorker::run()
     // initialize the necessary pointers statically
     static MtsMicroTaskQueue *taskQueue = MtsMicroTaskQueue::instance();
     static MtsWorkerPool *workerPool = MtsWorkerPool::instance();
+    static auto& globalSyncAssistant = mt_sniper_context->global_sync_assistant;
 
     LogDebug << "start worker " << m_name << std::endl;
 
     // loop the micro tasks in the queue until ...
-    while (true)
+    while (globalSyncAssistant.active())
     {
         switch (taskQueue->concurrentPop()->exec())
         {
         case MtsMicroTask::Status::OK:
-            LogInfo << __LINE__ << std::endl;
+            //LogInfo << "OK" << std::endl;
             continue; //continue the loop
+        //case MtsMicroTask::Status::GroupFinished:
+            //workerPool->put(this); // put self back to the pool for reusing
         case MtsMicroTask::Status::NoTask:
-            LogInfo << __LINE__ << std::endl;
-            break;
+            //LogInfo << "NoTask and waiting..." << std::endl;
+            globalSyncAssistant.pauseCurrentThread();
+            //LogInfo << "continue the worker" << std::endl;
+            continue; //continue the loop
         case MtsMicroTask::Status::NoMoreEvt:
-            LogInfo << __LINE__ << std::endl;
-            break;
+            globalSyncAssistant.resumeAllThreads(); // wakeup any paused workers so it can finish itself
+            LogInfo << "NoMoreEvt, endup the worker" << std::endl;
+            return;
         default:  //Failed
-            LogInfo << __LINE__ << std::endl;
-            break;
+            globalSyncAssistant.deactive();
+            globalSyncAssistant.resumeAllThreads(); // wakeup any paused workers so it can finish itself
+            LogError << "failed to exec a MicroTask, endup all workers" << std::endl;
+            return;
         }
     }
-
-    // put self back to the pool for reusing
-    workerPool->put(this);
 }
 
 void MtsWorker::wait()

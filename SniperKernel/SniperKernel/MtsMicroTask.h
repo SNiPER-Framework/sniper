@@ -25,8 +25,9 @@ class MtsMicroTask : public NamedElement
 public:
     enum class Status
     {
-        OK = 0,
+        OK,
         Failed,
+        //GroupFinished,
         NoTask,
         NoMoreEvt
     };

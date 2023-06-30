@@ -58,10 +58,10 @@ protected:
     int m_gbufCapacity;
     int m_gbufThreshold;
 
-    bool m_hasExternalPrimaryTask;
+    bool m_hasExternalPrimaryTask{false};
 
-    Task* m_itask;
-    Task* m_otask;
+    Task *m_itask{nullptr};
+    Task *m_otask{nullptr};
 
     MtsMicroTaskQueue *m_microTaskQueue;
     MtsWorkerPool *m_workerPool;

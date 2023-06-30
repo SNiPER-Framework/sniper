@@ -24,10 +24,17 @@
 class MtsEvtBufferRing
 {
 public:
+    enum class SlotStatus
+    {
+        Invalid,
+        Ready,
+        BeingProcessed,
+        Done
+    };
+
     struct EvtSlot
     {
-        // -1:Invalid, 0:Ready, 1:BeingProcessed, 2:Done, 9:NoMoreEvent
-        long status;
+        SlotStatus status;
         EvtSlot *next;
         std::any evt;
     };
@@ -35,18 +42,17 @@ public:
     MtsEvtBufferRing(int capacity, int threshold);
     virtual ~MtsEvtBufferRing();
 
-    void setStatus(bool status) { m_status = status; }
-    bool status() { return m_status;}
+    void deVigorous() { m_vigorous = false; }
+    bool vigorous() { return m_vigorous;}
 
     int size() { return m_size; }
     bool empty() { return m_size == 0; }
-    bool urgent() { return m_status && m_size < m_threshold; }
-    bool thirsty() { return m_status && m_size < m_capacity; }
+    bool urgent() { return m_vigorous && m_size < m_threshold; }
+    bool eager() { return m_vigorous && m_size < m_capacity; }
     bool full() { return m_size == m_capacity; }
 
-    //template <typename EvtType>
-    //void push_back(EvtType evt);
-    void push_back(std::any evt);
+    template <typename EvtType>
+    void push_back(EvtType evt);
     void pop_front();
     EvtSlot *front() { return m_begin; }
     EvtSlot *next();
@@ -58,24 +64,24 @@ private:
 
     EvtSlot *m_store;
 
-    bool m_status;
     int m_capacity;
     int m_threshold;
-    std::atomic_int m_size;
-    std::atomic_flag m_lock;
+    bool m_vigorous{true};
+    std::atomic_int m_size{0};
+    std::atomic_flag m_lock{ATOMIC_FLAG_INIT};
 
     MtsEvtBufferRing() = delete;
 };
 
-//template <typename EvtType>
-//void MtsEvtBufferRing::push_back(EvtType evt)
-//{
-//    // should be invoked only in InputTask without concurrency
-//    // and full() must be checked (is false) before invoking
-//    m_end->evt = evt;
-//    m_end->status = 0;
-//    m_end = m_end->next;
-//    ++m_size;
-//}
+template <typename EvtType>
+void MtsEvtBufferRing::push_back(EvtType evt)
+{
+    // should be invoked only in InputTask without concurrency
+    // and full() must be checked (is false) before invoking
+    m_end->evt = evt;
+    m_end->status = SlotStatus::Ready;
+    m_end = m_end->next;
+    ++m_size;
+}
 
 #endif

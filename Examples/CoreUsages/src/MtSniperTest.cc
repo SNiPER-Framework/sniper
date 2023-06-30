@@ -22,6 +22,7 @@
 #include "SniperKernel/ToolBase.h"
 #include "SniperKernel/DeclareDLE.h"
 #include <memory>
+#include <fstream>
 
 typedef SniperJSON JsonEvent;
 
@@ -29,14 +30,23 @@ typedef SniperJSON JsonEvent;
 class FillGlobalBufAlg : public AlgBase
 {
 public:
-    FillGlobalBufAlg(const std::string &name) : AlgBase(name) {}
+    FillGlobalBufAlg(const std::string &name);
     virtual ~FillGlobalBufAlg() = default;
 
     virtual bool initialize() override { return true; }
     virtual bool execute() override;
     virtual bool finalize() override { return true; }
+
+private:
+    long m_max;
 };
 SNIPER_DECLARE_DLE(FillGlobalBufAlg);
+
+FillGlobalBufAlg::FillGlobalBufAlg(const std::string &name)
+    : AlgBase(name)
+{
+    declProp("MaxEvtNum", m_max = 0x7FFFFFFFFFFFFFFF);
+}
 
 bool FillGlobalBufAlg::execute()
 {
@@ -44,7 +54,12 @@ bool FillGlobalBufAlg::execute()
     static std::map<std::string, long> cppEvt{{"EventID", -1}};
     static auto ievt = cppEvt.find("EventID");
 
-    ++(ievt->second);  //increase the EventID by 1
+    if (++(ievt->second) >= m_max) //;  //increase the EventID by 1
+    {
+        gbptr->deVigorous();
+        return true;
+    }
+
     auto pevt = std::make_shared<JsonEvent>(cppEvt);
 
     // set the input value
@@ -57,3 +72,87 @@ bool FillGlobalBufAlg::execute()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+class PruneGlobalBufAlg : public AlgBase
+{
+public:
+    PruneGlobalBufAlg(const std::string &name);
+    virtual ~PruneGlobalBufAlg() = default;
+
+    virtual bool initialize() override;
+    virtual bool execute() override;
+    virtual bool finalize() override;
+
+private:
+    std::string m_ofname;
+    std::ofstream m_ofs;
+};
+SNIPER_DECLARE_DLE(PruneGlobalBufAlg);
+
+PruneGlobalBufAlg::PruneGlobalBufAlg(const std::string &name)
+    : AlgBase(name)
+{
+    declProp("OutputFile", m_ofname);
+}
+
+bool PruneGlobalBufAlg::initialize()
+{
+    m_ofs.open(m_ofname, std::ios::trunc);
+    return true;
+}
+
+bool PruneGlobalBufAlg::execute()
+{
+    auto &pevt = std::any_cast<std::shared_ptr<JsonEvent> &>(*(mt_sniper_context->current_event));
+
+    auto res = pevt->str(-1);
+    m_ofs.write(res.c_str(), res.size());
+    m_ofs.put('\n');
+
+    return true;
+}
+
+bool PruneGlobalBufAlg::finalize()
+{
+    m_ofs.close();
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+class TimeConsumeAlg : public AlgBase
+{
+public:
+    TimeConsumeAlg(const std::string &name);
+    virtual ~TimeConsumeAlg() = default;
+
+    virtual bool initialize() override;
+    virtual bool execute() override;
+    virtual bool finalize() override;
+
+private:
+    /*data*/
+};
+SNIPER_DECLARE_DLE(TimeConsumeAlg);
+
+TimeConsumeAlg::TimeConsumeAlg(const std::string &name)
+    : AlgBase(name)
+{
+}
+
+bool TimeConsumeAlg::initialize()
+{
+    return true;
+}
+
+bool TimeConsumeAlg::execute()
+{
+    auto &pevt = std::any_cast<std::shared_ptr<JsonEvent> &>(*(mt_sniper_context->current_event));
+
+    (*pevt)["result"].from(99.9);
+
+    return true;
+}
+
+bool TimeConsumeAlg::finalize()
+{
+    return true;
+}

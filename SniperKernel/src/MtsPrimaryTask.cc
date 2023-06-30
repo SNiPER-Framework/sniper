@@ -19,13 +19,6 @@
 #include "SniperKernel/SniperLog.h"
 
 MtsPrimaryTask::MtsPrimaryTask()
-    : m_evtMax(-1),
-      m_done(0),
-      m_itask(nullptr),
-      m_otask(nullptr),
-      m_ilock(ATOMIC_FLAG_INIT),
-      m_olock(ATOMIC_FLAG_INIT),
-      m_sniperTaskPool(nullptr)
 {
     m_name = "MtsPrimaryTask";
     m_gb = mt_sniper_context->global_buffer;
@@ -46,24 +39,27 @@ MtsMicroTask::Status MtsPrimaryTask::exec()
     }
 
     // ...
-    Status _status = Status::OK;
+    Status returnCode = Status::OK;
     long nsubtask = 0;
 
     // whether to run MainTask
     auto evtslot = m_gb->next();
     if (evtslot != nullptr)
     {
-        _status = execMainTask(evtslot);
+        mt_sniper_context->current_event = &(evtslot->evt);
+        returnCode = execMainTask(evtslot);
         ++nsubtask;
     }
     // whether to run OutputTask
     evtslot = m_gb->front();
-    if (evtslot->status == 2 && !m_olock.test_and_set())
+    if (evtslot->status == Sniper::MtsEvtSlotStatus::Done && !m_olock.test_and_set())
     {
         AtomicFlagLockGuard guard(false, m_olock);
-        while (evtslot->status == 2)
+        static auto &snoopy = m_otask->Snoopy();
+        while (evtslot->status == Sniper::MtsEvtSlotStatus::Done)
         {
-            execOutputTask(); // suppose it never fails
+            mt_sniper_context->current_event = &(evtslot->evt);
+            snoopy.run_once(); // suppose it never fails
             m_gb->pop_front();
             evtslot = m_gb->front();
             ++nsubtask;
@@ -72,28 +68,24 @@ MtsMicroTask::Status MtsPrimaryTask::exec()
 
     if (nsubtask != 0)
     {
-        return _status;
+        return returnCode;
     }
 
-    return m_gb->status() ? Status::NoTask : Status::NoMoreEvt;
+    return m_gb->vigorous() ? Status::NoTask : Status::NoMoreEvt;
 }
 
 MtsMicroTask::Status MtsPrimaryTask::execInputTask()
 {
+    static auto &globalSyncAssistant = mt_sniper_context->global_sync_assistant;
     static auto &snoopy = m_itask->Snoopy();
 
-    bool status = true;
-    while (status && m_gb->thirsty())
+    bool status = snoopy.run_once();
+    while (status && m_gb->eager())
     {
+        globalSyncAssistant.resumeOneThread();
         status = snoopy.run_once();
     }
     return status ? Status::OK : Status::Failed;
-}
-
-MtsMicroTask::Status MtsPrimaryTask::execOutputTask()
-{
-    static auto &snoopy = m_otask->Snoopy();
-    return Status::OK;
 }
 
 MtsMicroTask::Status MtsPrimaryTask::execMainTask(MtsEvtBufferRing::EvtSlot *slot)
@@ -105,6 +97,7 @@ MtsMicroTask::Status MtsPrimaryTask::execMainTask(MtsEvtBufferRing::EvtSlot *slo
     {
         auto task = m_sniperTaskPool->allocate();
         bool status = task->Snoopy().run_once();
+        slot->status = Sniper::MtsEvtSlotStatus::Done;
         m_sniperTaskPool->deallocate(task);
         if (status)
         {
