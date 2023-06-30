@@ -28,6 +28,76 @@
 
 typedef SniperJSON JsonEvent;
 
+class IFillGlobalBufSvc
+{
+public:
+    virtual void fill(std::shared_ptr<JsonEvent> &pevt) = 0;
+    virtual void stop() = 0;
+};
+
+class IGetGlobalBufSvc
+{
+public:
+    virtual std::shared_ptr<JsonEvent> &get() = 0;
+    virtual void done() = 0;
+    virtual std::shared_ptr<JsonEvent> &pop() = 0;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+class FillGlobalBufSvc : public SvcBase, public IFillGlobalBufSvc
+{
+public:
+    FillGlobalBufSvc(const std::string &name) : SvcBase(name) {}
+    virtual ~FillGlobalBufSvc() = default;
+
+    virtual bool initialize() override { return true; }
+    virtual bool finalize() override { return true; }
+
+    virtual void fill(std::shared_ptr<JsonEvent> &pevt) override;
+    virtual void stop() override;
+};
+SNIPER_DECLARE_DLE(FillGlobalBufSvc);
+
+void FillGlobalBufSvc::fill(std::shared_ptr<JsonEvent> &pevt)
+{
+    static auto gbptr = mt_sniper_context->global_buffer;
+    gbptr->push_back(pevt);
+}
+
+void FillGlobalBufSvc::stop()
+{
+    mt_sniper_context->global_buffer->deVigorous();
+    getParent()->stop();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+class GetGlobalBufSvc : public SvcBase, public IGetGlobalBufSvc
+{
+public:
+    GetGlobalBufSvc(const std::string &name) : SvcBase(name) {}
+    virtual ~GetGlobalBufSvc() = default;
+
+    virtual bool initialize() override { return true; }
+    virtual bool finalize() override { return true; }
+
+    virtual std::shared_ptr<JsonEvent> &get() override;
+    virtual void done() override {}
+    virtual std::shared_ptr<JsonEvent> &pop() override;
+};
+SNIPER_DECLARE_DLE(GetGlobalBufSvc);
+
+std::shared_ptr<JsonEvent> &GetGlobalBufSvc::get()
+{
+    auto &pevt = std::any_cast<std::shared_ptr<JsonEvent> &>(*(mt_sniper_context->current_event));
+    return pevt;
+}
+
+std::shared_ptr<JsonEvent> &GetGlobalBufSvc::pop()
+{
+    auto &pevt = std::any_cast<std::shared_ptr<JsonEvent> &>(*(mt_sniper_context->current_event));
+    return pevt;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 class FillGlobalBufAlg : public AlgBase
 {
@@ -35,12 +105,13 @@ public:
     FillGlobalBufAlg(const std::string &name);
     virtual ~FillGlobalBufAlg() = default;
 
-    virtual bool initialize() override { return true; }
+    virtual bool initialize() override;
     virtual bool execute() override;
     virtual bool finalize() override { return true; }
 
 private:
     long m_max;
+    IFillGlobalBufSvc *m_svc;
     std::mt19937_64 m_gen{std::random_device()()};
     //std::fisher_f_distribution<double> m_random{25.0 /* m */, 2.0 /* n */};
     std::normal_distribution<double> m_random{0.8, 4.0};
@@ -54,15 +125,20 @@ FillGlobalBufAlg::FillGlobalBufAlg(const std::string &name)
     m_gen.seed(35711);
 }
 
+bool FillGlobalBufAlg::initialize()
+{
+    m_svc = SniperPtr<IFillGlobalBufSvc>(getParent(), "FillGlobalBufSvc").data();
+    return true;
+}
+
 bool FillGlobalBufAlg::execute()
 {
-    static auto gbptr = mt_sniper_context->global_buffer;
     static std::map<std::string, long> cppEvt{{"EventID", -1}};
     static auto ievt = cppEvt.find("EventID");
 
     if (++(ievt->second) >= m_max) // increase the EventID by 1
     {
-        gbptr->deVigorous();
+        m_svc->stop();
         return true;
     }
 
@@ -76,7 +152,7 @@ bool FillGlobalBufAlg::execute()
     }
     (*pevt)["input"].from(input);
 
-    gbptr->push_back(pevt);
+    m_svc->fill(pevt);
 
     return true;
 }
@@ -95,6 +171,8 @@ public:
 private:
     std::string m_ofname;
     std::ofstream m_ofs;
+
+    IGetGlobalBufSvc *m_svc;
 };
 SNIPER_DECLARE_DLE(PruneGlobalBufAlg);
 
@@ -107,12 +185,13 @@ PruneGlobalBufAlg::PruneGlobalBufAlg(const std::string &name)
 bool PruneGlobalBufAlg::initialize()
 {
     m_ofs.open(m_ofname, std::ios::trunc);
+    m_svc = SniperPtr<IGetGlobalBufSvc>(getParent(), "GetGlobalBufSvc").data();
     return true;
 }
 
 bool PruneGlobalBufAlg::execute()
 {
-    auto &pevt = std::any_cast<std::shared_ptr<JsonEvent> &>(*(mt_sniper_context->current_event));
+    auto pevt = m_svc->pop();
 
     auto res = pevt->str(-1);
     m_ofs.write(res.c_str(), res.size());
@@ -194,6 +273,7 @@ public:
 
 private:
     ITimeConsumeTool *m_tool;
+    IGetGlobalBufSvc *m_svc;
 };
 SNIPER_DECLARE_DLE(TimeConsumeAlg);
 
@@ -205,17 +285,20 @@ TimeConsumeAlg::TimeConsumeAlg(const std::string &name)
 bool TimeConsumeAlg::initialize()
 {
     m_tool = tool<ITimeConsumeTool>("TimeConsumeTool");
-    return m_tool != nullptr ? true : false;
+    m_svc = SniperPtr<IGetGlobalBufSvc>(getParent(), "GetGlobalBufSvc").data();
+    return true;
 }
 
 bool TimeConsumeAlg::execute()
 {
-    auto &evt = *std::any_cast<std::shared_ptr<JsonEvent> &>(*(mt_sniper_context->current_event));
+    auto &evt = *(m_svc->get());
 
     auto input = evt["input"].get<double>();
     auto result = m_tool->numberIntegral4Sin(input);
 
     evt["result"].from(result);
+
+    m_svc->done();
 
     return true;
 }
