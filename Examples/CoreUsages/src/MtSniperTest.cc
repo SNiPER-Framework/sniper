@@ -20,6 +20,7 @@
 #include "SniperKernel/SvcBase.h"
 #include "SniperKernel/AlgBase.h"
 #include "SniperKernel/ToolBase.h"
+#include "SniperKernel/IIncidentHandler.h"
 #include "SniperKernel/DeclareDLE.h"
 #include <random>
 #include <cmath>
@@ -27,6 +28,7 @@
 #include <fstream>
 
 typedef SniperJSON JsonEvent;
+typedef std::map<std::string, std::any> MappedEvent;
 
 class IFillGlobalBufSvc
 {
@@ -38,9 +40,9 @@ public:
 class IGetGlobalBufSvc
 {
 public:
-    virtual std::shared_ptr<JsonEvent> &get() = 0;
+    virtual MappedEvent &get() = 0;
+    virtual MappedEvent &pop() = 0;
     virtual void done() = 0;
-    virtual std::shared_ptr<JsonEvent> &pop() = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +63,10 @@ SNIPER_DECLARE_DLE(FillGlobalBufSvc);
 void FillGlobalBufSvc::fill(std::shared_ptr<JsonEvent> &pevt)
 {
     static auto gbptr = mt_sniper_context->global_buffer;
-    gbptr->push_back(pevt);
+    //gbptr->push_back(pevt);
+    static const std::string key{"event"};
+    MappedEvent emap{{key, pevt}};
+    gbptr->push_back(emap);
 }
 
 void FillGlobalBufSvc::stop()
@@ -80,22 +85,20 @@ public:
     virtual bool initialize() override { return true; }
     virtual bool finalize() override { return true; }
 
-    virtual std::shared_ptr<JsonEvent> &get() override;
+    virtual MappedEvent &get() override;
+    virtual MappedEvent &pop() override;
     virtual void done() override {}
-    virtual std::shared_ptr<JsonEvent> &pop() override;
 };
 SNIPER_DECLARE_DLE(GetGlobalBufSvc);
 
-std::shared_ptr<JsonEvent> &GetGlobalBufSvc::get()
+MappedEvent &GetGlobalBufSvc::get()
 {
-    auto &pevt = std::any_cast<std::shared_ptr<JsonEvent> &>(*(mt_sniper_context->current_event));
-    return pevt;
+    return std::any_cast<MappedEvent &>(*(mt_sniper_context->current_event));
 }
 
-std::shared_ptr<JsonEvent> &GetGlobalBufSvc::pop()
+MappedEvent &GetGlobalBufSvc::pop()
 {
-    auto &pevt = std::any_cast<std::shared_ptr<JsonEvent> &>(*(mt_sniper_context->current_event));
-    return pevt;
+    return std::any_cast<MappedEvent &>(*(mt_sniper_context->current_event));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -191,7 +194,8 @@ bool PruneGlobalBufAlg::initialize()
 
 bool PruneGlobalBufAlg::execute()
 {
-    auto pevt = m_svc->pop();
+    auto &emap = m_svc->pop();
+    auto &pevt = std::any_cast<std::shared_ptr<JsonEvent> &>(emap["event"]);
 
     auto res = pevt->str(-1);
     m_ofs.write(res.c_str(), res.size());
@@ -203,6 +207,26 @@ bool PruneGlobalBufAlg::execute()
 bool PruneGlobalBufAlg::finalize()
 {
     m_ofs.close();
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+class EventProcessedHandler : public IIncidentHandler
+{
+public:
+    EventProcessedHandler(ExecUnit *domain, IGetGlobalBufSvc *svc)
+        : IIncidentHandler(domain),
+          m_svc(svc) {}
+    virtual ~EventProcessedHandler() = default;
+
+    virtual bool handle(Incident &incident) override;
+
+    IGetGlobalBufSvc *m_svc;
+};
+
+bool EventProcessedHandler::handle(Incident &Incident)
+{
+    m_svc->done();
     return true;
 }
 
@@ -274,6 +298,7 @@ public:
 private:
     ITimeConsumeTool *m_tool;
     IGetGlobalBufSvc *m_svc;
+    EventProcessedHandler *m_handler;
 };
 SNIPER_DECLARE_DLE(TimeConsumeAlg);
 
@@ -286,24 +311,29 @@ bool TimeConsumeAlg::initialize()
 {
     m_tool = tool<ITimeConsumeTool>("TimeConsumeTool");
     m_svc = SniperPtr<IGetGlobalBufSvc>(getParent(), "GetGlobalBufSvc").data();
+    m_handler = new EventProcessedHandler(getParent(), m_svc);
+    m_handler->regist("EndEvent");
+
     return true;
 }
 
 bool TimeConsumeAlg::execute()
 {
-    auto &evt = *(m_svc->get());
+    auto &emap = m_svc->get();
+
+    auto &evt = *std::any_cast<std::shared_ptr<JsonEvent> &>(emap["event"]);
 
     auto input = evt["input"].get<double>();
     auto result = m_tool->numberIntegral4Sin(input);
 
     evt["result"].from(result);
 
-    m_svc->done();
-
     return true;
 }
 
 bool TimeConsumeAlg::finalize()
 {
+    m_handler->unregist("EndEvent");
+    delete m_handler;
     return true;
 }

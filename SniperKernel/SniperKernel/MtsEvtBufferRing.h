@@ -52,7 +52,7 @@ public:
     bool full() { return m_size == m_capacity; }
 
     template <typename EvtType>
-    void push_back(EvtType evt);
+    void push_back(EvtType &evt);
     void pop_front();
     EvtSlot *front() { return m_begin; }
     EvtSlot *next();
@@ -74,7 +74,7 @@ private:
 };
 
 template <typename EvtType>
-void MtsEvtBufferRing::push_back(EvtType evt)
+void MtsEvtBufferRing::push_back(EvtType &evt)
 {
     // should be invoked only in InputTask without concurrency
     // and full() must be checked (is false) before invoking
