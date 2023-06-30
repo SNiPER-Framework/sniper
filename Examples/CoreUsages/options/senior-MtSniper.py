@@ -5,19 +5,17 @@ if __name__ == "__main__":
 
     import Sniper
     import SniperCoreUsages
+    import SniperProfiling
 
     ###################################################
     mtsniper = Sniper.MtSniper()
-    svc = Sniper.create("SharedElem<DummySvc>/SharedSvc")
-    svc.setDescription("a service instance that share by different Tasks")
-    svc.setLogLevel(4)
 
     ###################################################
     Sniper.setLogLevel(3)
     nthrd = 4
-    mtsniper.setEvtMax(10000)
+    mtsniper.setEvtMax(3000)
     mtsniper.setNumThreads(nthrd)
-    mtsniper.configGlobalBuffer(nthrd*3, nthrd*2)
+    mtsniper.configGlobalBuffer(nthrd*3, nthrd+2)
 
     ###################################################
     task = mtsniper.createInputTask("Task/InputTask")
@@ -31,7 +29,11 @@ if __name__ == "__main__":
 
     ###################################################
     task = mtsniper.createMainTask("Task/MainTask")
+    svc = task.createSvc("SniperProfiling")
+    if nthrd == 1:
+        svc.property("SaveDetails").set(True)
     alg = task.createAlg("TimeConsumeAlg")
+    alg.createTool("TimeConsumeTool")
 
     ###################################################
     mtsniper.show()

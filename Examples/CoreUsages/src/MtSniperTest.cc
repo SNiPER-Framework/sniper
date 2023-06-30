@@ -21,6 +21,8 @@
 #include "SniperKernel/AlgBase.h"
 #include "SniperKernel/ToolBase.h"
 #include "SniperKernel/DeclareDLE.h"
+#include <random>
+#include <cmath>
 #include <memory>
 #include <fstream>
 
@@ -39,6 +41,9 @@ public:
 
 private:
     long m_max;
+    std::mt19937_64 m_gen{std::random_device()()};
+    //std::fisher_f_distribution<double> m_random{25.0 /* m */, 2.0 /* n */};
+    std::normal_distribution<double> m_random{0.8, 4.0};
 };
 SNIPER_DECLARE_DLE(FillGlobalBufAlg);
 
@@ -46,6 +51,7 @@ FillGlobalBufAlg::FillGlobalBufAlg(const std::string &name)
     : AlgBase(name)
 {
     declProp("MaxEvtNum", m_max = 0x7FFFFFFFFFFFFFFF);
+    m_gen.seed(35711);
 }
 
 bool FillGlobalBufAlg::execute()
@@ -54,7 +60,7 @@ bool FillGlobalBufAlg::execute()
     static std::map<std::string, long> cppEvt{{"EventID", -1}};
     static auto ievt = cppEvt.find("EventID");
 
-    if (++(ievt->second) >= m_max) //;  //increase the EventID by 1
+    if (++(ievt->second) >= m_max) // increase the EventID by 1
     {
         gbptr->deVigorous();
         return true;
@@ -62,8 +68,12 @@ bool FillGlobalBufAlg::execute()
 
     auto pevt = std::make_shared<JsonEvent>(cppEvt);
 
-    // set the input value
-    double input = 9.9;
+    // generate and set the input value
+    auto input = m_random(m_gen) * 100;
+    while (input > 2000. || input < 1.)
+    {
+        input = m_random(m_gen) * 100;
+    }
     (*pevt)["input"].from(input);
 
     gbptr->push_back(pevt);
@@ -118,6 +128,60 @@ bool PruneGlobalBufAlg::finalize()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+class ITimeConsumeTool
+{
+public:
+    virtual double numberIntegral4Sin(double x) = 0;
+protected:
+    const double step{0.0002};
+};
+
+////////////////////////////////////////////////////////////////////////////////
+class TimeConsumeTool : public ToolBase, public ITimeConsumeTool
+{
+public:
+    TimeConsumeTool(const std::string &name) : ToolBase(name) {}
+    virtual ~TimeConsumeTool() = default;
+
+    virtual double numberIntegral4Sin(double x) override;
+};
+SNIPER_DECLARE_DLE(TimeConsumeTool);
+
+double TimeConsumeTool::numberIntegral4Sin(double x)
+{
+    static const double halfStep = step * 0.5;
+    const double pend = x - step;
+
+    double result = 0.;
+    double cs = 0.;
+    while (cs < pend)
+    {
+        result += (std::sin(cs) + std::sin(cs+step))*halfStep;
+        cs += step;
+    }
+    result += (std::sin(cs) + std::sin(x)) * (x - cs) * 0.5;
+
+    return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+class MtTimeConsumeTool : public ToolBase, public ITimeConsumeTool
+{
+public:
+    MtTimeConsumeTool(const std::string &name) : ToolBase(name) {}
+    virtual ~MtTimeConsumeTool() = default;
+
+    virtual double numberIntegral4Sin(double x) override;
+};
+SNIPER_DECLARE_DLE(MtTimeConsumeTool);
+
+double MtTimeConsumeTool::numberIntegral4Sin(double x)
+{
+    double result = 0.;
+    return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 class TimeConsumeAlg : public AlgBase
 {
 public:
@@ -129,7 +193,7 @@ public:
     virtual bool finalize() override;
 
 private:
-    /*data*/
+    ITimeConsumeTool *m_tool;
 };
 SNIPER_DECLARE_DLE(TimeConsumeAlg);
 
@@ -140,14 +204,18 @@ TimeConsumeAlg::TimeConsumeAlg(const std::string &name)
 
 bool TimeConsumeAlg::initialize()
 {
-    return true;
+    m_tool = tool<ITimeConsumeTool>("TimeConsumeTool");
+    return m_tool != nullptr ? true : false;
 }
 
 bool TimeConsumeAlg::execute()
 {
-    auto &pevt = std::any_cast<std::shared_ptr<JsonEvent> &>(*(mt_sniper_context->current_event));
+    auto &evt = *std::any_cast<std::shared_ptr<JsonEvent> &>(*(mt_sniper_context->current_event));
 
-    (*pevt)["result"].from(99.9);
+    auto input = evt["input"].get<double>();
+    auto result = m_tool->numberIntegral4Sin(input);
+
+    evt["result"].from(result);
 
     return true;
 }
