@@ -12,10 +12,20 @@ if __name__ == "__main__":
 
     ###################################################
     Sniper.setLogLevel(3)
+    useRootWriter = False
     nthrd = 4
     mtsniper.setEvtMax(3000)
     mtsniper.setNumThreads(nthrd)
     mtsniper.configGlobalBuffer(nthrd*3, nthrd+2)
+
+    ###################################################
+    if useRootWriter:
+        import RootWriter
+        import SniperRootUsages
+        wroot = Sniper.create("MtRootWriter/RootWriter")
+        wroot.property("Output").set(
+                {"MtsTest": "mtresult.root"}
+                )
 
     ###################################################
     task = mtsniper.createInputTask("Task/InputTask")
@@ -27,7 +37,11 @@ if __name__ == "__main__":
     task = mtsniper.createOutputTask("Task/OutputTask")
     task.createSvc("GetGlobalBufSvc")
     alg = task.createAlg("PruneGlobalBufAlg")
-    alg.property("OutputFile").set("mtresult.txt")
+    if useRootWriter:
+        tool = alg.createTool("WriteRootTool/WriteResultTool")
+    else:
+        tool = alg.createTool("WriteAsciiTool/WriteResultTool")
+        tool.property("OutputFile").set("mtresult.txt")
 
     ###################################################
     task = mtsniper.createMainTask("Task/MainTask")
@@ -37,6 +51,9 @@ if __name__ == "__main__":
         svc.property("SaveDetails").set(True)
     alg = task.createAlg("TimeConsumeAlg")
     alg.createTool("TimeConsumeTool")
+    if useRootWriter:
+        task.addSvc(wroot)
+        alg.createTool("FillRootTool/FillResultTool")
 
     ###################################################
     mtsniper.show()

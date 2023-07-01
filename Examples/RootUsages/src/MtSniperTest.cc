@@ -15,129 +15,104 @@
    You should have received a copy of the GNU Lesser General Public License
    along with mt.sniper.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "SniperKernel/MtSniperContext.h"
 #include "SniperKernel/SniperJSON.h"
-#include "SniperKernel/IIncidentHandler.h"
-#include "SniperKernel/SvcBase.h"
-#include "SniperKernel/AlgBase.h"
+#include "SniperKernel/ToolBase.h"
 #include "SniperKernel/DeclareDLE.h"
+#include "SniperKernel/SniperPtr.h"
+#include "SniperKernel/SniperDataPtr.h"
 #include "RootWriter/RootWriter.h"
-#include "TTree.h"
+#include "RootWriter/MtTTree.h"
+#include "RootWriter/MtTTreeStore.h"
+#include <any>
+#include <memory>
 
 typedef SniperJSON JsonEvent;
 typedef std::map<std::string, std::any> MappedEvent;
 
-class IGetGlobalBufSvc
+class IFillResultTool
 {
 public:
-    virtual MappedEvent &get() = 0;
-    virtual MappedEvent &pop() = 0;
-    virtual void done() = 0;
+    virtual void fill(MappedEvent &emap) = 0;
+};
+
+class IWriteResultTool
+{
+public:
+    virtual void save(MappedEvent &emap) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-class MtsSaveRootHandler : public IIncidentHandler
+class FillRootTool : public ToolBase, public IFillResultTool
 {
 public:
-    MtsSaveRootHandler(ExecUnit *domain)
-        : IIncidentHandler(domain) {}
-    virtual ~MtsSaveRootHandler() = default;
-
-    virtual bool handle(Incident &incident) override;
-};
-
-bool MtsSaveRootHandler::handle(Incident &Incident)
-{
-    return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-class MtsStoreRootSvc : public SvcBase
-{
-public:
-    MtsStoreRootSvc(const std::string &name);
-    virtual ~MtsStoreRootSvc() = default;
+    FillRootTool(const std::string &name);
+    virtual ~FillRootTool() = default;
 
     virtual bool initialize() override;
-    virtual bool finalize() override { return true; }
-};
-SNIPER_DECLARE_DLE(MtsStoreRootSvc);
 
-MtsStoreRootSvc::MtsStoreRootSvc(const std::string &name)
-    : SvcBase(name)
-{
-}
-
-bool MtsStoreRootSvc::initialize()
-{
-    return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-class MtsWriteRootAlg : public AlgBase
-{
-public:
-    MtsWriteRootAlg(const std::string &name);
-    virtual ~MtsWriteRootAlg() = default;
-
-    virtual bool initialize() override;
-    virtual bool execute() override;
-    virtual bool finalize() override { return true; }
+    virtual void fill(MappedEvent &emap) override;
 
 private:
-    IGetGlobalBufSvc *m_svc;
+    TTree *m_tree;
+    Long64_t m_id;
+    Double_t m_input;
+    Double_t m_result;
+
+    MtTTreeStore *m_treeStore;
 };
-SNIPER_DECLARE_DLE(MtsWriteRootAlg);
+SNIPER_DECLARE_DLE(FillRootTool);
 
-MtsWriteRootAlg::MtsWriteRootAlg(const std::string &name)
-    : AlgBase(name)
+FillRootTool::FillRootTool(const std::string &name)
+    : ToolBase(name)
 {
 }
 
-bool MtsWriteRootAlg::initialize()
+bool FillRootTool::initialize()
 {
-    m_svc = SniperPtr<IGetGlobalBufSvc>(getParent(), "GetGlobalBufSvc").data();
+    SniperPtr<RootWriter> rw(m_par, "RootWriter");
+    m_tree = rw->bookTree(*m_par, "MtsTest/event", "Result of MtSniper Test");
+    m_tree->Branch("EventID", &m_id, "EventID/L");
+    m_tree->Branch("input", &m_input, "input/D");
+    m_tree->Branch("result", &m_result, "result/D");
+
+    m_treeStore = SniperDataPtr<MtTTreeStore>(m_par, "MtTTreeStore").data();
+
     return true;
 }
 
-bool MtsWriteRootAlg::execute()
+void FillRootTool::fill(MappedEvent &emap)
 {
-    auto &emap = m_svc->get();
+    // fill the ROOT TTree
+    auto &evt = *std::any_cast<std::shared_ptr<JsonEvent> &>(emap["event"]);
+    m_id = evt["EventID"].get<Long64_t>();
+    m_input = evt["input"].get<Double_t>();
+    m_result = evt["result"].get<Double_t>();
+    m_tree->Fill();
 
-    return true;
+    // move the TTree clones into GlobalBuffer in case of MtRootWriter
+    if (m_treeStore != nullptr)
+    {
+        auto &trees = m_treeStore->trees();
+        emap.insert(std::make_pair("trees", std::make_any<std::vector<MtTTree *>>()));
+        trees.swap(std::any_cast<std::vector<MtTTree *> &>(emap["trees"]));
+    }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-class PruneGlobalBuf2RootAlg : public AlgBase
+class WriteRootTool : public ToolBase, public IWriteResultTool
 {
 public:
-    PruneGlobalBuf2RootAlg(const std::string &name);
-    virtual ~PruneGlobalBuf2RootAlg() = default;
+    WriteRootTool(const std::string &name) : ToolBase(name) {}
+    virtual ~WriteRootTool() = default;
 
-    virtual bool initialize() override;
-    virtual bool execute() override;
-    virtual bool finalize() override { return true; }
-
-private:
-    IGetGlobalBufSvc *m_svc;
+    virtual void save(MappedEvent &emap) override;
 };
-SNIPER_DECLARE_DLE(PruneGlobalBuf2RootAlg);
+SNIPER_DECLARE_DLE(WriteRootTool);
 
-PruneGlobalBuf2RootAlg::PruneGlobalBuf2RootAlg(const std::string &name)
-    : AlgBase(name)
+void WriteRootTool::save(MappedEvent &emap)
 {
-}
-
-bool PruneGlobalBuf2RootAlg::initialize()
-{
-    m_svc = SniperPtr<IGetGlobalBufSvc>(getParent(), "GetGlobalBufSvc").data();
-    return true;
-}
-
-bool PruneGlobalBuf2RootAlg::execute()
-{
-    auto &emap = m_svc->pop();
-    //auto &pevt = std::any_cast<std::shared_ptr<JsonEvent> &>(emap["event"]);
-
-    return true;
+    auto &trees = std::any_cast<std::vector<MtTTree *> &>(emap["trees"]);
+    for (auto tree : trees)
+    {
+        tree->DoFillOne();
+    }
 }

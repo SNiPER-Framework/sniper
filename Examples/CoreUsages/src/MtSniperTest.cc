@@ -20,7 +20,6 @@
 #include "SniperKernel/SvcBase.h"
 #include "SniperKernel/AlgBase.h"
 #include "SniperKernel/ToolBase.h"
-#include "SniperKernel/IIncidentHandler.h"
 #include "SniperKernel/DeclareDLE.h"
 #include <random>
 #include <cmath>
@@ -45,6 +44,18 @@ public:
     virtual void done() = 0;
 };
 
+class IFillResultTool
+{
+public:
+    virtual void fill(MappedEvent &emap) = 0;
+};
+
+class IWriteResultTool
+{
+public:
+    virtual void save(MappedEvent &emap) = 0;
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 class FillGlobalBufSvc : public SvcBase, public IFillGlobalBufSvc
 {
@@ -63,8 +74,8 @@ SNIPER_DECLARE_DLE(FillGlobalBufSvc);
 void FillGlobalBufSvc::fill(std::shared_ptr<JsonEvent> &pevt)
 {
     static auto gbptr = mt_sniper_context->global_buffer;
-    //gbptr->push_back(pevt);
     static const std::string key{"event"};
+
     MappedEvent emap{{key, pevt}};
     gbptr->push_back(emap);
 }
@@ -72,7 +83,6 @@ void FillGlobalBufSvc::fill(std::shared_ptr<JsonEvent> &pevt)
 void FillGlobalBufSvc::stop()
 {
     mt_sniper_context->global_buffer->deVigorous();
-    getParent()->stop();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,6 +109,50 @@ MappedEvent &GetGlobalBufSvc::get()
 MappedEvent &GetGlobalBufSvc::pop()
 {
     return std::any_cast<MappedEvent &>(*(mt_sniper_context->current_event));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+class WriteAsciiTool : public ToolBase, public IWriteResultTool
+{
+public:
+    WriteAsciiTool(const std::string &name);
+    virtual ~WriteAsciiTool() = default;
+
+    virtual bool initialize() override;
+    virtual bool finalize() override;
+
+    virtual void save(MappedEvent &emap) override;
+
+private:
+    std::string m_ofname;
+    std::ofstream m_ofs;
+};
+SNIPER_DECLARE_DLE(WriteAsciiTool);
+
+WriteAsciiTool::WriteAsciiTool(const std::string &name)
+    : ToolBase(name)
+{
+    declProp("OutputFile", m_ofname);
+}
+
+bool WriteAsciiTool::initialize()
+{
+    m_ofs.open(m_ofname, std::ios::trunc);
+    return true;
+}
+
+bool WriteAsciiTool::finalize()
+{
+    m_ofs.close();
+    return true;
+}
+
+void WriteAsciiTool::save(MappedEvent &emap)
+{
+    auto &pevt = std::any_cast<std::shared_ptr<JsonEvent> &>(emap["event"]);
+    auto res = pevt->str(-1);
+    m_ofs.write(res.c_str(), res.size());
+    m_ofs.put('\n');
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -172,9 +226,7 @@ public:
     virtual bool finalize() override;
 
 private:
-    std::string m_ofname;
-    std::ofstream m_ofs;
-
+    IWriteResultTool *m_wtool;
     IGetGlobalBufSvc *m_svc;
 };
 SNIPER_DECLARE_DLE(PruneGlobalBufAlg);
@@ -182,12 +234,12 @@ SNIPER_DECLARE_DLE(PruneGlobalBufAlg);
 PruneGlobalBufAlg::PruneGlobalBufAlg(const std::string &name)
     : AlgBase(name)
 {
-    declProp("OutputFile", m_ofname);
 }
 
 bool PruneGlobalBufAlg::initialize()
 {
-    m_ofs.open(m_ofname, std::ios::trunc);
+    m_wtool = tool<IWriteResultTool>("WriteResultTool");
+    dynamic_cast<ToolBase*>(m_wtool)->initialize();
     m_svc = SniperPtr<IGetGlobalBufSvc>(getParent(), "GetGlobalBufSvc").data();
     return true;
 }
@@ -195,39 +247,14 @@ bool PruneGlobalBufAlg::initialize()
 bool PruneGlobalBufAlg::execute()
 {
     auto &emap = m_svc->pop();
-    auto &pevt = std::any_cast<std::shared_ptr<JsonEvent> &>(emap["event"]);
-
-    auto res = pevt->str(-1);
-    m_ofs.write(res.c_str(), res.size());
-    m_ofs.put('\n');
+    m_wtool->save(emap);
 
     return true;
 }
 
 bool PruneGlobalBufAlg::finalize()
 {
-    m_ofs.close();
-    return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-class EventProcessedHandler : public IIncidentHandler
-{
-public:
-    EventProcessedHandler(ExecUnit *domain, IGetGlobalBufSvc *svc)
-        : IIncidentHandler(domain),
-          m_svc(svc) {}
-    virtual ~EventProcessedHandler() = default;
-
-    virtual bool handle(Incident &incident) override;
-
-    IGetGlobalBufSvc *m_svc;
-};
-
-bool EventProcessedHandler::handle(Incident &Incident)
-{
-    m_svc->done();
-    return true;
+    return dynamic_cast<ToolBase*>(m_wtool)->finalize();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -296,9 +323,9 @@ public:
     virtual bool finalize() override;
 
 private:
-    ITimeConsumeTool *m_tool;
+    ITimeConsumeTool *m_calcTool;
+    IFillResultTool *m_fillTool;
     IGetGlobalBufSvc *m_svc;
-    EventProcessedHandler *m_handler;
 };
 SNIPER_DECLARE_DLE(TimeConsumeAlg);
 
@@ -309,10 +336,13 @@ TimeConsumeAlg::TimeConsumeAlg(const std::string &name)
 
 bool TimeConsumeAlg::initialize()
 {
-    m_tool = tool<ITimeConsumeTool>("TimeConsumeTool");
+    m_calcTool = tool<ITimeConsumeTool>("TimeConsumeTool");
+    m_fillTool = tool<IFillResultTool>("FillResultTool");
+    if (m_fillTool != nullptr)
+    {
+        dynamic_cast<ToolBase*>(m_fillTool)->initialize();
+    }
     m_svc = SniperPtr<IGetGlobalBufSvc>(getParent(), "GetGlobalBufSvc").data();
-    m_handler = new EventProcessedHandler(getParent(), m_svc);
-    m_handler->regist("EndEvent");
 
     return true;
 }
@@ -324,16 +354,21 @@ bool TimeConsumeAlg::execute()
     auto &evt = *std::any_cast<std::shared_ptr<JsonEvent> &>(emap["event"]);
 
     auto input = evt["input"].get<double>();
-    auto result = m_tool->numberIntegral4Sin(input);
+    auto result = m_calcTool->numberIntegral4Sin(input);
 
     evt["result"].from(result);
+
+    if (m_fillTool != nullptr)
+    {
+        m_fillTool->fill(emap);
+    }
+
+    m_svc->done();
 
     return true;
 }
 
 bool TimeConsumeAlg::finalize()
 {
-    m_handler->unregist("EndEvent");
-    delete m_handler;
     return true;
 }
