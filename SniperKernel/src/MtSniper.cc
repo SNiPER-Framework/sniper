@@ -123,12 +123,12 @@ bool MtSniper::initialize()
     mt_sniper_context->global_buffer = new MtsEvtBufferRing(m_gbufCapacity, m_gbufThreshold);
 
     // create the micro tasks for IO Task initialize
-    m_microTaskQueue->push(new InitializeSniperTask(m_itask, false));
-    m_microTaskQueue->push(new InitializeSniperTask(m_otask, false));
+    m_microTaskQueue->push(new InitializeSniperTask(m_itask, m_ilock));
+    m_microTaskQueue->push(new InitializeSniperTask(m_otask, m_olock));
 
     // get the sniper main Task instance and create its copies and micro tasks for initialize
     auto *mtask = m_sniperTaskPool->allocate();
-    m_microTaskQueue->push(new InitializeSniperTask(mtask, true));
+    m_microTaskQueue->push(new InitializeSniperTask(mtask));
     auto jtask = mtask->json();
     auto identifier = jtask["identifier"].get<std::string>();
     for (int i = m_nthrds; i > 1; --i)
@@ -136,13 +136,13 @@ bool MtSniper::initialize()
         auto ptask = createSniperTask(identifier);
         ptask->setScopeString(std::string("(") + std::to_string(i) + ")");
         ptask->eval(jtask);
-        m_microTaskQueue->push(new InitializeSniperTask(ptask, true));
+        m_microTaskQueue->push(new InitializeSniperTask(ptask));
     }
 
     // use the default primary task if it's not set externally
     if (!m_hasExternalPrimaryTask)
     {
-        auto ptask = new MtsPrimaryTask();
+        auto ptask = new MtsPrimaryTask(m_ilock, m_olock);
         ptask->setEvtMax(m_evtMax);
         ptask->setInputTask(m_itask);
         ptask->setOutputTask(m_otask);
@@ -169,9 +169,6 @@ bool MtSniper::run()
     if (status)
     {
         LogInfo << "MtSniper initialized and now start workers..." << std::endl;
-        // FIXME: a potential problem
-        // If the I/O tasks initialize() is slower than the MainTask initialize(),
-        // the PrimaryTask may be invoked with incomplete I/O tasks
         for (int i = 0; i < m_nthrds; ++i)
         {
             auto w = m_workerPool->create();

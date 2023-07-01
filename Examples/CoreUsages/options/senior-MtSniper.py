@@ -19,16 +19,19 @@ if __name__ == "__main__":
 
     ###################################################
     task = mtsniper.createInputTask("Task/InputTask")
+    task.createSvc("FillGlobalBufSvc")
     alg = task.createAlg("FillGlobalBufAlg")
     #alg.property("MaxEvtNum").set(10)
 
     ###################################################
     task = mtsniper.createOutputTask("Task/OutputTask")
+    task.createSvc("GetGlobalBufSvc")
     alg = task.createAlg("PruneGlobalBufAlg")
     alg.property("OutputFile").set("mtresult.txt")
 
     ###################################################
     task = mtsniper.createMainTask("Task/MainTask")
+    task.createSvc("GetGlobalBufSvc")
     svc = task.createSvc("SniperProfiling")
     if nthrd == 1:
         svc.property("SaveDetails").set(True)

@@ -27,7 +27,7 @@
 class MtsPrimaryTask final : public MtsMicroTask
 {
 public:
-    MtsPrimaryTask();
+    MtsPrimaryTask(std::atomic_flag &ilock, std::atomic_flag &olock);
     virtual ~MtsPrimaryTask();
 
     void setEvtMax(long evtMax) { m_evtMax = evtMax; }
@@ -52,8 +52,8 @@ private:
     Task *m_otask{nullptr};
 
     // atomic_flag as locks
-    std::atomic_flag m_ilock{ATOMIC_FLAG_INIT};
-    std::atomic_flag m_olock{ATOMIC_FLAG_INIT};
+    std::atomic_flag &m_ilock;
+    std::atomic_flag &m_olock;
 
     // for all the SNiPER main Task copies
     SniperObjPool<Task> *m_sniperTaskPool{nullptr};

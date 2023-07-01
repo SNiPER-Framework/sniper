@@ -23,8 +23,9 @@ MtsMicroTask::Status InitializeSniperTask::exec()
 {
     auto &snoopy = m_sniperTask->Snoopy();
     bool status = snoopy.config() && snoopy.initialize();
-    if (m_isMain)
+    if (m_lock == nullptr)
     {
+        // this is a MainTask, put it back to the SniperTaskPool
         SniperObjPool<Task>::instance()->deallocate(m_sniperTask);
     }
     delete this; // manages itself

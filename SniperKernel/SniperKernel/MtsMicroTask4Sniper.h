@@ -20,23 +20,32 @@
 
 #include "SniperKernel/MtsMicroTask.h"
 #include "SniperKernel/Task.h"
+#include <atomic>
 
 class InitializeSniperTask : public MtsMicroTask
 {
 public:
-    InitializeSniperTask(Task *task, bool isMain)
+    // for a MainTask, no lock needed
+    InitializeSniperTask(Task *task)
         : m_sniperTask(task),
-          m_isMain(isMain)
-    {
-    }
+          m_lock(nullptr) {}
 
-    virtual ~InitializeSniperTask() = default;
+    // for an I/O Task, it should be locked before it initialized
+    InitializeSniperTask(Task *task, std::atomic_flag &lock)
+        : m_sniperTask(task),
+          m_lock(&lock) { lock.test_and_set(); }
+
+    virtual ~InitializeSniperTask()
+    {
+        if (m_lock != nullptr)
+            m_lock->clear();
+    }
 
     virtual Status exec() override;
 
 private:
     Task *m_sniperTask;
-    bool m_isMain;
+    std::atomic_flag *m_lock;
 };
 
 #endif

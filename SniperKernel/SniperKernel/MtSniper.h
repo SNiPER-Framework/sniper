@@ -62,6 +62,8 @@ protected:
 
     Task *m_itask{nullptr};
     Task *m_otask{nullptr};
+    std::atomic_flag m_ilock{ATOMIC_FLAG_INIT};
+    std::atomic_flag m_olock{ATOMIC_FLAG_INIT};
 
     MtsMicroTaskQueue *m_microTaskQueue;
     MtsWorkerPool *m_workerPool;

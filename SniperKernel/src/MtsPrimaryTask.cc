@@ -18,7 +18,9 @@
 #include "SniperPrivate/MtsPrimaryTask.h"
 #include "SniperKernel/SniperLog.h"
 
-MtsPrimaryTask::MtsPrimaryTask()
+MtsPrimaryTask::MtsPrimaryTask(std::atomic_flag &ilock, std::atomic_flag &olock)
+    : m_ilock(ilock),
+      m_olock(olock)
 {
     m_name = "MtsPrimaryTask";
     m_gb = mt_sniper_context->global_buffer;
