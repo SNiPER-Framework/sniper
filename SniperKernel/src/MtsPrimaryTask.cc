@@ -84,7 +84,7 @@ MtsMicroTask::Status MtsPrimaryTask::execInputTask()
     bool status = snoopy.run_once();
     while (status && m_gb->eager())
     {
-        globalSyncAssistant.resumeOneThread();
+        globalSyncAssistant.notifyOne();
         status = snoopy.run_once();
     }
     return status ? Status::OK : Status::Failed;

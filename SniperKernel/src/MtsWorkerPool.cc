@@ -61,16 +61,16 @@ void MtsWorker::run()
             //workerPool->put(this); // put self back to the pool for reusing
         case MtsMicroTask::Status::NoTask:
             //LogInfo << "NoTask and waiting..." << std::endl;
-            globalSyncAssistant.pauseCurrentThread();
+            globalSyncAssistant.pause();
             //LogInfo << "continue the worker" << std::endl;
             continue; //continue the loop
         case MtsMicroTask::Status::NoMoreEvt:
-            globalSyncAssistant.resumeAllThreads(); // wakeup any paused workers so it can finish itself
+            globalSyncAssistant.notifyAll(); // wakeup any paused workers so it can finish itself
             LogInfo << "NoMoreEvt, endup the worker" << std::endl;
             return;
         default:  //Failed
             globalSyncAssistant.deactive();
-            globalSyncAssistant.resumeAllThreads(); // wakeup any paused workers so it can finish itself
+            globalSyncAssistant.notifyAll(); // wakeup any paused workers so it can finish itself
             LogError << "failed to exec a MicroTask, endup all workers" << std::endl;
             return;
         }

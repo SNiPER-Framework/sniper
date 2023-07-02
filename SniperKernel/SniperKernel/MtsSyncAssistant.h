@@ -30,7 +30,7 @@ public:
     bool active() { return m_active; }
     void deactive() { m_active = false; }
 
-    void pauseCurrentThread()
+    void pause()
     {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_paused = true;
@@ -38,14 +38,14 @@ public:
                   { return !m_paused; });
     }
 
-    void resumeOneThread()
+    void notifyOne()
     {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_paused = false;
         m_cv.notify_one();
     }
 
-    void resumeAllThreads()
+    void notifyAll()
     {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_paused = false;
