@@ -60,7 +60,8 @@ namespace Sniper
     };
 
     template <typename T>
-    typename Queue<T>::SlotPool *Queue<T>::s_slotPool = Queue<T>::SlotPool::instance();
+    typename Queue<T>::SlotPool *Queue<T>::s_slotPool = Queue<T>::SlotPool::instance([]()
+                                                                                     { return new QueueSlot(); });
 
     template <typename T>
     Queue<T>::Queue(const T &guarantee)

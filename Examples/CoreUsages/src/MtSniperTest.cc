@@ -17,6 +17,7 @@
 
 #include "SniperKernel/MtSniperContext.h"
 #include "SniperKernel/SniperJSON.h"
+#include "SniperKernel/SniperObjPool.h"
 #include "SniperKernel/SvcBase.h"
 #include "SniperKernel/AlgBase.h"
 #include "SniperKernel/ToolBase.h"
@@ -298,16 +299,36 @@ double TimeConsumeTool::numberIntegral4Sin(double x)
 class MtTimeConsumeTool : public ToolBase, public ITimeConsumeTool
 {
 public:
-    MtTimeConsumeTool(const std::string &name) : ToolBase(name) {}
-    virtual ~MtTimeConsumeTool() = default;
+    MtTimeConsumeTool(const std::string &name)
+        : ToolBase(name)
+    {
+        ++m_n;
+        m_toolPool = SniperObjPool<TimeConsumeTool>::instance([]()
+                                                              { return new TimeConsumeTool("TimeConsumeTool"); });
+    }
+
+    virtual ~MtTimeConsumeTool()
+    {
+        if (--m_n == 0)
+            m_toolPool->destroy();
+    }
 
     virtual double numberIntegral4Sin(double x) override;
+
+private:
+    SniperObjPool<TimeConsumeTool>* m_toolPool;
+    static std::atomic_int m_n;
 };
 SNIPER_DECLARE_DLE(MtTimeConsumeTool);
 
+std::atomic_int MtTimeConsumeTool::m_n{0};
+
 double MtTimeConsumeTool::numberIntegral4Sin(double x)
 {
-    double result = 0.;
+    // TODO:
+    auto pt = m_toolPool->secureAllocate();
+    double result = pt->numberIntegral4Sin(x);
+    m_toolPool->deallocate(pt);
     return result;
 }
 

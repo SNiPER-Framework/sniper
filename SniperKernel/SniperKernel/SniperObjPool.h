@@ -25,7 +25,7 @@ template <typename T>
 class SniperObjPool
 {
 public:
-    static SniperObjPool<T> *instance();
+    static SniperObjPool<T> *instance(T *(*creator)() = nullptr);
     static void destroy();
 
     // set the creator function for the object creation
@@ -70,13 +70,14 @@ template <typename T>
 SniperObjPool<T> *SniperObjPool<T>::s_instance = nullptr;
 
 template <typename T>
-SniperObjPool<T> *SniperObjPool<T>::instance()
+SniperObjPool<T> *SniperObjPool<T>::instance(T *(*creator)())
 {
     // suppose this function is firstly invoked at the beginning of the main thread
     // before any children threads, so mutex lock is unnecessary
     if (s_instance == nullptr)
     {
         s_instance = new SniperObjPool<T>();
+        s_instance->setCreator(creator);
     }
     return s_instance;
 }
@@ -126,7 +127,7 @@ void SniperObjPool<T>::preAllocate(int n)
 {
     for (int i = 0; i < n; ++i)
     {
-        T *obj = m_creator != nullptr ? (*m_creator)() : new T();
+        T *obj = (*m_creator)();
         deallocate(obj);
     }
 }
@@ -146,7 +147,7 @@ T *SniperObjPool<T>::secureAllocate()
     T *obj = allocate();
     if (obj == nullptr)
     {
-        obj = m_creator == nullptr ? new T() : (*m_creator)();
+        obj = (*m_creator)();
     }
     return obj;
 }
