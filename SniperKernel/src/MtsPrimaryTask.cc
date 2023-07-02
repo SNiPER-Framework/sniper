@@ -36,7 +36,7 @@ MtsMicroTask::Status MtsPrimaryTask::exec()
     // whether to run InputTask
     if (m_gb->urgent() && !m_ilock.test_and_set())
     {
-        AtomicFlagLockGuard guard(false, m_ilock);
+        AtomicFlagLockGuard<false> guard(m_ilock);
         return execInputTask();
     }
 
@@ -56,7 +56,7 @@ MtsMicroTask::Status MtsPrimaryTask::exec()
     evtslot = m_gb->front();
     if (evtslot->status == Sniper::MtsEvtSlotStatus::Done && !m_olock.test_and_set())
     {
-        AtomicFlagLockGuard guard(false, m_olock);
+        AtomicFlagLockGuard<false> guard(m_olock);
         static auto &snoopy = m_otask->Snoopy();
         while (evtslot->status == Sniper::MtsEvtSlotStatus::Done)
         {

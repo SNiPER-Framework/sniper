@@ -51,7 +51,7 @@ void MtsEvtBufferRing::pop_front()
 MtsEvtBufferRing::EvtSlot *MtsEvtBufferRing::next()
 {
     EvtSlot *pcur = nullptr;
-    AtomicFlagLockGuard guard(m_lock);
+    AtomicFlagLockGuard<true> guard(m_lock);
     if (m_cursor->status == SlotStatus::Ready)
     {
         pcur = m_cursor;

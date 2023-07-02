@@ -111,7 +111,7 @@ namespace Sniper
         auto last = s_slotPool->secureAllocate();
         last->value = value;
         last->next = m_tail;
-        AtomicFlagLockGuard guard(m_lock);
+        AtomicFlagLockGuard<true> guard(m_lock);
         if (m_head != m_tail)
         {
             m_last->next = last;

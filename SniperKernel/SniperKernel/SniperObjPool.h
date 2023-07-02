@@ -134,7 +134,7 @@ void SniperObjPool<T>::preAllocate(int n)
 template <typename T>
 T *SniperObjPool<T>::allocate()
 {
-    AtomicFlagLockGuard guard(m_lock);
+    AtomicFlagLockGuard<true> guard(m_lock);
     T *obj = m_top->value;
     m_top = m_top->down;
     return obj;
@@ -154,7 +154,7 @@ T *SniperObjPool<T>::secureAllocate()
 template <typename T>
 void SniperObjPool<T>::deallocate(T *obj)
 {
-    AtomicFlagLockGuard guard(m_lock);
+    AtomicFlagLockGuard<true> guard(m_lock);
     if (m_top->up != nullptr)
     {
         m_top = m_top->up;

@@ -20,6 +20,7 @@
 
 #include <atomic>
 
+template <bool LockInternally>
 class AtomicFlagLockGuard final
 {
 public:
@@ -30,15 +31,26 @@ public:
             continue;
     }
 
-    AtomicFlagLockGuard(bool /*externallyLocked*/, std::atomic_flag &src)
+    ~AtomicFlagLockGuard() { m_ref.clear(); }
+
+private:
+    std::atomic_flag &m_ref;
+
+    AtomicFlagLockGuard() = delete;
+    AtomicFlagLockGuard(const AtomicFlagLockGuard &) = delete;
+    AtomicFlagLockGuard &operator=(const AtomicFlagLockGuard &) = delete;
+};
+
+template </*LockExternally*/>
+class AtomicFlagLockGuard<false> final
+{
+public:
+    AtomicFlagLockGuard(std::atomic_flag &src)
         : m_ref(src)
     {
     }
 
-    ~AtomicFlagLockGuard()
-    {
-        m_ref.clear();
-    }
+    ~AtomicFlagLockGuard() { m_ref.clear(); }
 
 private:
     std::atomic_flag &m_ref;
