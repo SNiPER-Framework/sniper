@@ -20,7 +20,7 @@
 
 #include "SniperKernel/Task.h"
 #include "SniperKernel/MtsMicroTaskQueue.h"
-#include "SniperPrivate/MtsWorkerPool.h"
+#include "SniperKernel/MtsWorkerPool.h"
 
 class MtSniper : public DLElement
 {

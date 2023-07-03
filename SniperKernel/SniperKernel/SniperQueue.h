@@ -38,6 +38,7 @@ namespace Sniper
         // thread-safe interfaces
         T concurrentPop();
         void concurrentPush(const T &value);
+        void concurrentMerge(Queue<T> &other);
 
         // thread-unsafe but faster interfaces
         T pop();
@@ -122,6 +123,22 @@ namespace Sniper
             m_head = last;
         }
         m_last = last;
+    }
+
+    template <typename T>
+    void Queue<T>::concurrentMerge(Queue<T> &other)
+    {
+        if (other.m_head != other.m_tail)
+        {
+            other.m_last->next = m_tail;
+            auto ohead = other.m_head;
+            other.m_head = other.m_tail;
+            AtomicFlagLockGuard<true> guard(m_lock);
+            if (m_head != m_tail)
+                m_last->next = ohead;
+            else
+                m_head = ohead;
+        }
     }
 
     template <typename T>

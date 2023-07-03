@@ -15,7 +15,7 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "SniperPrivate/MtsWorkerPool.h"
+#include "SniperKernel/MtsWorkerPool.h"
 #include "SniperKernel/MtsMicroTaskQueue.h"
 #include "SniperKernel/SniperLog.h"
 #include "SniperKernel/MtSniperContext.h"
@@ -52,18 +52,18 @@ void MtsWorker::run()
     // loop the micro tasks in the queue until ...
     while (globalSyncAssistant.active())
     {
-        switch (taskQueue->concurrentPop()->exec())
+        switch (taskQueue->concurrentPop()->run())
         {
         case MtsMicroTask::Status::OK:
             //LogInfo << "OK" << std::endl;
             continue; //continue the loop
-        //case MtsMicroTask::Status::GroupFinished:
-            //workerPool->put(this); // put self back to the pool for reusing
+        case MtsMicroTask::Status::BatchEnd:
+            workerPool->push(this); // put self back to the pool and waiting for reusing
+            continue; // the worker wakes up and continue the loop
         case MtsMicroTask::Status::NoTask:
             //LogInfo << "NoTask and waiting..." << std::endl;
-            globalSyncAssistant.pause();
-            //LogInfo << "continue the worker" << std::endl;
-            continue; //continue the loop
+            globalSyncAssistant.pause(); // wait for a global signal
+            continue; // the worker wakes up and continue the loop
         case MtsMicroTask::Status::NoMoreEvt:
             globalSyncAssistant.notifyAll(); // wakeup any paused workers so it can finish itself
             LogInfo << "NoMoreEvt, endup the worker" << std::endl;
@@ -108,15 +108,34 @@ MtsWorker *MtsWorkerPool::create()
     return w;
 }
 
-MtsWorker *MtsWorkerPool::get()
+void MtsWorkerPool::push(MtsWorker *worker)
 {
-    auto w = this->allocate();
-    if (w == nullptr)
+    AtomicFlagLockGuard<true> guard(m_lock);
+    if (m_top->up != nullptr)
+    {
+        m_top = m_top->up;
+        m_top->value = worker;
+    }
+    else
+    {
+        m_top->up = new Slot(m_top, worker);
+        m_top = m_top->up;
+    }
+    worker->syncAssistant().pause();
+}
+
+void MtsWorkerPool::pop()
+{
+    if (auto w = this->allocate(); w != nullptr)
+    {
+        w->syncAssistant().notifyOne();
+    }
+    else
     {
         w = new MtsWorker();
         m_allWorkers.concurrentPush(w);
+        w->start();
     }
-    return w;
 }
 
 void MtsWorkerPool::waitAll()

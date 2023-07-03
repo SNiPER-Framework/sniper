@@ -20,9 +20,12 @@
 
 #include "SniperKernel/SniperObjPool.h"
 #include "SniperKernel/SniperQueue.h"
+#include "SniperKernel/MtsSyncAssistant.h"
 #include "SniperKernel/NamedElement.h"
 #include <thread>
 #include <atomic>
+
+class MtsWorkerPool;
 
 class MtsWorker final : public NamedElement
 {
@@ -34,8 +37,11 @@ public:
     void run();
     void wait();
 
+    MtsSyncAssistant &syncAssistant() { return m_sync; }
+
 private:
     std::thread *m_thrd;
+    MtsSyncAssistant m_sync;
 
     static std::atomic_int s_id;
 };
@@ -47,15 +53,16 @@ public:
     static void destroy() { SniperObjPool<MtsWorker>::destroy(); }
 
     MtsWorker* create();
-    MtsWorker* get();
-    void put(MtsWorker *w) { deallocate(w); }
+    void push(MtsWorker *worker);
+    void pop();
     void waitAll();
 
 private:
+    std::atomic_flag m_lock{ATOMIC_FLAG_INIT};
+    Sniper::Queue<MtsWorker*> m_allWorkers;
+
     MtsWorkerPool();
     virtual ~MtsWorkerPool() = default;
-
-    Sniper::Queue<MtsWorker*> m_allWorkers;
 };
 
 #endif

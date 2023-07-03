@@ -19,6 +19,7 @@
 #define SNIPER_MTS_MICRO_TASK_H
 
 #include "SniperKernel/NamedElement.h"
+#include "SniperKernel/MtsIncubatorBase.h"
 
 class MtsMicroTask : public NamedElement
 {
@@ -27,7 +28,7 @@ public:
     {
         OK,
         Failed,
-        //GroupFinished,
+        BatchEnd, // a batch of MicroTasks from a Incubator finished
         NoTask,
         NoMoreEvt
     };
@@ -35,7 +36,20 @@ public:
     MtsMicroTask() : NamedElement("MtSniper:", "MtsMicroTask") {}
     virtual ~MtsMicroTask() = default;
 
+    void setIncubator(MtsIncubatorBase *incubator) { m_incubator = incubator; }
+
+    inline Status run()
+    {
+        auto status = exec();
+        if (m_incubator != nullptr && m_incubator->notify(this))
+            return Status::BatchEnd;
+        return status;
+    }
+
     virtual Status exec() = 0;
+
+private:
+    MtsIncubatorBase *m_incubator{nullptr};
 };
 
 #endif
