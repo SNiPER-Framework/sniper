@@ -46,7 +46,7 @@ private:
     MtsWorkerPool *m_workerPool;
 
     std::atomic_int m_nEggs{0};
-    Sniper::Queue<T *> m_eggs;
+    Sniper::Queue<MtsMicroTask *> m_eggs;
 
     MtsSyncAssistant m_sync;
 
@@ -95,7 +95,7 @@ void MtsIncubator<T>::wait()
     {
         auto egg = m_eggs.pop();
         egg->exec();
-        m_taskPool->deallocate(egg);
+        m_taskPool->deallocate(dynamic_cast<T *>(egg));
         m_nEggs = 0;
     }
 }

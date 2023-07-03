@@ -304,8 +304,8 @@ public:
 
     virtual Status exec() override;
 
-    double *x0;
-    double *x1;
+    double x0;
+    double x1;
     double *result;
     TimeConsumeTool *tool;
 
@@ -316,7 +316,7 @@ SniperObjPool<TimeConsumeTool> *TimeConsumeTask::toolPool = nullptr;
 
 TimeConsumeTask::Status TimeConsumeTask::exec()
 {
-    *result = tool->numberIntegral4Sin(*x0, *x1);
+    *result = tool->numberIntegral4Sin(x0, x1);
     return Status::OK;
 }
 
@@ -349,6 +349,7 @@ public:
 
 private:
     MtsIncubator<TimeConsumeTask> m_incubator;
+    double m_resStore[200];
 
     static std::atomic_int m_n;
 };
@@ -358,13 +359,31 @@ std::atomic_int MtTimeConsumeTool::m_n{0};
 
 double MtTimeConsumeTool::numberIntegral4Sin(double x0, double x1)
 {
-    //double result = pt->numberIntegral4Sin(x0, x1);
-    double result = 0.;
-    auto pt = m_incubator.allocate();
-    pt->x0 = &x0;
-    pt->x1 = &x1;
-    pt->result = &result;
+    static const double tstep = 10.;
+    int n = (x1 - x0) / tstep;
+    double _x = x0;
+    for (int i = 0; i < n; ++i)
+    {
+        auto pt = m_incubator.allocate();
+        pt->x0 = _x;
+        _x += tstep;
+        pt->x1 = _x;
+        pt->result = m_resStore + i;
+    }
+    {
+        //the last
+        auto pt = m_incubator.allocate();
+        pt->x0 = _x;
+        pt->x1 = x1;
+        pt->result = m_resStore + n;
+        ++n;
+    }
     m_incubator.wait();
+    double result = 0.;
+    for (int i = 0; i < n; ++i)
+    {
+        result += m_resStore[i];
+    }
     return result;
 }
 
