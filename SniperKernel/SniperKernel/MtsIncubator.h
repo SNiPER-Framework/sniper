@@ -33,11 +33,14 @@ public:
     ~MtsIncubator();
 
     T *allocate();
-
     void wait();
-    virtual bool notify(MtsMicroTask *egg) override;
+
+    void cleanup();
 
 private:
+    friend class MtsMicroTask;
+    virtual bool notify(MtsMicroTask *egg) override;
+
     SniperObjPool<T> *m_taskPool;
     MtsMicroTaskQueue *m_taskQueue;
     MtsWorkerPool *m_workerPool;
@@ -67,14 +70,12 @@ MtsIncubator<T>::MtsIncubator()
 template <typename T>
 MtsIncubator<T>::~MtsIncubator()
 {
-    if (--m_nIncubator)
-        m_taskPool->destroy();
 }
 
 template <typename T>
 T *MtsIncubator<T>::allocate()
 {
-    MtsMicroTask *egg = m_taskPool->secureAllocate();
+    T *egg = m_taskPool->secureAllocate();
     egg->setIncubator(this);
     m_eggs.push(egg); //concurrently allocate is unnecessary
     ++m_nEggs;
@@ -114,6 +115,13 @@ bool MtsIncubator<T>::notify(MtsMicroTask *egg)
         return false;
     }
     throw ContextMsgException("MtsIncubator::notify() receives a bad egg");
+}
+
+template <typename T>
+void MtsIncubator<T>::cleanup()
+{
+    if (--m_nIncubator == 0)
+        m_taskPool->destroy();
 }
 
 #endif
