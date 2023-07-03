@@ -20,6 +20,7 @@
 
 #include "SniperKernel/MtsMicroTaskQueue.h"
 #include "SniperKernel/MtsWorkerPool.h"
+#include "SniperKernel/MtSniperContext.h"
 #include "SniperKernel/SniperException.h"
 #include <type_traits>
 
@@ -89,6 +90,7 @@ void MtsIncubator<T>::wait()
     {
         m_taskQueue->concurrentMerge(m_eggs);
         m_workerPool->pop(); // wakeup another worker
+        mt_sniper_context->global_sync_assistant.notifyAll();
         m_sync.pause();      // pause current thread and wait
     }
     else if (m_nEggs == 1)
