@@ -16,6 +16,7 @@
    along with mt.sniper.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/MtSniperContext.h"
+#include "SniperKernel/MtsIncubator.h"
 #include "SniperKernel/SniperJSON.h"
 #include "SniperKernel/SniperObjPool.h"
 #include "SniperKernel/SvcBase.h"
@@ -262,7 +263,7 @@ bool PruneGlobalBufAlg::finalize()
 class ITimeConsumeTool
 {
 public:
-    virtual double numberIntegral4Sin(double x) = 0;
+    virtual double numberIntegral4Sin(double x0, double x1) = 0;
 protected:
     const double step{0.0002};
 };
@@ -274,25 +275,49 @@ public:
     TimeConsumeTool(const std::string &name) : ToolBase(name) {}
     virtual ~TimeConsumeTool() = default;
 
-    virtual double numberIntegral4Sin(double x) override;
+    virtual double numberIntegral4Sin(double x0, double x1) override;
 };
 SNIPER_DECLARE_DLE(TimeConsumeTool);
 
-double TimeConsumeTool::numberIntegral4Sin(double x)
+double TimeConsumeTool::numberIntegral4Sin(double x0, double x1)
 {
     static const double halfStep = step * 0.5;
-    const double pend = x - step;
 
     double result = 0.;
     double cs = 0.;
-    while (cs < pend)
+    while (cs < x1)
     {
         result += (std::sin(cs) + std::sin(cs+step))*halfStep;
         cs += step;
     }
-    result += (std::sin(cs) + std::sin(x)) * (x - cs) * 0.5;
+    result += (std::sin(cs) + std::sin(x1)) * (x1 - cs) * 0.5;
 
     return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+class TimeConsumeTask : public MtsMicroTask
+{
+public:
+    TimeConsumeTask() { tool = toolPool->secureAllocate(); }
+    virtual ~TimeConsumeTask() { toolPool->deallocate(tool); }
+
+    virtual Status exec() override;
+
+    double *x0;
+    double *x1;
+    double *result;
+    TimeConsumeTool *tool;
+
+    static SniperObjPool<TimeConsumeTool>* toolPool;
+};
+
+SniperObjPool<TimeConsumeTool> *TimeConsumeTask::toolPool = nullptr;
+
+TimeConsumeTask::Status TimeConsumeTask::exec()
+{
+    *result = tool->numberIntegral4Sin(*x0, *x1);
+    return Status::OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -302,33 +327,44 @@ public:
     MtTimeConsumeTool(const std::string &name)
         : ToolBase(name)
     {
+        if (m_n == 0)
+        {
+            TimeConsumeTask::toolPool =
+                SniperObjPool<TimeConsumeTool>::instance([]()
+                                                         { return new TimeConsumeTool("TimeConsumeTool"); });
+        }
         ++m_n;
-        m_toolPool = SniperObjPool<TimeConsumeTool>::instance([]()
-                                                              { return new TimeConsumeTool("TimeConsumeTool"); });
     }
 
     virtual ~MtTimeConsumeTool()
     {
+        m_incubator.cleanup();
         if (--m_n == 0)
-            m_toolPool->destroy();
+        {
+            TimeConsumeTask::toolPool->destroy();
+        }
     }
 
-    virtual double numberIntegral4Sin(double x) override;
+    virtual double numberIntegral4Sin(double x0, double x1) override;
 
 private:
-    SniperObjPool<TimeConsumeTool>* m_toolPool;
+    MtsIncubator<TimeConsumeTask> m_incubator;
+
     static std::atomic_int m_n;
 };
 SNIPER_DECLARE_DLE(MtTimeConsumeTool);
 
 std::atomic_int MtTimeConsumeTool::m_n{0};
 
-double MtTimeConsumeTool::numberIntegral4Sin(double x)
+double MtTimeConsumeTool::numberIntegral4Sin(double x0, double x1)
 {
-    // TODO:
-    auto pt = m_toolPool->secureAllocate();
-    double result = pt->numberIntegral4Sin(x);
-    m_toolPool->deallocate(pt);
+    //double result = pt->numberIntegral4Sin(x0, x1);
+    double result = 0.;
+    auto pt = m_incubator.allocate();
+    pt->x0 = &x0;
+    pt->x1 = &x1;
+    pt->result = &result;
+    m_incubator.wait();
     return result;
 }
 
@@ -375,7 +411,7 @@ bool TimeConsumeAlg::execute()
     auto &evt = *std::any_cast<std::shared_ptr<JsonEvent> &>(emap["event"]);
 
     auto input = evt["input"].get<double>();
-    auto result = m_calcTool->numberIntegral4Sin(input);
+    auto result = m_calcTool->numberIntegral4Sin(0, input);
 
     evt["result"].from(result);
 
