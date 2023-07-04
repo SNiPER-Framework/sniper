@@ -284,7 +284,7 @@ double TimeConsumeTool::numberIntegral4Sin(double x0, double x1)
     static const double halfStep = step * 0.5;
 
     double result = 0.;
-    double cs = 0.;
+    double cs = x0;
     while (cs < x1)
     {
         result += (std::sin(cs) + std::sin(cs+step))*halfStep;
@@ -359,23 +359,26 @@ std::atomic_int MtTimeConsumeTool::m_n{0};
 
 double MtTimeConsumeTool::numberIntegral4Sin(double x0, double x1)
 {
-    static const double tstep = 10.;
+    static const double tstep = 20.;
     int n = (x1 - x0) / tstep;
     double _x = x0;
-    for (int i = 0; i < n; ++i)
+    double *endStore = m_resStore + n;
+    for (auto iStore = m_resStore; iStore < endStore; ++iStore)
     {
         auto pt = m_incubator.allocate();
         pt->x0 = _x;
         _x += tstep;
         pt->x1 = _x;
-        pt->result = m_resStore + i;
+        pt->result = iStore;
+        *iStore = 0.;
     }
     {
-        //the last
+        //the left beyond
         auto pt = m_incubator.allocate();
         pt->x0 = _x;
         pt->x1 = x1;
-        pt->result = m_resStore + n;
+        pt->result = endStore;
+        *endStore = 0.;
         ++n;
     }
     m_incubator.wait();

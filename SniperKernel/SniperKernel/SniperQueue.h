@@ -131,13 +131,15 @@ namespace Sniper
         if (other.m_head != other.m_tail)
         {
             other.m_last->next = m_tail;
-            auto ohead = other.m_head;
+            {
+                AtomicFlagLockGuard<true> guard(m_lock);
+                if (m_head != m_tail)
+                    m_last->next = other.m_head;
+                else
+                    m_head = other.m_head;
+                m_last = other.m_last;
+            }
             other.m_head = other.m_tail;
-            AtomicFlagLockGuard<true> guard(m_lock);
-            if (m_head != m_tail)
-                m_last->next = ohead;
-            else
-                m_head = ohead;
         }
     }
 

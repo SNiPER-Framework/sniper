@@ -134,7 +134,7 @@ bool MtSniper::initialize()
     for (int i = m_nthrds; i > 1; --i)
     {
         auto ptask = createSniperTask(identifier);
-        ptask->setScopeString(std::string("(") + std::to_string(i) + ")");
+        ptask->setScopeString(std::string("(") + std::to_string(i) + ')');
         ptask->eval(jtask);
         m_microTaskQueue->push(new InitializeSniperTask(ptask));
     }

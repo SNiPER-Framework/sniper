@@ -65,22 +65,25 @@ void MtsWorker::run()
             globalSyncAssistant.pause(); // wait for a global signal
             continue; // the worker wakes up and continue the loop
         case MtsMicroTask::Status::NoMoreEvt:
-            globalSyncAssistant.notifyAll(); // wakeup any paused workers so it can finish itself
             LogInfo << "NoMoreEvt, endup the worker" << std::endl;
+            globalSyncAssistant.notifyAll(); // wakeup any paused workers so it can finish itself
+            workerPool->notifyEndUp();
             return;
         default:  //Failed
+            LogError << "failed to exec a MicroTask, endup all workers" << std::endl;
             globalSyncAssistant.deactive();
             globalSyncAssistant.notifyAll(); // wakeup any paused workers so it can finish itself
-            LogError << "failed to exec a MicroTask, endup all workers" << std::endl;
+            workerPool->notifyEndUp();
             return;
         }
     }
 }
 
-void MtsWorker::wait()
+void MtsWorker::join()
 {
     if (m_thrd != nullptr)
     {
+        m_sync.notifyOne(); // in case it's waiting in the pool
         m_thrd->join();
         delete m_thrd;
         m_thrd = nullptr;
@@ -110,25 +113,31 @@ MtsWorker *MtsWorkerPool::create()
 
 void MtsWorkerPool::push(MtsWorker *worker)
 {
-    AtomicFlagLockGuard<true> guard(m_lock);
-    if (m_top->up != nullptr)
     {
-        m_top = m_top->up;
-        m_top->value = worker;
+        AtomicFlagLockGuard<true> guard(m_lock);
+        if (m_top->up != nullptr)
+        {
+            m_top = m_top->up;
+            m_top->value = worker;
+        }
+        else
+        {
+            m_top->up = new Slot(m_top, worker);
+            m_top = m_top->up;
+        }
+        //release the lock before pause
     }
-    else
+    if (m_alive)
     {
-        m_top->up = new Slot(m_top, worker);
-        m_top = m_top->up;
+        worker->pause();
     }
-    worker->syncAssistant().pause();
 }
 
 void MtsWorkerPool::pop()
 {
     if (auto w = this->allocate(); w != nullptr)
     {
-        w->syncAssistant().notifyOne();
+        w->resume();
     }
     else
     {
@@ -138,12 +147,20 @@ void MtsWorkerPool::pop()
     }
 }
 
+void MtsWorkerPool::notifyEndUp()
+{
+    AtomicFlagLockGuard<true> guard(m_lock);
+    m_alive = false;
+    m_sync.notifyOne();
+}
+
 void MtsWorkerPool::waitAll()
 {
+    m_sync.pause();
     auto worker = m_allWorkers.concurrentPop();
     while (worker != nullptr)
     {
-        worker->wait();
+        worker->join();
         worker = m_allWorkers.concurrentPop();
     }
 }

@@ -35,9 +35,10 @@ public:
 
     void start();
     void run();
-    void wait();
+    void join();
 
-    MtsSyncAssistant &syncAssistant() { return m_sync; }
+    void pause() { m_sync.pause(); }
+    void resume() { m_sync.notifyOne(); }
 
 private:
     std::thread *m_thrd;
@@ -55,10 +56,14 @@ public:
     MtsWorker* create();
     void push(MtsWorker *worker);
     void pop();
+
+    void notifyEndUp();
     void waitAll();
 
 private:
+    bool m_alive{true};
     std::atomic_flag m_lock{ATOMIC_FLAG_INIT};
+    MtsSyncAssistant m_sync;
     Sniper::Queue<MtsWorker*> m_allWorkers;
 
     MtsWorkerPool();
