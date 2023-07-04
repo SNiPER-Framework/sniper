@@ -155,12 +155,14 @@ bool MtSniper::initialize()
 
 bool MtSniper::finalize()
 {
+    auto status = m_otask->Snoopy().finalize(); // m_itask has been finalized in PrimaryTask
+
     if (mt_sniper_context->global_buffer != nullptr)
     {
         delete mt_sniper_context->global_buffer;
     }
 
-    return true;
+    return status;
 }
 
 bool MtSniper::run()

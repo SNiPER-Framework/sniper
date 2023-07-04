@@ -43,6 +43,7 @@ public:
 private:
     Status execInputTask();
     Status execMainTask(MtsEvtBufferRing::EvtSlot *slot);
+    Status cleanTaskPool();
 
     long m_evtMax{-1};          // the max event number to be processed
     std::atomic_long m_done{0}; // the event number has been processed

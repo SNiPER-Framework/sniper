@@ -73,7 +73,7 @@ MtsMicroTask::Status MtsPrimaryTask::exec()
         return returnCode;
     }
 
-    return m_gb->vigorous() ? Status::NoTask : Status::NoMoreEvt;
+    return m_gb->vigorous() ? Status::NoTask : cleanTaskPool();
 }
 
 MtsMicroTask::Status MtsPrimaryTask::execInputTask()
@@ -110,12 +110,20 @@ MtsMicroTask::Status MtsPrimaryTask::execMainTask(MtsEvtBufferRing::EvtSlot *slo
     }
     else {
         m_gb->deVigorous();
-        auto task = m_sniperTaskPool->allocate();
-        if (task != nullptr)
-        {
-            task->Snoopy().finalize();
-            delete task;
-        }
-        return Status::NoMoreEvt;
+        return cleanTaskPool();
     }
+}
+
+MtsMicroTask::Status MtsPrimaryTask::cleanTaskPool()
+{
+    if (!m_ilock.test_and_set())
+    {
+        m_itask->Snoopy().finalize();
+    }
+    while (auto task = m_sniperTaskPool->allocate())
+    {
+        task->Snoopy().finalize();
+        delete task;
+    }
+    return Status::NoMoreEvt;
 }
