@@ -50,7 +50,7 @@ if __name__ == "__main__":
     if nthrd == 1:
         svc.property("SaveDetails").set(True)
     alg = task.createAlg("TimeConsumeAlg")
-    alg.createTool("TimeConsumeTool")
+    alg.createTool("MtTimeConsumeTool/TimeConsumeTool")
     if useRootWriter:
         task.addSvc(wroot)
         alg.createTool("FillRootTool/FillResultTool")
