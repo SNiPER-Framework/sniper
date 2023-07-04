@@ -35,6 +35,10 @@ class ToolBase : public DLElement
         virtual bool finalize();
 
         void setParentAlg(AlgBase* alg);
+        AlgBase* getParentAlg(){ return m_parAlg; }
+
+    private:
+        AlgBase* m_parAlg;
 };
 
 #endif
