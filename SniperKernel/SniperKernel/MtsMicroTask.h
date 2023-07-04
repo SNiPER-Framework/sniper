@@ -42,7 +42,9 @@ public:
     {
         auto status = exec();
         if (m_incubator != nullptr && m_incubator->notify(this))
+        {
             return Status::BatchEnd;
+        }
         return status;
     }
 

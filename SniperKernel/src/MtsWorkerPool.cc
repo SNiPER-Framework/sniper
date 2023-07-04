@@ -47,7 +47,7 @@ void MtsWorker::run()
     static MtsWorkerPool *workerPool = MtsWorkerPool::instance();
     static auto& globalSyncAssistant = mt_sniper_context->global_sync_assistant;
 
-    LogDebug << "start worker " << m_name << std::endl;
+    LogInfo << "start worker " << m_name << std::endl;
 
     // loop the micro tasks in the queue until ...
     while (globalSyncAssistant.active())
@@ -55,14 +55,17 @@ void MtsWorker::run()
         switch (taskQueue->concurrentPop()->run())
         {
         case MtsMicroTask::Status::OK:
-            //LogInfo << "OK" << std::endl;
+            //LogDebug << "OK" << std::endl;
             continue; //continue the loop
         case MtsMicroTask::Status::BatchEnd:
+            LogDebug << "Reach Batch end and waiting..." << std::endl;
             workerPool->push(this); // put self back to the pool and waiting for reusing
+            LogDebug << "Wakeup and continue..." << std::endl;
             continue; // the worker wakes up and continue the loop
         case MtsMicroTask::Status::NoTask:
-            //LogInfo << "NoTask and waiting..." << std::endl;
+            LogDebug << "NoTask and waiting..." << std::endl;
             globalSyncAssistant.pause(); // wait for a global signal
+            LogDebug << "Wakeup and continue..." << std::endl;
             continue; // the worker wakes up and continue the loop
         case MtsMicroTask::Status::NoMoreEvt:
             LogInfo << "NoMoreEvt, endup the worker" << std::endl;
@@ -70,7 +73,7 @@ void MtsWorker::run()
             workerPool->notifyEndUp();
             return;
         default:  //Failed
-            LogError << "failed to exec a MicroTask, endup all workers" << std::endl;
+            LogError << "Failed to exec a MicroTask, endup all workers" << std::endl;
             globalSyncAssistant.deactive();
             globalSyncAssistant.notifyAll(); // wakeup any paused workers so it can finish itself
             workerPool->notifyEndUp();

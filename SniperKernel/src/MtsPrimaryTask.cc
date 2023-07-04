@@ -56,8 +56,8 @@ MtsMicroTask::Status MtsPrimaryTask::exec()
     evtslot = m_gb->front();
     if (evtslot->status == Sniper::MtsEvtSlotStatus::Done && !m_olock.test_and_set())
     {
-        AtomicFlagLockGuard<false> guard(m_olock);
         static auto &snoopy = m_otask->Snoopy();
+        AtomicFlagLockGuard<false> guard(m_olock);
         while (evtslot->status == Sniper::MtsEvtSlotStatus::Done)
         {
             mt_sniper_context->current_event = &(evtslot->evt);
@@ -81,11 +81,11 @@ MtsMicroTask::Status MtsPrimaryTask::execInputTask()
     static auto &globalSyncAssistant = mt_sniper_context->global_sync_assistant;
     static auto &snoopy = m_itask->Snoopy();
 
-    bool status = snoopy.run_once();
-    while (status && m_gb->eager())
+    bool status = true;
+    while (m_gb->eager() && status)
     {
-        globalSyncAssistant.notifyOne();
         status = snoopy.run_once();
+        globalSyncAssistant.notifyOne();
     }
     return status ? Status::OK : Status::Failed;
 }
@@ -109,6 +109,7 @@ MtsMicroTask::Status MtsPrimaryTask::execMainTask(MtsEvtBufferRing::EvtSlot *slo
         return Status::Failed; // error
     }
     else {
+        m_gb->deVigorous();
         auto task = m_sniperTaskPool->allocate();
         if (task != nullptr)
         {

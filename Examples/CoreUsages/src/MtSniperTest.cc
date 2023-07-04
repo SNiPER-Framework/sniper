@@ -155,6 +155,7 @@ void WriteAsciiTool::save(MappedEvent &emap)
     auto res = pevt->str(-1);
     m_ofs.write(res.c_str(), res.size());
     m_ofs.put('\n');
+    LogDebug << res << std::endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -212,6 +213,8 @@ bool FillGlobalBufAlg::execute()
     (*pevt)["input"].from(input);
 
     m_svc->fill(pevt);
+
+    LogDebug << "filled event: " << ievt->second << std::endl;
 
     return true;
 }
@@ -381,7 +384,9 @@ double MtTimeConsumeTool::numberIntegral4Sin(double x0, double x1)
         *endStore = 0.;
         ++n;
     }
+    LogDebug << &m_incubator << " incubator wating children: " << n << std::endl;
     m_incubator.wait();
+    LogDebug << &m_incubator << " incubator come back" << std::endl;
     double result = 0.;
     for (int i = 0; i < n; ++i)
     {
@@ -429,8 +434,10 @@ bool TimeConsumeAlg::initialize()
 bool TimeConsumeAlg::execute()
 {
     auto &emap = m_svc->get();
-
     auto &evt = *std::any_cast<std::shared_ptr<JsonEvent> &>(emap["event"]);
+
+    auto eid = evt["EventID"].str(-1);
+    LogDebug << "begin event: " << eid << std::endl;
 
     auto input = evt["input"].get<double>();
     auto result = m_calcTool->numberIntegral4Sin(0, input);
@@ -443,6 +450,7 @@ bool TimeConsumeAlg::execute()
     }
 
     m_svc->done();
+    LogDebug << "end event: " << eid << std::endl;
 
     return true;
 }
