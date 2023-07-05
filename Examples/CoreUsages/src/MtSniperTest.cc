@@ -205,10 +205,14 @@ bool FillGlobalBufAlg::execute()
     auto pevt = std::make_shared<JsonEvent>(cppEvt);
 
     // generate and set the input value
-    auto input = m_random(m_gen) * 100;
-    while (input > 2000. || input < 1.)
+    double input = 2200.; // set a big input for every 10 events
+    if (ievt->second % 10 != 6)
     {
         input = m_random(m_gen) * 100;
+        while (input > 2000. || input < 1.)
+        {
+            input = m_random(m_gen) * 100;
+        }
     }
     (*pevt)["input"].from(input);
 
@@ -268,7 +272,7 @@ class ITimeConsumeTool
 public:
     virtual double numberIntegral4Sin(double x0, double x1) = 0;
 protected:
-    const double step{0.0002};
+    const double step{0.0001};
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -302,8 +306,8 @@ double TimeConsumeTool::numberIntegral4Sin(double x0, double x1)
 class TimeConsumeTask : public MtsMicroTask
 {
 public:
-    TimeConsumeTask() { tool = toolPool->secureAllocate(); }
-    virtual ~TimeConsumeTask() { toolPool->deallocate(tool); }
+    TimeConsumeTask() { tool = new TimeConsumeTool("TimeConsumeTool"); }
+    virtual ~TimeConsumeTask() { delete tool; }
 
     virtual Status exec() override;
 
@@ -311,11 +315,7 @@ public:
     double x1;
     double *result;
     TimeConsumeTool *tool;
-
-    static SniperObjPool<TimeConsumeTool>* toolPool;
 };
-
-SniperObjPool<TimeConsumeTool> *TimeConsumeTask::toolPool = nullptr;
 
 TimeConsumeTask::Status TimeConsumeTask::exec()
 {
@@ -330,47 +330,31 @@ public:
     MtTimeConsumeTool(const std::string &name)
         : ToolBase(name)
     {
-        if (m_n == 0)
-        {
-            TimeConsumeTask::toolPool =
-                SniperObjPool<TimeConsumeTool>::instance([]()
-                                                         { return new TimeConsumeTool("TimeConsumeTool"); });
-        }
-        ++m_n;
+        declProp("MicroStep", m_mstep);
     }
 
-    virtual ~MtTimeConsumeTool()
-    {
-        m_incubator.cleanup();
-        if (--m_n == 0)
-        {
-            TimeConsumeTask::toolPool->destroy();
-        }
-    }
+    virtual ~MtTimeConsumeTool() = default;
 
     virtual double numberIntegral4Sin(double x0, double x1) override;
 
 private:
+    double m_mstep{10.};
+    double m_resStore[4000];
     MtsIncubator<TimeConsumeTask> m_incubator;
-    double m_resStore[200];
-
-    static std::atomic_int m_n;
 };
 SNIPER_DECLARE_DLE(MtTimeConsumeTool);
 
-std::atomic_int MtTimeConsumeTool::m_n{0};
-
 double MtTimeConsumeTool::numberIntegral4Sin(double x0, double x1)
 {
-    static const double tstep = 20.;
-    int n = (x1 - x0) / tstep;
+    int n = (x1 - x0) / m_mstep;
     double _x = x0;
     double *endStore = m_resStore + n;
     for (auto iStore = m_resStore; iStore < endStore; ++iStore)
     {
+        // allocate and reuse a TimeConsumeTask in the pool
         auto pt = m_incubator.allocate();
         pt->x0 = _x;
-        _x += tstep;
+        _x += m_mstep;
         pt->x1 = _x;
         pt->result = iStore;
         *iStore = 0.;

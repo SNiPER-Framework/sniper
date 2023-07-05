@@ -71,6 +71,8 @@ MtsIncubator<T>::MtsIncubator()
 template <typename T>
 MtsIncubator<T>::~MtsIncubator()
 {
+    if (--m_nIncubator == 0)
+        m_taskPool->destroy();
 }
 
 template <typename T>
@@ -120,13 +122,6 @@ bool MtsIncubator<T>::notify(MtsMicroTask *egg)
         return false;
     }
     throw ContextMsgException("MtsIncubator::notify() receives a bad egg");
-}
-
-template <typename T>
-void MtsIncubator<T>::cleanup()
-{
-    if (--m_nIncubator == 0)
-        m_taskPool->destroy();
 }
 
 #endif
