@@ -57,13 +57,13 @@ public:
     void push(MtsWorker *worker);
     void pop();
 
-    void notifyEndUp();
-    void waitAll();
+    void notifyEndUp(MtsWorker *worker);
+    void waitAll(unsigned int nWorkers);
 
 private:
-    bool m_alive{true};
+    std::atomic_int m_nAliveWorkers{0};
     MtsSyncAssistant m_sync;
-    Sniper::Queue<MtsWorker*> m_allWorkers;
+    Sniper::Queue<MtsWorker*> m_freeWorkers;
 
     MtsWorkerPool();
     virtual ~MtsWorkerPool() = default;

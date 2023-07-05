@@ -178,7 +178,7 @@ bool MtSniper::run()
         }
 
         // wait for all the workers
-        m_workerPool->waitAll();
+        m_workerPool->waitAll(m_nthrds);
 
         status = finalize();
         if (status)

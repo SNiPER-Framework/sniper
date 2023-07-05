@@ -32,6 +32,7 @@ MtsWorker::MtsWorker()
 
 MtsWorker::~MtsWorker()
 {
+    delete m_thrd;
     LogDebug << "destruct MtsWorker " << m_name << std::endl;
 }
 
@@ -70,26 +71,25 @@ void MtsWorker::run()
         case MtsMicroTask::Status::NoMoreEvt:
             LogInfo << "NoMoreEvt, endup the worker" << std::endl;
             globalSyncAssistant.notifyAll(); // wakeup any paused workers so it can finish itself
-            workerPool->notifyEndUp();
+            workerPool->notifyEndUp(this);
             return;
         default:  //Failed
             LogError << "Failed to exec a MicroTask, endup all workers" << std::endl;
             globalSyncAssistant.deactive();
             globalSyncAssistant.notifyAll(); // wakeup any paused workers so it can finish itself
-            workerPool->notifyEndUp();
+            workerPool->notifyEndUp(this);
             return;
         }
     }
+
+    workerPool->notifyEndUp(this);
 }
 
 void MtsWorker::join()
 {
     if (m_thrd != nullptr)
     {
-        m_sync.notifyOne(); // in case it's waiting in the pool
         m_thrd->join();
-        delete m_thrd;
-        m_thrd = nullptr;
     }
 }
 
@@ -103,14 +103,13 @@ MtsWorkerPool *MtsWorkerPool::instance()
 }
 
 MtsWorkerPool::MtsWorkerPool()
-    : m_allWorkers(nullptr)
+    : m_freeWorkers(nullptr)
 {
 }
 
 MtsWorker *MtsWorkerPool::create()
 {
     auto w = new MtsWorker();
-    m_allWorkers.concurrentPush(w);
     return w;
 }
 
@@ -130,40 +129,49 @@ void MtsWorkerPool::push(MtsWorker *worker)
         }
         //release the lock before pause
     }
-    if (m_alive)
-    {
-        worker->pause();
-    }
+    worker->pause();
 }
 
 void MtsWorkerPool::pop()
 {
     if (auto w = this->allocate(); w != nullptr)
     {
+        // FIXME: rare case when resume() before pause(), it fails
         w->resume();
     }
     else
     {
         w = new MtsWorker();
-        m_allWorkers.concurrentPush(w);
         w->start();
     }
 }
 
-void MtsWorkerPool::notifyEndUp()
+void MtsWorkerPool::notifyEndUp(MtsWorker *worker)
 {
-    AtomicFlagLockGuard<true> guard(m_lock);
-    m_alive = false;
-    m_sync.notifyOne();
+    m_freeWorkers.concurrentPush(worker);
+    if (--m_nAliveWorkers == 0)
+    {
+        m_sync.notifyOne();
+    }
 }
 
-void MtsWorkerPool::waitAll()
+void MtsWorkerPool::waitAll(unsigned int nWorkers)
 {
+    m_nAliveWorkers = nWorkers;
     m_sync.pause();
-    auto worker = m_allWorkers.concurrentPop();
-    while (worker != nullptr)
+
+    // release the workers outside the Pool
+    while (auto worker = m_freeWorkers.pop())
     {
         worker->join();
-        worker = m_allWorkers.concurrentPop();
+        delete worker;
+    }
+
+    // release the workers inside the Pool
+    while (auto worker = this->allocate())
+    {
+        worker->resume();
+        worker->join();
+        delete worker;
     }
 }
