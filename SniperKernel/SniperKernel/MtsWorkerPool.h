@@ -62,7 +62,6 @@ public:
 
 private:
     bool m_alive{true};
-    std::atomic_flag m_lock{ATOMIC_FLAG_INIT};
     MtsSyncAssistant m_sync;
     Sniper::Queue<MtsWorker*> m_allWorkers;
 
