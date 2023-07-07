@@ -19,7 +19,8 @@
 #include "SniperKernel/AlgBase.h"
 
 ToolBase::ToolBase(const std::string& name)
-    : DLElement(name)
+    : DLElement(name),
+      m_parAlg(nullptr)
 {
 }
 
@@ -38,4 +39,5 @@ void ToolBase::setParentAlg(AlgBase* par)
     m_logLevel = par->logLevel();
     m_scope = par->scope() + par->objName() + '.';
     m_par = par->getParent();
+    m_parAlg = par;
 }
