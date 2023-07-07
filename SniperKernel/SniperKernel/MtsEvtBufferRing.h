@@ -39,8 +39,11 @@ public:
         std::any evt;
     };
 
+    MtsEvtBufferRing() = default;
     MtsEvtBufferRing(int capacity, int threshold);
     virtual ~MtsEvtBufferRing();
+
+    void config(int capacity, int threshold);
 
     void deVigorous() { m_vigorous = false; }
     bool vigorous() { return m_vigorous;}
@@ -57,12 +60,18 @@ public:
     EvtSlot *front() { return m_begin; }
     EvtSlot *next();
 
+    // bind a GlobalBuffer event to a thread local reference, and later can be accessed in a SniperTask
+    void bindEventToThread(std::any &evt) { s_bindingEvt = &evt; }
+
+    // get the binding event in a running thread (generally in a MainTask or OutputTask)
+    std::any &getEventInThread() { return *s_bindingEvt; }
+
 private:
     EvtSlot *m_begin;
     EvtSlot *m_end;
     EvtSlot *m_cursor;
 
-    EvtSlot *m_store;
+    EvtSlot *m_store{nullptr};
 
     int m_capacity;
     int m_threshold;
@@ -70,7 +79,7 @@ private:
     std::atomic_int m_size{0};
     std::atomic_flag m_lock{ATOMIC_FLAG_INIT};
 
-    MtsEvtBufferRing() = delete;
+    static thread_local std::any *s_bindingEvt;
 };
 
 template <typename EvtType>

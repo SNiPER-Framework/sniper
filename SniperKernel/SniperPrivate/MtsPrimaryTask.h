@@ -20,8 +20,8 @@
 
 #include "SniperKernel/MtsMicroTask.h"
 #include "SniperKernel/SniperObjPool.h"
+#include "SniperKernel/MtsEvtBufferRing.h"
 #include "SniperKernel/Task.h"
-#include "SniperKernel/MtSniperContext.h"
 #include <atomic>
 
 class MtsPrimaryTask final : public MtsMicroTask

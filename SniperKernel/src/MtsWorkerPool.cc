@@ -15,10 +15,10 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "SniperKernel/MtsWorkerPool.h"
+#include "SniperPrivate/MtsWorkerPool.h"
 #include "SniperKernel/MtsMicroTaskQueue.h"
+#include "SniperKernel/MtSniperUtility.h"
 #include "SniperKernel/SniperLog.h"
-#include "SniperKernel/MtSniperContext.h"
 
 std::atomic_int MtsWorker::s_id{0};
 
@@ -38,6 +38,7 @@ MtsWorker::~MtsWorker()
 
 void MtsWorker::start()
 {
+    m_inUse = 1;
     m_thrd = new std::thread(&MtsWorker::run, this);
 }
 
@@ -46,14 +47,13 @@ void MtsWorker::run()
     // initialize the necessary pointers statically
     static MtsMicroTaskQueue *taskQueue = MtsMicroTaskQueue::instance();
     static MtsWorkerPool *workerPool = MtsWorkerPool::instance();
-    static auto& globalSyncAssistant = mt_sniper_context->global_sync_assistant;
 
     LogInfo << "start worker " << m_name << std::endl;
 
     // loop the micro tasks in the queue until ...
-    while (globalSyncAssistant.active())
+    while (MtSniperUtil::MtSniperStatus)
     {
-        switch (taskQueue->concurrentPop()->run())
+        switch (taskQueue->dequeue()->run())
         {
         case MtsMicroTask::Status::OK:
             //LogDebug << "OK" << std::endl;
@@ -65,18 +65,18 @@ void MtsWorker::run()
             continue; // the worker wakes up and continue the loop
         case MtsMicroTask::Status::NoTask:
             LogDebug << "NoTask and waiting..." << std::endl;
-            globalSyncAssistant.pause(); // wait for a global signal
+            MtSniperUtil::Thread::pause(); // pause current thread and wait for a global signal
             LogDebug << "Wakeup and continue..." << std::endl;
             continue; // the worker wakes up and continue the loop
         case MtsMicroTask::Status::NoMoreEvt:
             LogInfo << "NoMoreEvt, endup the worker" << std::endl;
-            globalSyncAssistant.notifyAll(); // wakeup any paused workers so it can finish itself
+            MtSniperUtil::Thread::resumeAll(); // wakeup any paused workers then finish itself
             workerPool->notifyEndUp(this);
             return;
         default:  //Failed
             LogError << "Failed to exec a MicroTask, endup all workers" << std::endl;
-            globalSyncAssistant.deactive();
-            globalSyncAssistant.notifyAll(); // wakeup any paused workers so it can finish itself
+            MtSniperUtil::MtSniperStatus = false;
+            MtSniperUtil::Thread::resumeAll(); // wakeup any paused workers then finish itself
             workerPool->notifyEndUp(this);
             return;
         }
@@ -93,6 +93,25 @@ void MtsWorker::join()
     }
 }
 
+void MtsWorker::pause()
+{
+    std::unique_lock<std::mutex> lock(m_mutex);
+    if (--m_inUse == 0)
+    {
+        m_cv.wait(lock, [this]()
+                  { return m_inUse != 0; });
+    }
+}
+
+void MtsWorker::resume()
+{
+    std::unique_lock<std::mutex> lock(m_mutex);
+    if (++m_inUse == 1)
+    {
+        m_cv.notify_one();
+    }
+}
+
 MtsWorkerPool *MtsWorkerPool::instance()
 {
     if (s_instance == nullptr)
@@ -105,12 +124,25 @@ MtsWorkerPool *MtsWorkerPool::instance()
 MtsWorkerPool::MtsWorkerPool()
     : m_freeWorkers(nullptr)
 {
+    m_creator = []()
+    { return new MtsWorker(); };
 }
 
-MtsWorker *MtsWorkerPool::create()
+void MtsWorkerPool::spawn(int n)
 {
-    auto w = new MtsWorker();
-    return w;
+    if (m_nAliveWorkers != 0)
+    {
+        LogError << "there are alive workers, don't spawn again!" << std::endl;
+        return;
+    }
+
+    this->preAllocate(n);
+    while (auto w = this->allocate())
+    {
+        w->start();
+    }
+
+    m_nAliveWorkers = n;
 }
 
 void MtsWorkerPool::push(MtsWorker *worker)
@@ -136,7 +168,6 @@ void MtsWorkerPool::pop()
 {
     if (auto w = this->allocate(); w != nullptr)
     {
-        // FIXME: rare case when resume() before pause(), it fails
         w->resume();
     }
     else
@@ -151,14 +182,18 @@ void MtsWorkerPool::notifyEndUp(MtsWorker *worker)
     m_freeWorkers.concurrentPush(worker);
     if (--m_nAliveWorkers == 0)
     {
-        m_sync.notifyOne();
+        m_ending.notify_one();
     }
 }
 
-void MtsWorkerPool::waitAll(unsigned int nWorkers)
+void MtsWorkerPool::waitAll()
 {
-    m_nAliveWorkers = nWorkers;
-    m_sync.pause();
+    {
+        // in fact we don't need a lock here...
+        std::mutex _local;
+        std::unique_lock<std::mutex> _lock(_local);
+        m_ending.wait(_lock);
+    }
 
     // release the workers outside the Pool
     while (auto worker = m_freeWorkers.pop())

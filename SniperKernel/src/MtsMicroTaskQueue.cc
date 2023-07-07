@@ -16,6 +16,7 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/MtsMicroTaskQueue.h"
+#include "SniperKernel/MtSniperUtility.h"
 
 MtsMicroTaskQueue *MtsMicroTaskQueue::s_instance = nullptr;
 
@@ -48,6 +49,18 @@ MtsMicroTaskQueue::~MtsMicroTaskQueue()
     {
         delete m_tail->value;
     }
+}
+
+void MtsMicroTaskQueue::enqueue(MtsMicroTask *task)
+{
+    concurrentPush(task);
+    MtSniperUtil::Thread::resumeOne();
+}
+
+void MtsMicroTaskQueue::enqueue(Sniper::Queue<MtsMicroTask *> &tasks)
+{
+    concurrentMerge(tasks);
+    MtSniperUtil::Thread::resumeAll();
 }
 
 void MtsMicroTaskQueue::setPrimaryTask(MtsMicroTask *ptask)

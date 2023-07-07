@@ -18,14 +18,11 @@
 #ifndef SNIPER_MTS_WORKER_H
 #define SNIPER_MTS_WORKER_H
 
-#include "SniperKernel/SniperObjPool.h"
 #include "SniperKernel/SniperQueue.h"
-#include "SniperKernel/MtsSyncAssistant.h"
 #include "SniperKernel/NamedElement.h"
 #include <thread>
+#include <condition_variable>
 #include <atomic>
-
-class MtsWorkerPool;
 
 class MtsWorker final : public NamedElement
 {
@@ -37,12 +34,14 @@ public:
     void run();
     void join();
 
-    void pause() { m_sync.pause(); }
-    void resume() { m_sync.notifyOne(); }
+    void pause();
+    void resume();
 
 private:
     std::thread *m_thrd;
-    MtsSyncAssistant m_sync;
+    int m_inUse{0};
+    std::mutex m_mutex;
+    std::condition_variable m_cv;
 
     static std::atomic_int s_id;
 };
@@ -53,16 +52,16 @@ public:
     static MtsWorkerPool *instance();
     static void destroy() { SniperObjPool<MtsWorker>::destroy(); }
 
-    MtsWorker* create();
+    void spawn(int n);
     void push(MtsWorker *worker);
     void pop();
 
     void notifyEndUp(MtsWorker *worker);
-    void waitAll(unsigned int nWorkers);
+    void waitAll();
 
 private:
     std::atomic_int m_nAliveWorkers{0};
-    MtsSyncAssistant m_sync;
+    std::condition_variable m_ending;
     Sniper::Queue<MtsWorker*> m_freeWorkers;
 
     MtsWorkerPool();

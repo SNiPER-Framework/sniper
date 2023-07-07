@@ -15,8 +15,9 @@
    You should have received a copy of the GNU Lesser General Public License
    along with mt.sniper.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "SniperKernel/MtSniperContext.h"
+#include "SniperKernel/MtSniperUtility.h"
 #include "SniperKernel/MtsIncubator.h"
+#include "SniperKernel/MtsEvtBufferRing.h"
 #include "SniperKernel/SniperJSON.h"
 #include "SniperKernel/SniperObjPool.h"
 #include "SniperKernel/SvcBase.h"
@@ -62,7 +63,11 @@ public:
 class FillGlobalBufSvc : public SvcBase, public IFillGlobalBufSvc
 {
 public:
-    FillGlobalBufSvc(const std::string &name) : SvcBase(name) {}
+    FillGlobalBufSvc(const std::string &name)
+        : SvcBase(name)
+    {
+        m_gb = MtSniperUtil::GlobalBuffer::instance();
+    }
     virtual ~FillGlobalBufSvc() = default;
 
     virtual bool initialize() override { return true; }
@@ -70,28 +75,34 @@ public:
 
     virtual void fill(std::shared_ptr<JsonEvent> &pevt) override;
     virtual void stop() override;
+
+private:
+    MtsEvtBufferRing *m_gb;
 };
 SNIPER_DECLARE_DLE(FillGlobalBufSvc);
 
 void FillGlobalBufSvc::fill(std::shared_ptr<JsonEvent> &pevt)
 {
-    static auto gbptr = mt_sniper_context->global_buffer;
     static const std::string key{"event"};
 
     MappedEvent emap{{key, pevt}};
-    gbptr->push_back(emap);
+    m_gb->push_back(emap);
 }
 
 void FillGlobalBufSvc::stop()
 {
-    mt_sniper_context->global_buffer->deVigorous();
+    m_gb->deVigorous();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 class GetGlobalBufSvc : public SvcBase, public IGetGlobalBufSvc
 {
 public:
-    GetGlobalBufSvc(const std::string &name) : SvcBase(name) {}
+    GetGlobalBufSvc(const std::string &name)
+        : SvcBase(name)
+    {
+        m_gb = MtSniperUtil::GlobalBuffer::instance();
+    }
     virtual ~GetGlobalBufSvc() = default;
 
     virtual bool initialize() override { return true; }
@@ -100,17 +111,20 @@ public:
     virtual MappedEvent &get() override;
     virtual MappedEvent &pop() override;
     virtual void done() override {}
+
+private:
+    MtsEvtBufferRing *m_gb;
 };
 SNIPER_DECLARE_DLE(GetGlobalBufSvc);
 
 MappedEvent &GetGlobalBufSvc::get()
 {
-    return std::any_cast<MappedEvent &>(*(mt_sniper_context->current_event));
+    return std::any_cast<MappedEvent &>(m_gb->getEventInThread());
 }
 
 MappedEvent &GetGlobalBufSvc::pop()
 {
-    return std::any_cast<MappedEvent &>(*(mt_sniper_context->current_event));
+    return std::any_cast<MappedEvent &>(m_gb->getEventInThread());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -272,7 +286,7 @@ class ITimeConsumeTool
 public:
     virtual double numberIntegral4Sin(double x0, double x1) = 0;
 protected:
-    const double step{0.0001};
+    const double step{0.0002};
 };
 
 ////////////////////////////////////////////////////////////////////////////////

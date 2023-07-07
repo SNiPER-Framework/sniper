@@ -19,9 +19,9 @@
 #define SNIPER_MTS_INCUBATOR_H
 
 #include "SniperKernel/MtsMicroTaskQueue.h"
-#include "SniperKernel/MtsWorkerPool.h"
-#include "SniperKernel/MtSniperContext.h"
+#include "SniperKernel/MtSniperUtility.h"
 #include "SniperKernel/SniperException.h"
+#include <condition_variable>
 #include <type_traits>
 
 template <typename T>
@@ -44,12 +44,12 @@ private:
 
     SniperObjPool<T> *m_taskPool;
     MtsMicroTaskQueue *m_taskQueue;
-    MtsWorkerPool *m_workerPool;
 
     std::atomic_int m_nEggs{0};
     Sniper::Queue<MtsMicroTask *> m_eggs;
 
-    MtsSyncAssistant m_sync;
+    std::mutex m_mutex;
+    std::condition_variable m_sync;
 
     static std::atomic_int m_nIncubator;
 };
@@ -64,7 +64,6 @@ MtsIncubator<T>::MtsIncubator()
     m_taskPool = SniperObjPool<T>::instance([]()
                                         { return new T(); });
     m_taskQueue = MtsMicroTaskQueue::instance();
-    m_workerPool = MtsWorkerPool::instance();
     ++m_nIncubator;
 }
 
@@ -90,12 +89,12 @@ void MtsIncubator<T>::wait()
 {
     if (m_nEggs > 1)
     {
-        m_taskQueue->concurrentMerge(m_eggs);
-        m_workerPool->pop(); // wakeup another worker
-        mt_sniper_context->global_sync_assistant.notifyAll();
+        m_taskQueue->enqueue(m_eggs);
+        MtSniperUtil::Worker::raiseAnother(); // wakeup another worker
+        std::unique_lock<std::mutex> lock(m_mutex);
         if (m_nEggs != 0)
         {
-            m_sync.pause(); // pause current thread and wait
+            m_sync.wait(lock); // pause current thread and wait
         }
     }
     else if (m_nEggs == 1)
@@ -114,9 +113,10 @@ bool MtsIncubator<T>::notify(MtsMicroTask *egg)
     if (_egg != nullptr)
     {
         m_taskPool->deallocate(_egg);
+        std::lock_guard<std::mutex> lock(m_mutex);
         if (--m_nEggs == 0)
         {
-            m_sync.notifyOne();
+            m_sync.notify_one();
             return true;
         }
         return false;

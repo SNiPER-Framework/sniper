@@ -17,11 +17,29 @@
 
 #include "SniperKernel/MtsEvtBufferRing.h"
 
+thread_local std::any *MtsEvtBufferRing::s_bindingEvt{nullptr};
+
 MtsEvtBufferRing::MtsEvtBufferRing(int capacity, int threshold)
-    : m_capacity(capacity),
-      m_threshold(threshold)
 {
-    m_store = new EvtSlot[m_capacity];
+    config(capacity, threshold);
+}
+
+MtsEvtBufferRing::~MtsEvtBufferRing()
+{
+    delete[] m_store;
+}
+
+void MtsEvtBufferRing::config(int capacity, int threshold)
+{
+    if (m_store != nullptr)
+    {
+        delete m_store;
+    }
+
+    m_store = new EvtSlot[capacity];
+    m_capacity = capacity;
+    m_threshold = threshold;
+
     m_begin = m_store;
     m_end = m_store + m_capacity;
     for (m_cursor = m_begin; m_cursor != m_end; ++m_cursor)
@@ -31,11 +49,6 @@ MtsEvtBufferRing::MtsEvtBufferRing(int capacity, int threshold)
     }
     (--m_cursor)->next = m_begin;
     m_cursor = m_end = m_begin;
-}
-
-MtsEvtBufferRing::~MtsEvtBufferRing()
-{
-    delete[] m_store;
 }
 
 void MtsEvtBufferRing::pop_front()

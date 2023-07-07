@@ -20,7 +20,6 @@
 
 #include "SniperKernel/Task.h"
 #include "SniperKernel/MtsMicroTaskQueue.h"
-#include "SniperKernel/MtsWorkerPool.h"
 
 class MtSniper : public DLElement
 {
@@ -66,7 +65,6 @@ protected:
     std::atomic_flag m_olock{ATOMIC_FLAG_INIT};
 
     MtsMicroTaskQueue *m_microTaskQueue;
-    MtsWorkerPool *m_workerPool;
     SniperObjPool<Task> *m_sniperTaskPool; // for all the main task copies
 };
 

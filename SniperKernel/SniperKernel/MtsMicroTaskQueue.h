@@ -21,11 +21,16 @@
 #include "SniperKernel/MtsMicroTask.h"
 #include "SniperKernel/SniperQueue.h"
 
-class MtsMicroTaskQueue : public Sniper::Queue<MtsMicroTask *>
+class MtsMicroTaskQueue : private Sniper::Queue<MtsMicroTask *>
 {
 public:
     static MtsMicroTaskQueue *instance();
     static void destroy();
+
+    void enqueue(MtsMicroTask *task);
+    void enqueue(Sniper::Queue<MtsMicroTask *> &tasks);
+
+    MtsMicroTask *dequeue() { return s_instance->concurrentPop(); }
 
     void setPrimaryTask(MtsMicroTask *ptask);
     MtsMicroTask *getPrimaryTask() { return m_tail->value; }

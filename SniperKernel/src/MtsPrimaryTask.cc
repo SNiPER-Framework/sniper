@@ -16,6 +16,7 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperPrivate/MtsPrimaryTask.h"
+#include "SniperKernel/MtSniperUtility.h"
 #include "SniperKernel/SniperLog.h"
 
 MtsPrimaryTask::MtsPrimaryTask(std::atomic_flag &ilock, std::atomic_flag &olock)
@@ -23,7 +24,7 @@ MtsPrimaryTask::MtsPrimaryTask(std::atomic_flag &ilock, std::atomic_flag &olock)
       m_olock(olock)
 {
     m_name = "MtsPrimaryTask";
-    m_gb = mt_sniper_context->global_buffer;
+    m_gb = MtSniperUtil::GlobalBuffer::instance();
 }
 
 MtsPrimaryTask::~MtsPrimaryTask()
@@ -48,19 +49,19 @@ MtsMicroTask::Status MtsPrimaryTask::exec()
     auto evtslot = m_gb->next();
     if (evtslot != nullptr)
     {
-        mt_sniper_context->current_event = &(evtslot->evt);
+        m_gb->bindEventToThread(evtslot->evt);
         returnCode = execMainTask(evtslot);
         ++nsubtask;
     }
     // whether to run OutputTask
     evtslot = m_gb->front();
-    if (evtslot->status == Sniper::MtsEvtSlotStatus::Done && !m_olock.test_and_set())
+    if (evtslot->status == MtsEvtBufferRing::SlotStatus::Done && !m_olock.test_and_set())
     {
         static auto &snoopy = m_otask->Snoopy();
         AtomicFlagLockGuard<false> guard(m_olock);
-        while (evtslot->status == Sniper::MtsEvtSlotStatus::Done)
+        while (evtslot->status == MtsEvtBufferRing::SlotStatus::Done)
         {
-            mt_sniper_context->current_event = &(evtslot->evt);
+            m_gb->bindEventToThread(evtslot->evt);
             snoopy.run_once(); // suppose it never fails
             m_gb->pop_front();
             evtslot = m_gb->front();
@@ -78,14 +79,13 @@ MtsMicroTask::Status MtsPrimaryTask::exec()
 
 MtsMicroTask::Status MtsPrimaryTask::execInputTask()
 {
-    static auto &globalSyncAssistant = mt_sniper_context->global_sync_assistant;
     static auto &snoopy = m_itask->Snoopy();
 
     bool status = true;
     while (m_gb->eager() && status)
     {
         status = snoopy.run_once();
-        globalSyncAssistant.notifyOne();
+        MtSniperUtil::Thread::resumeOne();
     }
     return status ? Status::OK : Status::Failed;
 }
@@ -99,7 +99,7 @@ MtsMicroTask::Status MtsPrimaryTask::execMainTask(MtsEvtBufferRing::EvtSlot *slo
     {
         auto task = m_sniperTaskPool->allocate();
         bool status = task->Snoopy().run_once();
-        slot->status = Sniper::MtsEvtSlotStatus::Done;
+        slot->status = MtsEvtBufferRing::SlotStatus::Done;
         m_sniperTaskPool->deallocate(task);
         if (status)
         {

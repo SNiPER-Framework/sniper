@@ -16,15 +16,13 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/MtSniper.h"
-#include "SniperKernel/SniperLog.h"
-#include "SniperKernel/SniperContext.h"
-#include "SniperKernel/MtSniperContext.h"
-#include "SniperKernel/Sniper.h"
 #include "SniperKernel/MtsMicroTask4Sniper.h"
+#include "SniperKernel/MtSniperUtility.h"
+#include "SniperKernel/SniperContext.h"
+#include "SniperKernel/SniperLog.h"
+#include "SniperKernel/Sniper.h"
 #include "SniperPrivate/MtsPrimaryTask.h"
-
-Sniper::MtContext *mt_sniper_context = nullptr;
-thread_local std::any* Sniper::MtContext::current_event = nullptr;
+#include <thread>
 
 MtSniper::MtSniper()
     : DLElement("MtSniper")
@@ -36,11 +34,8 @@ MtSniper::MtSniper()
     declProp("GlobalBufferCapacity", m_gbufCapacity = -1);
     declProp("GlobalBufferThreshold", m_gbufThreshold = -1);
 
-    mt_sniper_context = new Sniper::MtContext;
-    mt_sniper_context->global_buffer = nullptr;
-
+    MtSniperUtil::contextInit();
     m_microTaskQueue = MtsMicroTaskQueue::instance();
-    m_workerPool = MtsWorkerPool::instance();
     m_sniperTaskPool = SniperObjPool<Task>::instance();
 }
 
@@ -50,10 +45,8 @@ MtSniper::~MtSniper()
     delete m_otask;
 
     m_sniperTaskPool->destroy();
-    m_workerPool->destroy();
     m_microTaskQueue->destroy();
-
-    delete mt_sniper_context;
+    MtSniperUtil::contextRelease();
 }
 
 void MtSniper::configGlobalBuffer(int capacity, int threshold)
@@ -114,21 +107,21 @@ bool MtSniper::initialize()
     sniper_context->set(Sniper::SysMode::MT);
     sniper_context->set_threads(m_nthrds);
 
-    // create the global buffer for MtSniper
-    if (m_gbufThreshold < 0 || m_gbufThreshold >= m_gbufCapacity)
+    // config the global buffer for MtSniper
+    if (m_gbufThreshold < m_nthrds || m_gbufThreshold > m_gbufCapacity)
     {
-        LogWarn << "improper GlobalBuffer capacity and threshold" << std::endl;
+        LogError << "Improper GlobalBuffer options, please make sure: NumThreads <= threshold <= capacity" << std::endl;
         return false;
     }
-    mt_sniper_context->global_buffer = new MtsEvtBufferRing(m_gbufCapacity, m_gbufThreshold);
+    MtSniperUtil::GlobalBuffer::instance()->config(m_gbufCapacity, m_gbufThreshold);
 
     // create the micro tasks for IO Task initialize
-    m_microTaskQueue->push(new InitializeSniperTask(m_itask, m_ilock));
-    m_microTaskQueue->push(new InitializeSniperTask(m_otask, m_olock));
+    m_microTaskQueue->enqueue(new InitializeSniperTask(m_itask, m_ilock));
+    m_microTaskQueue->enqueue(new InitializeSniperTask(m_otask, m_olock));
 
     // get the sniper main Task instance and create its copies and micro tasks for initialize
     auto *mtask = m_sniperTaskPool->allocate();
-    m_microTaskQueue->push(new InitializeSniperTask(mtask));
+    m_microTaskQueue->enqueue(new InitializeSniperTask(mtask));
     auto jtask = mtask->json();
     auto identifier = jtask["identifier"].get<std::string>();
     for (int i = m_nthrds; i > 1; --i)
@@ -136,7 +129,7 @@ bool MtSniper::initialize()
         auto ptask = createSniperTask(identifier);
         ptask->setScopeString(std::string("(") + std::to_string(i) + ')');
         ptask->eval(jtask);
-        m_microTaskQueue->push(new InitializeSniperTask(ptask));
+        m_microTaskQueue->enqueue(new InitializeSniperTask(ptask));
     }
 
     // use the default primary task if it's not set externally
@@ -155,37 +148,32 @@ bool MtSniper::initialize()
 
 bool MtSniper::finalize()
 {
-    auto status = m_otask->Snoopy().finalize(); // m_itask has been finalized in PrimaryTask
-
-    if (mt_sniper_context->global_buffer != nullptr)
-    {
-        delete mt_sniper_context->global_buffer;
-    }
-
-    return status;
+    return m_otask->Snoopy().finalize(); // m_itask has been finalized in PrimaryTask
 }
 
 bool MtSniper::run()
 {
-    bool status = initialize();
-    if (status)
+    if (!this->initialize())
     {
-        LogInfo << "MtSniper initialized and now start workers..." << std::endl;
-        for (int i = 0; i < m_nthrds; ++i)
-        {
-            auto w = m_workerPool->create();
-            w->start();
-        }
-
-        // wait for all the workers
-        m_workerPool->waitAll(m_nthrds);
-
-        status = finalize();
-        if (status)
-        {
-            LogInfo << "all workers finished successfully" << std::endl;
-        }
+        LogError << "initialize failed" << std::endl;
+        return false;
     }
 
-    return status;
+    LogInfo << "MtSniper initialized and now start workers..." << std::endl;
+
+    // start m_nthrds workers and each runs in a seperated threads
+    MtSniperUtil::Worker::spawn(m_nthrds);
+
+    // wait for the ending of all the workers
+    MtSniperUtil::Worker::waitAll();
+
+    if (!this->finalize())
+    {
+        LogError << "finalize failed" << std::endl;
+        return false;
+    }
+
+    LogInfo << "all workers finished successfully" << std::endl;
+
+    return true;
 }
