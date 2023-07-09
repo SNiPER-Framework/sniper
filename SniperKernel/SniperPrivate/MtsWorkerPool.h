@@ -21,8 +21,10 @@
 #include "SniperKernel/SniperQueue.h"
 #include "SniperKernel/NamedElement.h"
 #include <thread>
-#include <condition_variable>
 #include <atomic>
+#include <ucontext.h>
+
+class MtsWorkerPool;
 
 class MtsWorker final : public NamedElement
 {
@@ -30,42 +32,40 @@ public:
     MtsWorker();
     ~MtsWorker();
 
-    void start();
-    void run();
-    void join();
+    ucontext_t *context() { return &m_ctx; }
+    void initContext();
 
-    void pause();
+    void run();
+    void yield();
     void resume();
 
 private:
-    std::thread *m_thrd;
-    int m_inUse{0};
-    std::mutex m_mutex;
-    std::condition_variable m_cv;
+    bool m_active{true};
+    MtsWorkerPool *m_pool;
+    ucontext_t m_ctx;
+    char m_stack[1024*4];
 
     static std::atomic_int s_id;
 };
 
-class MtsWorkerPool final : private SniperObjPool<MtsWorker>
+class MtsWorkerPool final : public SniperObjPool<MtsWorker>
 {
 public:
     static MtsWorkerPool *instance();
     static void destroy() { SniperObjPool<MtsWorker>::destroy(); }
 
     void spawn(int n);
-    void push(MtsWorker *worker);
-    void pop();
-
     void notifyEndUp(MtsWorker *worker);
     void waitAll();
 
 private:
-    std::atomic_int m_nAliveWorkers{0};
-    std::condition_variable m_ending;
-    Sniper::Queue<MtsWorker*> m_freeWorkers;
+    Sniper::Queue<std::thread *> m_threads{nullptr};
+    Sniper::Queue<MtsWorker *> m_freeWorkers{nullptr};
 
     MtsWorkerPool();
-    virtual ~MtsWorkerPool() = default;
+    virtual ~MtsWorkerPool();
+
+    static MtsWorker *creator();
 };
 
 #endif

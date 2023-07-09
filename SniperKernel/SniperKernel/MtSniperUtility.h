@@ -19,7 +19,7 @@
 #define SNIPER_MT_SNIPER_UTILITY_H
 
 #include <any>
-#include <setjmp.h>
+#include <ucontext.h>
 
 class MtsEvtBufferRing;
 
@@ -57,10 +57,10 @@ namespace MtSniperUtil
         void raiseAnother();
 
         // expose the Incubator internal context so that it can be accessed by a Worker
-        void setIncubatorContext(jmp_buf &ctx);
+        void setIncubatorContext(ucontext_t *ctx);
 
         // get the Incubator context and then we can resume it
-        jmp_buf &getIncubatorContext();
+        ucontext_t *getIncubatorContext();
 
     } // namespace Worker
 

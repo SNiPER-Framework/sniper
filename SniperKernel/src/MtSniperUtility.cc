@@ -18,6 +18,7 @@
 #include "SniperKernel/MtSniperUtility.h"
 #include "SniperKernel/MtsEvtBufferRing.h"
 #include "SniperPrivate/MtsWorkerPool.h"
+#include <condition_variable>
 
 namespace MtSniperUtil
 {
@@ -30,7 +31,7 @@ namespace MtSniperUtil
     static std::condition_variable _workerSync;
 
     // thread local variable
-    static thread_local jmp_buf *_pIncubatorCtx{nullptr};
+    static thread_local ucontext_t *_pIncubatorCtx{nullptr};
 }
 
 void MtSniperUtil::contextInit()
@@ -78,17 +79,26 @@ void MtSniperUtil::Worker::waitAll()
 
 void MtSniperUtil::Worker::raiseAnother()
 {
-    _pWorkerPool->pop();
+    if (auto w = _pWorkerPool->allocate())
+    {
+        setcontext(w->context());
+    }
+    else
+    {
+        w = new MtsWorker();
+        w->initContext();
+        setcontext(w->context());
+    }
 }
 
-void MtSniperUtil::Worker::setIncubatorContext(jmp_buf &ctx)
+void MtSniperUtil::Worker::setIncubatorContext(ucontext_t *ctx)
 {
-    _pIncubatorCtx = &ctx;
+    _pIncubatorCtx = ctx;
 }
 
-jmp_buf &MtSniperUtil::Worker::getIncubatorContext()
+ucontext_t *MtSniperUtil::Worker::getIncubatorContext()
 {
-    return *_pIncubatorCtx;
+    return _pIncubatorCtx;
 }
 
 MtsEvtBufferRing *MtSniperUtil::GlobalBuffer::instance()

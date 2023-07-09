@@ -21,8 +21,8 @@
 #include "SniperKernel/MtsMicroTaskQueue.h"
 #include "SniperKernel/MtSniperUtility.h"
 #include "SniperKernel/SniperException.h"
-#include <condition_variable>
 #include <type_traits>
+#include <ucontext.h>
 
 template <typename T>
 class MtsIncubator : public MtsIncubatorBase
@@ -36,8 +36,6 @@ public:
     T *allocate();
     void wait();
 
-    void cleanup();
-
 private:
     friend class MtsMicroTask;
     virtual bool notify(MtsMicroTask *egg) override;
@@ -48,8 +46,7 @@ private:
     std::atomic_int m_nEggs{0};
     Sniper::Queue<MtsMicroTask *> m_eggs;
 
-    std::mutex m_mutex;
-    std::condition_variable m_sync;
+    ucontext_t m_ctx;
 
     static std::atomic_int m_nIncubator;
 };
@@ -89,13 +86,13 @@ void MtsIncubator<T>::wait()
 {
     if (m_nEggs > 1)
     {
-        m_taskQueue->enqueue(m_eggs);
-        MtSniperUtil::Worker::raiseAnother(); // wakeup another worker
-        std::unique_lock<std::mutex> lock(m_mutex);
+        getcontext(&m_ctx);
         if (m_nEggs != 0)
         {
-            m_sync.wait(lock); // pause current thread and wait
+            m_taskQueue->enqueue(m_eggs);
+            MtSniperUtil::Worker::raiseAnother(); // yield and go to another Worker
         }
+        // else: BatchEnd and come back from another Worker
     }
     else if (m_nEggs == 1)
     {
@@ -113,10 +110,9 @@ bool MtsIncubator<T>::notify(MtsMicroTask *egg)
     if (_egg != nullptr)
     {
         m_taskPool->deallocate(_egg);
-        std::lock_guard<std::mutex> lock(m_mutex);
         if (--m_nEggs == 0)
         {
-            m_sync.notify_one();
+            MtSniperUtil::Worker::setIncubatorContext(&m_ctx);
             return true;
         }
         return false;
