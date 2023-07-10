@@ -29,7 +29,7 @@ MtsPrimaryTask::MtsPrimaryTask(std::atomic_flag &ilock, std::atomic_flag &olock)
 
 MtsPrimaryTask::~MtsPrimaryTask()
 {
-    LogInfo << "events processed " << m_done << std::endl;
+    LogDebug << "events processed " << m_done << std::endl;
 }
 
 MtsMicroTask::Status MtsPrimaryTask::exec()

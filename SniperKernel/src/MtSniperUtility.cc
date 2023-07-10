@@ -85,7 +85,7 @@ void MtSniperUtil::Worker::raiseAnother()
     }
     else
     {
-        w = new MtsWorker();
+        w = _pWorkerPool->create();
         w->initContext();
         w->resume();
     }

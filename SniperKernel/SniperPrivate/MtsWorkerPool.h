@@ -30,18 +30,21 @@ class MtsWorkerPool;
 class MtsWorker final : public NamedElement
 {
 public:
-    MtsWorker(bool isThreadHandle = false);
+    void initContext();
+    void resume() { setcontext(&m_ctx); }
+
+private:
+    friend class MtsWorkerPool;
+    friend class SniperObjPool<MtsWorker>;
+
+    MtsWorker(bool isThreadHandle);
     ~MtsWorker();
 
-    void initContext();
     void run();
-
     void yield(ucontext_t *ctx); // yield the CPU and go to another context
-    void resume() { setcontext(&m_ctx); }
 
     bool isThreadHandle() { return m_isThreadHandle; }
 
-private:
     bool m_isThreadHandle;
     bool m_active{true};
     MtsWorkerPool *m_pool;
@@ -56,6 +59,8 @@ class MtsWorkerPool final : public SniperObjPool<MtsWorker>
 public:
     static MtsWorkerPool *instance();
     static void destroy() { SniperObjPool<MtsWorker>::destroy(); }
+
+    MtsWorker *create() { return new MtsWorker(false); }
 
     void spawn(int n);
     void syncEndUp(MtsWorker *worker);

@@ -140,6 +140,8 @@ void MtsWorkerPool::spawn(int n)
 
 void MtsWorkerPool::syncEndUp(MtsWorker *worker)
 {
+    m_freeWorkers.concurrentPush(worker);
+
     if (worker->isThreadHandle())
     {
         std::unique_lock<std::mutex> lock(m_mutex);
@@ -170,6 +172,7 @@ void MtsWorkerPool::syncEndUp(MtsWorker *worker)
             // but it unnecessary to end up on its original thread handle in our case
             w->resume();
         }
+        m_freeWorkers.concurrentPush(w);
     }
 }
 
