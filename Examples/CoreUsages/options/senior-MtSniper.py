@@ -42,6 +42,7 @@ if __name__ == "__main__":
     alg = task.createAlg("PruneGlobalBufAlg")
     if useRootWriter:
         tool = alg.createTool("WriteRootTool/WriteResultTool")
+        task.addSvc(wroot)
     else:
         tool = alg.createTool("WriteAsciiTool/WriteResultTool")
         tool.property("OutputFile").set("mtresult.txt")
