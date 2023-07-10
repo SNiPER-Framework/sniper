@@ -22,10 +22,12 @@
 
 std::atomic_int MtsWorker::s_id{0};
 
-MtsWorker::MtsWorker()
-    : NamedElement("MtSniper:", "Worker")
+MtsWorker::MtsWorker(bool isThreadHandle)
+    : NamedElement("MtSniper:", "Worker"),
+      m_isThreadHandle(isThreadHandle)
 {
     m_name += std::to_string(++s_id);
+
     LogDebug << "construct MtsWorker " << m_name << std::endl;
     m_pool = MtsWorkerPool::instance();
 }
@@ -49,18 +51,6 @@ void MtsWorker::initContext()
     }
 }
 
-void MtsWorker::yield()
-{
-    //if (setjmp(m_ctx) == 0)
-    {
-        m_pool->deallocate(this); // put self back to the pool and wait for reusing
-    }
-}
-
-void MtsWorker::resume()
-{
-}
-
 void MtsWorker::run()
 {
     // initialize the necessary pointers statically
@@ -78,12 +68,7 @@ void MtsWorker::run()
             continue; //continue the loop
         case MtsMicroTask::Status::BatchEnd:
             LogDebug << "Reach Batch end and waiting..." << std::endl;
-            getcontext(&m_ctx);
-            if(m_active){
-                m_active = false;
-                m_pool->deallocate(this);
-                setcontext(MtSniperUtil::Worker::getIncubatorContext());
-            }
+            yield(MtSniperUtil::Worker::getIncubatorContext());
             LogDebug << "Wakeup and continue..." << std::endl;
             m_active = true;
             continue; // the worker wakes up and continue the loop
@@ -95,18 +80,29 @@ void MtsWorker::run()
         case MtsMicroTask::Status::NoMoreEvt:
             LogInfo << "NoMoreEvt, endup the worker" << std::endl;
             MtSniperUtil::Thread::resumeAll(); // wakeup any paused workers then finish itself
-            m_pool->notifyEndUp(this);
+            m_pool->syncEndUp(this);
             return;
         default:  //Failed
             LogError << "Failed to exec a MicroTask, endup all workers" << std::endl;
             MtSniperUtil::MtSniperStatus = false;
             MtSniperUtil::Thread::resumeAll(); // wakeup any paused workers then finish itself
-            m_pool->notifyEndUp(this);
+            m_pool->syncEndUp(this);
             return;
         }
     }
 
-    m_pool->notifyEndUp(this);
+    m_pool->syncEndUp(this);
+}
+
+void MtsWorker::yield(ucontext_t *ctx)
+{
+    getcontext(&m_ctx);
+    if (m_active)
+    {
+        m_active = false;
+        m_pool->deallocate(this);
+        setcontext(ctx);
+    }
 }
 
 MtsWorkerPool *MtsWorkerPool::instance()
@@ -118,22 +114,11 @@ MtsWorkerPool *MtsWorkerPool::instance()
     return reinterpret_cast<MtsWorkerPool*>(s_instance);
 }
 
-MtsWorker *MtsWorkerPool::creator()
-{
-    return new MtsWorker();
-}
-
-MtsWorkerPool::MtsWorkerPool()
-{
-    m_creator = &MtsWorkerPool::creator;
-}
-
 MtsWorkerPool::~MtsWorkerPool()
 {
     // release the workers inside the Pool
     while (auto worker = this->allocate())
     {
-        worker->resume();
         delete worker;
     }
 
@@ -146,15 +131,46 @@ MtsWorkerPool::~MtsWorkerPool()
 
 void MtsWorkerPool::spawn(int n)
 {
+    m_nAlive = n;
     for (int i = 0; i < n; ++i)
     {
-        m_threads.push(new std::thread(&MtsWorker::run, new MtsWorker()));
+        m_threads.push(new std::thread(&MtsWorker::run, new MtsWorker(true)));
     }
 }
 
-void MtsWorkerPool::notifyEndUp(MtsWorker *worker)
+void MtsWorkerPool::syncEndUp(MtsWorker *worker)
 {
-    m_freeWorkers.concurrentPush(worker);
+    if (worker->isThreadHandle())
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        if (--m_nAlive == 0)
+        {
+            m_sync.notify_all();
+        }
+        return;
+    }
+
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        if (--m_nAlive != 0)
+        {
+            m_sync.wait(lock);
+        }
+        else
+        {
+            m_sync.notify_all();
+        }
+    }
+
+    while (auto w = this->allocate())
+    {
+        if (w->isThreadHandle())
+        {
+            // all threads have to end up on a different thread handle, or else join() will fail
+            // but it unnecessary to end up on its original thread handle in our case
+            w->resume();
+        }
+    }
 }
 
 void MtsWorkerPool::waitAll()

@@ -81,13 +81,13 @@ void MtSniperUtil::Worker::raiseAnother()
 {
     if (auto w = _pWorkerPool->allocate())
     {
-        setcontext(w->context());
+        w->resume();
     }
     else
     {
         w = new MtsWorker();
         w->initContext();
-        setcontext(w->context());
+        w->resume();
     }
 }
 
