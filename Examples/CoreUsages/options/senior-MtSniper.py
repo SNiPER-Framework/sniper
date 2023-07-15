@@ -14,6 +14,7 @@ if __name__ == "__main__":
     Sniper.setLogLevel(3)
     useRootWriter = False
     nthrd = 4
+    timeScale = 10
     mtsniper.setEvtMax(3000)
     mtsniper.setNumThreads(nthrd)
     if nthrd != 1:
@@ -52,12 +53,13 @@ if __name__ == "__main__":
     task.createSvc("GetGlobalBufSvc")
     svc = task.createSvc("SniperProfiling")
     alg = task.createAlg("TimeConsumeAlg")
+    alg.property("TimeScale").set(timeScale)
     if nthrd == 1:
         svc.property("SaveDetails").set(True)
         alg.createTool("TimeConsumeTool")
     else:
         tool = alg.createTool("MtTimeConsumeTool/TimeConsumeTool")
-        tool.property("MicroStep").set(10)
+        tool.property("MicroStep").set(10*timeScale)
     if useRootWriter:
         task.addSvc(wroot)
         alg.createTool("FillRootTool/FillResultTool")
