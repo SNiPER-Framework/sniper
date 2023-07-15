@@ -60,6 +60,31 @@ public:
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+class SerialFillGetBufSvc : public SvcBase, public IFillGlobalBufSvc, public IGetGlobalBufSvc
+{
+public:
+    SerialFillGetBufSvc(const std::string &name) : SvcBase(name) {}
+    virtual ~SerialFillGetBufSvc() = default;
+
+    virtual bool initialize() override { return true; }
+    virtual bool finalize() override { return true; }
+
+    virtual void fill(std::shared_ptr<JsonEvent> &pevt) override { s_evt["event"] = pevt; }
+    virtual void stop() override {}
+    virtual MappedEvent &get() override { return s_evt; }
+    virtual MappedEvent &pop() override { return s_evt; }
+    virtual void done() override {}
+
+private:
+    static MappedEvent s_evt;
+};
+MappedEvent SerialFillGetBufSvc::s_evt;
+typedef SerialFillGetBufSvc SerialFillBufSvc;
+typedef SerialFillGetBufSvc SerialGetBufSvc;
+SNIPER_DECLARE_DLE(SerialFillBufSvc);
+SNIPER_DECLARE_DLE(SerialGetBufSvc);
+
+////////////////////////////////////////////////////////////////////////////////
 class FillGlobalBufSvc : public SvcBase, public IFillGlobalBufSvc
 {
 public:
@@ -408,12 +433,14 @@ private:
     ITimeConsumeTool *m_calcTool;
     IFillResultTool *m_fillTool;
     IGetGlobalBufSvc *m_svc;
+    double m_timeScale;
 };
 SNIPER_DECLARE_DLE(TimeConsumeAlg);
 
 TimeConsumeAlg::TimeConsumeAlg(const std::string &name)
     : AlgBase(name)
 {
+    declProp("TimeScale", m_timeScale = 1.0);
 }
 
 bool TimeConsumeAlg::initialize()
@@ -437,7 +464,7 @@ bool TimeConsumeAlg::execute()
     auto eid = evt["EventID"].str(-1);
     LogDebug << "begin event: " << eid << std::endl;
 
-    auto input = evt["input"].get<double>();
+    auto input = evt["input"].get<double>() * m_timeScale;
     auto result = m_calcTool->numberIntegral4Sin(0, input);
 
     evt["result"].from(result);
