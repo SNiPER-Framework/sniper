@@ -43,7 +43,7 @@ void MtsWorker::initContext()
     {
         m_ctx.uc_stack.ss_sp = m_stack;
         m_ctx.uc_stack.ss_size = sizeof(m_stack);
-        makecontext(&m_ctx, reinterpret_cast<void (*)()>(&MtsWorker::run), 1, this);
+        makecontext(&m_ctx, reinterpret_cast<void (*)()>(&MtsWorker::sRun), 1, this);
     }
     else
     {

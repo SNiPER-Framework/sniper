@@ -30,6 +30,7 @@ class MtsWorkerPool;
 class MtsWorker final : public NamedElement
 {
 public:
+    static void sRun(MtsWorker *p) { p->run(); }
     void initContext();
     void resume() { setcontext(&m_ctx); }
 
