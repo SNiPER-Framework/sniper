@@ -8,7 +8,6 @@ target_link_libraries(SniperCoreUsages PRIVATE SniperKernel)
 # install
 install(TARGETS SniperCoreUsages DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install_and_test(CoreUsages
-    options/run-AlgDepGraph.json
     options/run-HelloWorld.json
     options/run-SvcAndTool.json
     options/run-TimerUsage.json
@@ -21,7 +20,6 @@ install_and_test(CoreUsages
 if(USE_PYTHON)
     install(FILES python/SniperCoreUsages.py DESTINATION ${CMAKE_INSTALL_PYTHONDIR})
     install_and_test(CoreUsages
-        options/run-AlgDepGraph.py
         options/run-HelloWorld.py
         options/run-SvcAndTool.py
         options/run-TimerUsage.py

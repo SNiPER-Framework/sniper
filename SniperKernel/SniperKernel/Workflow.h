@@ -44,9 +44,6 @@ public:
     //clear all svcs and algs
     virtual void reset() override;
 
-    //ooo~~ just as its name
-    TaskWatchDog &Snoopy() override { return m_snoopy; }
-
 protected:
     //none state check... Please use Snoopy for state control
     friend class TaskWatchDog;
@@ -55,9 +52,6 @@ protected:
     virtual bool initialize() override;
     virtual bool finalize() override;
     virtual bool execute() override;
-
-protected:
-    TaskWatchDog m_snoopy;
 };
 
 #endif

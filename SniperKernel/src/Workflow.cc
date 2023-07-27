@@ -26,8 +26,7 @@
 SNIPER_DECLARE_DLE(Workflow);
 
 Workflow::Workflow(const std::string& name)
-    : ExecUnit(name),
-      m_snoopy(this)
+    : ExecUnit(name)
 {
     if ( m_tag.empty() ) m_tag = "Workflow";  //protection for derived classes
 
@@ -37,7 +36,6 @@ Workflow::Workflow(const std::string& name)
 
 Workflow::~Workflow()
 {
-    m_snoopy.terminate();
 }
 
 void Workflow::setLogLevel(int level)
@@ -57,21 +55,21 @@ bool Workflow::run()
         return true;
     }
 
-    if ( m_snoopy.config() ) {
-        if ( m_snoopy.initialize() ) {
-            if ( ! m_snoopy.run() ) {
+    if ( m_snoopy->config() ) {
+        if ( m_snoopy->initialize() ) {
+            if ( ! m_snoopy->run() ) {
                 //LogError << "Failed to execute algorithms" << std::endl;
             }
-            m_snoopy.finalize();
+            m_snoopy->finalize();
         }
     }
 
-    return ! m_snoopy.isErr();
+    return ! m_snoopy->isErr();
 }
 
 bool Workflow::stop(Sniper::StopRun mode)
 {
-    return m_snoopy.stop(mode);
+    return m_snoopy->stop(mode);
 }
 
 void Workflow::reset()
@@ -98,7 +96,7 @@ bool Workflow::initialize()
         LogInfo << "initialized" << std::endl;
     }
     else {
-        m_snoopy.setErr();
+        m_snoopy->setErr();
     }
 
     return stat;
@@ -113,7 +111,7 @@ bool Workflow::finalize()
     LogInfo << "End Workflow " << std::endl;
 
     if ( ! stat ) {
-        m_snoopy.setErr();
+        m_snoopy->setErr();
     }
 
     return stat;

@@ -58,9 +58,6 @@ public:
     // eval this Task from json
     virtual void eval(const SniperJSON &json) override;
 
-    //ooo~~ just as its name
-    TaskWatchDog &Snoopy() override { return m_snoopy; }
-
 protected:
     //none state check... Please use Snoopy for state control
     friend class TaskWatchDog;
@@ -75,7 +72,6 @@ protected:
     bool m_limited;
     long m_evtMax;
     long m_done;
-    TaskWatchDog m_snoopy;
 
 protected:
     //incidents

@@ -15,7 +15,7 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "SniperPrivate/AlgNode.h"
+#include "SniperPrivate/MtsInterAlgNode.h"
 
 AlgNode::AlgNode(AlgBase* alg) : realAlg(alg) {
     preNum = 0;

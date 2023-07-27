@@ -18,18 +18,15 @@
 #include <queue>
 
 #include "SniperKernel/AlgBase.h"
-#include "SniperKernel/DagTask.h"
-#include "SniperKernel/DeclareDLE.h"
+#include "SniperKernel/MtsInterAlgDag.h"
 #include "SniperKernel/DLElement.h"
 #include "SniperKernel/SniperJSON.h"
 #include "SniperKernel/SniperLog.h"
-#include "SniperPrivate/AlgNode.h"
-#include "SniperPrivate/DLEFactory.h"
+#include "SniperPrivate/MtsInterAlgNode.h"
 
-SNIPER_DECLARE_DLE(DagTask);
-
-DagTask::DagTask(const std::string& name) : DagBase(name) {
-    m_tag = "DagTask";
+DagTask::DagTask(ExecUnit *task)
+    : TaskWatchDog(task)
+{
 }
 
 DagTask::~DagTask() {
@@ -37,21 +34,21 @@ DagTask::~DagTask() {
         delete p.second;
 }
 
-AlgBase* DagTask::insertNode(const std::string& alg) {
-    std::string name;
-    // Create AlgBase* to return
-    DLElement* obj = DLEFactory::instance().create(alg);
-    if (obj != nullptr) {
-        AlgBase* result = dynamic_cast<AlgBase*>(obj);
-        if (result != nullptr) {
-            name = result->objName();
-            m_nodes.emplace_back(name);
-            m_algPtr.insert({name, new AlgNode(result)});
-            return result;
-        }
-    }
-    return nullptr;
-}
+//AlgBase* DagTask::insertNode(const std::string& alg) {
+//    std::string name;
+//    // Create AlgBase* to return
+//    DLElement* obj = DLEFactory::instance().create(alg);
+//    if (obj != nullptr) {
+//        AlgBase* result = dynamic_cast<AlgBase*>(obj);
+//        if (result != nullptr) {
+//            name = result->objName();
+//            m_nodes.emplace_back(name);
+//            m_algPtr.insert({name, new AlgNode(result)});
+//            return result;
+//        }
+//    }
+//    return nullptr;
+//}
 
 bool DagTask::makeEdge(const std::string& alg1, const std::string& alg2) {
     if (m_algPtr.find(alg1) == m_algPtr.end() || m_algPtr.find(alg2) == m_algPtr.end()) {
@@ -66,8 +63,18 @@ bool DagTask::makeEdge(const std::string& alg1, const std::string& alg2) {
     return true;
 }
 
+bool DagTask::config()
+{
+    return true;
+}
+
+bool DagTask::run_once()
+{
+    return true;
+}
+
 SniperJSON DagTask::json() {
-    SniperJSON j = TopTask::json();
+    SniperJSON j; // = TopTask::json();
     j["ordered_keys"].push_back(SniperJSON().from("nodes"));
     j["ordered_keys"].push_back(SniperJSON().from("edges"));
     if (!m_nodes.empty()) {
@@ -88,15 +95,15 @@ SniperJSON DagTask::json() {
 
 void DagTask::eval(const SniperJSON& json) {
     // eval for base class
-    TopTask::eval(json);
+    //TopTask::eval(json);
 
     // eval nodes and edges
     auto& nodes = json["nodes"];
     for (auto it = nodes.vec_begin(); it != nodes.vec_end(); ++it) {
         auto idStr = (*it)["identifier"].get<std::string>();
         if (idStr.front() != '[') {
-            auto alg = this->insertNode(idStr);
-            alg->eval(*it);
+            //auto alg = this->insertNode(idStr);
+            //alg->eval(*it);
         }
     }
 
@@ -109,21 +116,21 @@ void DagTask::eval(const SniperJSON& json) {
         this->makeEdge(edge.substr(0, p), edge.substr(p + 1, edge.size() - p - 1));
     }
 
-    this->done();
+    //this->done();
 }
 
-bool DagTask::done() {
-    bool flag = true;
-    // The real order in which the algorithm is executed.
-    std::vector<AlgNode*> realSeq;
-    this->getSequence(realSeq);
-
-    for (auto p : realSeq) {
-        if (this->addAlg( m_algPtr.at(p->realAlg->objName())->realAlg ) == nullptr)
-            flag = false;
-    }
-    return flag;
-}
+//bool DagTask::done() {
+//    bool flag = true;
+//    // The real order in which the algorithm is executed.
+//    std::vector<AlgNode*> realSeq;
+//    this->getSequence(realSeq);
+//
+//    for (auto p : realSeq) {
+//        if (this->addAlg( m_algPtr.at(p->realAlg->objName())->realAlg ) == nullptr)
+//            flag = false;
+//    }
+//    return flag;
+//}
 
 void DagTask::getSequence(std::vector<AlgNode*>& realSeq) {
     // AlgNodes that can be traversed now.

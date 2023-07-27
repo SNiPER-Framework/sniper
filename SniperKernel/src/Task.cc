@@ -31,7 +31,6 @@ Task::Task(const std::string &name)
       m_limited(false),
       m_evtMax(-1),
       m_done(0),
-      m_snoopy(this),
       m_beginEvt("BeginEvent"),
       m_endEvt("EndEvent"),
       m_beginAlg("BeginAlg"),
@@ -47,7 +46,6 @@ Task::Task(const std::string &name)
 
 Task::~Task()
 {
-    m_snoopy.terminate();
 }
 
 void Task::setEvtMax(long evtMax_)
@@ -74,24 +72,24 @@ bool Task::run()
         return true;
     }
 
-    if (m_snoopy.config())
+    if (m_snoopy->config())
     {
-        if (m_snoopy.initialize())
+        if (m_snoopy->initialize())
         {
-            if (!m_snoopy.run())
+            if (!m_snoopy->run())
             {
                 //LogError << "Failed to execute algorithms" << std::endl;
             }
-            m_snoopy.finalize();
+            m_snoopy->finalize();
         }
     }
 
-    return !m_snoopy.isErr();
+    return !m_snoopy->isErr();
 }
 
 bool Task::stop(Sniper::StopRun mode)
 {
-    return m_snoopy.stop(mode);
+    return m_snoopy->stop(mode);
 }
 
 void Task::reset()
@@ -147,7 +145,7 @@ bool Task::initialize()
     }
     else
     {
-        m_snoopy.setErr();
+        m_snoopy->setErr();
     }
 
     return stat;
@@ -165,7 +163,7 @@ bool Task::finalize()
 
     if (!stat)
     {
-        m_snoopy.setErr();
+        m_snoopy->setErr();
     }
 
     return stat;
@@ -175,15 +173,15 @@ bool Task::execute()
 {
     if (m_limited && m_done >= m_evtMax)
     {
-        m_snoopy.stop();
+        m_snoopy->stop();
         return true;
     }
 
     try
     {
-        if (m_snoopy.state() == Sniper::RunState::Stopped)
+        if (m_snoopy->state() == Sniper::RunState::Stopped)
             return true;
-        if (m_snoopy.isErr())
+        if (m_snoopy->isErr())
             return false;
         //BeginEvent is fired
         m_beginEvt.load(m_done).fire(*this);
@@ -211,16 +209,16 @@ bool Task::execute()
     }
     catch (std::exception &e)
     {
-        m_snoopy.setErr();
+        m_snoopy->setErr();
         LogError << e.what() << std::endl;
     }
     catch (...)
     {
-        m_snoopy.setErr();
+        m_snoopy->setErr();
         LogError << "catch an unknown exception" << std::endl;
     }
 
-    bool stat = !m_snoopy.isErr();
+    bool stat = !m_snoopy->isErr();
     if (stat)
     {
         ++m_done;

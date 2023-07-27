@@ -15,7 +15,7 @@ if __name__ == "__main__":
     useRootWriter = False
     nthrd = 4
     timeScale = 10
-    mtsniper.setEvtMax(3000)
+    mtsniper.setEvtMax(50)
     mtsniper.setNumThreads(nthrd)
     if nthrd != 1:
         mtsniper.configGlobalBuffer(nthrd*3, nthrd+2)

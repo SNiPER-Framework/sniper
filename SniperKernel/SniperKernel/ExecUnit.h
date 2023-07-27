@@ -67,8 +67,10 @@ public:
     // eval this Task from json
     virtual void eval(const SniperJSON &json) override;
 
-    //ooo~~ just as its name
-    virtual TaskWatchDog &Snoopy() = 0;
+    // use a customized WatchDog instead of the default one
+    void setSnoopy(TaskWatchDog *snoopy);
+    // get the current WatchDog
+    TaskWatchDog &Snoopy() { return *m_snoopy; }
 
 public:
     //none state check... Please use Snoopy for state control
@@ -79,6 +81,9 @@ public:
     virtual bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly) = 0;
 
 protected:
+    // the pointer to the WatchDog
+    TaskWatchDog *m_snoopy;
+
     // the supervisors of services and algorithms
     DleSupervisor m_svcs;
     DleSupervisor m_algs;

@@ -25,6 +25,7 @@
 
 ExecUnit::ExecUnit(const std::string &name)
     : DLElement(name),
+      m_snoopy(new TaskWatchDog(this)),
       m_svcs(name, "services"),
       m_algs(name, "algorithms"),
       m_targets{&m_svcs, &m_algs}
@@ -34,6 +35,9 @@ ExecUnit::ExecUnit(const std::string &name)
 
 ExecUnit::~ExecUnit()
 {
+    m_snoopy->terminate();
+    delete m_snoopy;
+
     reset();
 }
 
@@ -232,4 +236,10 @@ void ExecUnit::eval(const SniperJSON &json)
             this->addAlg(alg);
         }
     }
+}
+
+void ExecUnit::setSnoopy(TaskWatchDog *snoopy)
+{
+    delete m_snoopy;
+    m_snoopy = snoopy;
 }

@@ -68,11 +68,6 @@ struct ExecUnitWarp : ExecUnit, bp::wrapper<ExecUnit>
          return this->ExecUnit::reset();
     }
 
-    TaskWatchDog &Snoopy()
-    {
-        return this->get_override("Snoopy")();
-    }
-
     bool config()
     {
         return this->get_override("config")();
@@ -109,7 +104,7 @@ void export_Sniper_ExecUnit()
              return_value_policy<reference_existing_object>())
         .def("remove", &ExecUnit::remove, &ExecUnitWarp::default_remove)
         .def("reset", &ExecUnit::reset, &ExecUnitWarp::default_reset)
-        .def("Snoopy", pure_virtual(&ExecUnit::Snoopy), return_value_policy<reference_existing_object>())
+        .def("Snoopy", &ExecUnit::Snoopy, return_value_policy<reference_existing_object>())
         .def("config", pure_virtual(&ExecUnit::config))
         .def("execute", pure_virtual(&ExecUnit::execute))
         .def("stop", pure_virtual(&ExecUnit::stop));

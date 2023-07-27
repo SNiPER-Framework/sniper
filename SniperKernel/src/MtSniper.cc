@@ -33,6 +33,7 @@ MtSniper::MtSniper()
     declProp("EvtMax", m_evtMax = -1);
     declProp("GlobalBufferCapacity", m_gbufCapacity = -1);
     declProp("GlobalBufferThreshold", m_gbufThreshold = -1);
+    declProp("InterAlgConcurrency", m_interAlgConcurrency = false);
 
     MtSniperUtil::contextInit();
     m_microTaskQueue = MtsMicroTaskQueue::instance();
