@@ -240,6 +240,11 @@ void ExecUnit::eval(const SniperJSON &json)
 
 void ExecUnit::setSnoopy(TaskWatchDog *snoopy)
 {
+    if (&(snoopy->host()) != this)
+    {
+        throw ContextMsgException("unmatched host in ExecUnit::setSnoopy()");
+    }
+
     delete m_snoopy;
     m_snoopy = snoopy;
 }

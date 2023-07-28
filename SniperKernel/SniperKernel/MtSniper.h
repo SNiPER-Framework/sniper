@@ -56,7 +56,6 @@ protected:
     long m_evtMax;
     int m_gbufCapacity;
     int m_gbufThreshold;
-    bool m_interAlgConcurrency;
 
     bool m_hasExternalPrimaryTask{false};
 

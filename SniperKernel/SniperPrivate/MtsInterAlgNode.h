@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2023
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
 
@@ -15,28 +15,80 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef SNIPER_ALG_NODE_H
-#define SNIPER_ALG_NODE_H
+#ifndef SNIPER_MTS_INTER_ALG_NODE_H
+#define SNIPER_MTS_INTER_ALG_NODE_H
 
-#include <string>
-#include <vector>
+#include "SniperKernel/MtsMicroTask.h"
+#include "SniperKernel/AlgBase.h"
+#include "SniperKernel/Incident.h"
+#include "SniperKernel/SniperQueue.h"
+#include <atomic>
 
-class AlgBase;
+class MtsInterAlgDag;
 
-class AlgNode {
-
+class MtsInterAlgNode : public MtsMicroTask
+{
 public:
-    AlgNode(AlgBase* alg);
-    ~AlgNode();
+    MtsInterAlgNode(MtsInterAlgDag *dag, AlgBase *alg);
+    virtual ~MtsInterAlgNode();
 
-    AlgBase* realAlg;
-    // Record the number of precursors of current node that has not been traversed.
-    int preNum;
-    // Store successors of current node.
-    std::vector<AlgNode*> nextNodes;
+    // implement the pure virtual method in MtsMicroTask
+    virtual Status exec() override;
+
+    // set which algorithm(s) this node depends on
+    void dependOn(const std::string &name);
+    void dependOn(const std::vector<std::string> &names);
+
+    // check whether there is any loop in the DAG
+    bool validate(MtsInterAlgNode *node);
+
+    // prepare for next execution
+    void reset() { m_nPreLeft = m_nPre; }
+
+protected:
+    friend class MtsInterAlgDag;
+
+    void dependOnNode(MtsInterAlgNode *node);
+    Status spawnPost();
+
+    MtsInterAlgDag *m_dag;
+    AlgBase *m_alg;
+
+    int m_nPre{0};
+    std::atomic_int m_nPreLeft{0};
+    std::vector<MtsInterAlgNode *> m_post;
+
+    Sniper::Queue<MtsMicroTask *> m_postEggs{nullptr};
+
+    // incidents
+    Incident_T<AlgBase *> m_beginAlg;
+    Incident_T<AlgBase *> m_endAlg;
+};
+
+class MtsInterAlgBeginNode : public MtsInterAlgNode
+{
+public:
+    MtsInterAlgBeginNode(MtsInterAlgDag *dag, AlgBase *alg, long *done);
+    virtual ~MtsInterAlgBeginNode() = default;
+
+    virtual Status exec() override;
 
 private:
-    AlgNode() = delete;
+    long &m_done;
+    Incident_T<int> m_beginEvt;
+};
+
+class MtsInterAlgEndNode : public MtsInterAlgNode
+{
+public:
+    MtsInterAlgEndNode(MtsInterAlgDag *dag, AlgBase *alg, long *done);
+    virtual ~MtsInterAlgEndNode() = default;
+
+    virtual Status exec() override;
+
+private:
+    long &m_done;
+    Incident_T<int> m_endEvt;
 };
 
 #endif

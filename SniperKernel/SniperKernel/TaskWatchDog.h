@@ -20,8 +20,10 @@
 
 #include "SniperKernel/SniperRunState.h"
 #include <string>
+#include <list>
 
 class ExecUnit;
+class DLElement;
 
 class TaskWatchDog
 {
@@ -56,11 +58,17 @@ public:
     const Sniper::RunState &state() { return m_stat; }
     Sniper::RunState real_state();
 
+    ExecUnit &host() { return m_task; }
+
 protected:
     // pretend as a NamedElement
     int logLevel();
     const std::string &scope();
     const std::string &objName();
+
+    // helper functions
+    const std::list<DLElement *> &algList();
+    long *evtDone();
 
     // Data members
     Sniper::RunState m_stat;

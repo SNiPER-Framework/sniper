@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2023
+/* Copyright (C) 2023
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
 
@@ -15,42 +15,43 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef SNIPER_DAG_TASK_H
-#define SNIPER_DAG_TASK_H
+#ifndef SNIPER_MTS_INTER_ALG_DAG_H
+#define SNIPER_MTS_INTER_ALG_DAG_H
 
 #include "SniperKernel/TaskWatchDog.h"
 #include "SniperKernel/ExecUnit.h"
-#include <string>
-#include <unordered_map>
-#include <vector>
+//#include "SniperKernel/SniperJSON.h"
 
-struct AlgNode;
-class SniperJSON;
+class MtsInterAlgNode;
 
-class DagTask final : public TaskWatchDog
+class MtsInterAlgDag final : public TaskWatchDog
 {
 public:
-    DagTask(ExecUnit *task);
-    virtual ~DagTask();
+    MtsInterAlgDag(ExecUnit *task);
+    virtual ~MtsInterAlgDag();
 
-    virtual bool makeEdge(const std::string &alg1, const std::string &alg2);
+    // get (or create if not exist) a node by its alg name
+    MtsInterAlgNode *node(const std::string &name);
 
     // override interfaces in the base class
     virtual bool config() override;
     virtual bool run_once() override;
 
-    // the json value of this object
-    virtual SniperJSON json();
-    // eval this graph object from json
-    virtual void eval(const SniperJSON &json);
+    //// the json value of this object
+    // virtual SniperJSON json();
+    //// eval this graph object from json
+    // virtual void eval(const SniperJSON &json);
 
 private:
-    // Record the sequence of nodes being inserted.
-    std::vector<std::string> m_nodes;
-    // Record algs and their corresponding pointers.
-    std::unordered_map<std::string, AlgNode *> m_algPtr;
-    // Calculate the real sequence.
-    void getSequence(std::vector<AlgNode *> &realSeq);
+    // the event number has been processed
+    long m_done{0};
+
+    // the unique begin and end node of the dag
+    MtsInterAlgNode *m_begin;
+    MtsInterAlgNode *m_end;
+
+    // algorithm nodes in the dag
+    std::map<std::string, MtsInterAlgNode *> m_nodes;
 };
 
 #endif

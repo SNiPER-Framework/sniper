@@ -204,7 +204,7 @@ bool Task::execute()
     }
     catch (StopRunProcess &e)
     {
-        LogInfo << "stop run promtly." << std::endl;
+        LogInfo << "stop run promptly." << std::endl;
         throw e;
     }
     catch (std::exception &e)

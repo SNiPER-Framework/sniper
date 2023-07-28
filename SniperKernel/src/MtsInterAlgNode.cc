@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2023
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
 
@@ -16,11 +16,122 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperPrivate/MtsInterAlgNode.h"
+#include "SniperPrivate/MtsInterAlgDag.h"
+#include "SniperKernel/MtsMicroTaskQueue.h"
 
-AlgNode::AlgNode(AlgBase* alg) : realAlg(alg) {
-    preNum = 0;
+MtsInterAlgNode::MtsInterAlgNode(MtsInterAlgDag *dag, AlgBase *alg)
+    : m_dag(dag),
+      m_alg(alg),
+      m_beginAlg("BeginAlg"),
+      m_endAlg("EndAlg")
+{
+    m_name = "MtsInterAlgNode";
+
+    m_beginAlg.load(m_alg);
+    m_endAlg.load(m_alg);
 }
 
-AlgNode::~AlgNode() {
+MtsInterAlgNode::~MtsInterAlgNode()
+{
+}
 
+MtsMicroTask::Status MtsInterAlgNode::exec()
+{
+    // TODO: try & catch exceptions
+    bool status;
+    {
+        ScopedIncidentsPair sis{m_beginAlg, m_endAlg, m_dag->host()};
+        status = m_alg->execute();
+    }
+
+    return status ? spawnPost() : Status::Failed;
+}
+
+void MtsInterAlgNode::dependOn(const std::string &name)
+{
+    dependOnNode(m_dag->node(name));
+}
+
+void MtsInterAlgNode::dependOn(const std::vector<std::string> &names)
+{
+    for (auto &name : names)
+    {
+        this->dependOn(name);
+    }
+}
+
+bool MtsInterAlgNode::validate(MtsInterAlgNode *node)
+{
+    for (auto post : m_post)
+    {
+        if (post == node || !post->validate(node) || !post->validate(post))
+        {
+            LogDebug << "in loop node: " << m_alg->objName() << std::endl;
+            return false;
+        }
+    }
+    return true;
+}
+
+void MtsInterAlgNode::dependOnNode(MtsInterAlgNode *node)
+{
+    node->m_post.push_back(this);
+    ++m_nPre;
+}
+
+MtsMicroTask::Status MtsInterAlgNode::spawnPost()
+{
+    int nEggs = 0;
+    for (auto post : m_post)
+    {
+        if (--post->m_nPreLeft == 0)
+        {
+            m_postEggs.push(post);
+            ++nEggs;
+        }
+    }
+
+    if (nEggs > 1)
+    {
+        static auto *queue = MtsMicroTaskQueue::instance();
+        queue->enqueue(m_postEggs);
+    }
+    else if (nEggs == 1)
+    {
+        return m_postEggs.pop()->exec();
+    }
+
+    return Status::OK;
+}
+
+MtsInterAlgBeginNode::MtsInterAlgBeginNode(MtsInterAlgDag *dag, AlgBase *alg, long *done)
+    : MtsInterAlgNode(dag, alg),
+      m_done(*done),
+      m_beginEvt("BeginEvent")
+{
+}
+
+MtsMicroTask::Status MtsInterAlgBeginNode::exec()
+{
+    m_beginEvt.load(m_done).fire(m_dag->host());
+    return spawnPost();
+}
+
+MtsInterAlgEndNode::MtsInterAlgEndNode(MtsInterAlgDag *dag, AlgBase *alg, long *done)
+    : MtsInterAlgNode(dag, alg),
+      m_done(*done),
+      m_endEvt("EndEvent")
+{
+}
+
+MtsMicroTask::Status MtsInterAlgEndNode::exec()
+{
+    m_endEvt.load(m_done).fire(m_dag->host());
+
+    if (!m_dag->isErr())
+    {
+        ++m_done;
+        return Status::OK;
+    }
+    return Status::Failed;
 }
