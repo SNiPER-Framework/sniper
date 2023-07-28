@@ -25,6 +25,7 @@
 //Pre-declarations
 class SvcBase;
 class AlgBase;
+class MtsInterAlgDag;
 
 //Task definition
 class Task : public ExecUnit
@@ -58,6 +59,10 @@ public:
     // eval this Task from json
     virtual void eval(const SniperJSON &json) override;
 
+    // for inter-algorithm parallelizations
+    void enableInterAlgConcurrency();
+    MtsInterAlgDag *dag();
+
 protected:
     //none state check... Please use Snoopy for state control
     friend class TaskWatchDog;
@@ -72,6 +77,8 @@ protected:
     bool m_limited;
     long m_evtMax;
     long m_done;
+
+    bool m_interAlgConcurrency{false};
 
 protected:
     //incidents

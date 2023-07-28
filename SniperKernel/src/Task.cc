@@ -21,6 +21,7 @@
 #include "SniperKernel/SniperContext.h"
 #include "SniperKernel/SniperException.h"
 #include "SniperKernel/DeclareDLE.h"
+#include "SniperPrivate/MtsInterAlgDag.h"
 #include "SniperPrivate/TaskProperty.h"
 #include "SniperPrivate/WhiteBoard.h"
 
@@ -109,7 +110,8 @@ SniperJSON Task::json()
         "identifier",
         "properties",
         "services",
-        "algorithms"});
+        "algorithms",
+        "algDAG"});
 
     SniperJSON j = ExecUnit::json();
     j.insert("ordered_keys", keys);
@@ -123,6 +125,17 @@ void Task::eval(const SniperJSON &json)
     ExecUnit::eval(json);
     //set event number limitation
     m_limited = (m_evtMax >= 0);
+}
+
+void Task::enableInterAlgConcurrency()
+{
+    setSnoopy(new MtsInterAlgDag(this));
+    m_interAlgConcurrency = true;
+}
+
+MtsInterAlgDag *Task::dag()
+{
+    return dynamic_cast<MtsInterAlgDag *>(m_snoopy);
 }
 
 bool Task::config()
