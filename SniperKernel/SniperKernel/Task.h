@@ -61,7 +61,7 @@ public:
 
     // for inter-algorithm parallelizations
     void enableInterAlgConcurrency();
-    MtsInterAlgDag *dag();
+    MtsInterAlgDag *DAG();
 
 protected:
     //none state check... Please use Snoopy for state control

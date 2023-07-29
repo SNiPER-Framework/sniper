@@ -104,3 +104,13 @@ bool MtsInterAlgDag::run_once()
 
     return true;
 }
+
+SniperJSON MtsInterAlgDag::json()
+{
+    SniperJSON json;
+    return json;
+}
+
+void MtsInterAlgDag::eval(const SniperJSON &json)
+{
+}

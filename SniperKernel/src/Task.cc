@@ -133,7 +133,7 @@ void Task::enableInterAlgConcurrency()
     m_interAlgConcurrency = true;
 }
 
-MtsInterAlgDag *Task::dag()
+MtsInterAlgDag *Task::DAG()
 {
     return dynamic_cast<MtsInterAlgDag *>(m_snoopy);
 }

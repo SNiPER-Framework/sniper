@@ -20,7 +20,6 @@
 
 #include "SniperKernel/TaskWatchDog.h"
 #include "SniperKernel/ExecUnit.h"
-//#include "SniperKernel/SniperJSON.h"
 
 class MtsInterAlgNode;
 
@@ -38,9 +37,9 @@ public:
     virtual bool run_once() override;
 
     //// the json value of this object
-    // virtual SniperJSON json();
-    //// eval this graph object from json
-    // virtual void eval(const SniperJSON &json);
+    SniperJSON json();
+    //// eval the DAG from json
+    void eval(const SniperJSON &json);
 
 private:
     // the event number has been processed
