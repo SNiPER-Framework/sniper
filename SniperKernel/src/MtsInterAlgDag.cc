@@ -76,7 +76,7 @@ bool MtsInterAlgDag::config()
         auto pNode = node.second;
         if (pNode->m_nPre == 0)
         {
-            m_begin->m_post.push_back(pNode);
+            pNode->dependOnNode(m_begin);
         }
         if (pNode->m_post.empty())
         {
