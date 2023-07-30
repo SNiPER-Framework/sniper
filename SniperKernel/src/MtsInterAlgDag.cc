@@ -84,6 +84,12 @@ bool MtsInterAlgDag::config()
         }
     }
 
+    // if the DAG is empty, there should be a way to invoke the end node
+    if (m_nodes.empty())
+    {
+        m_end->dependOnNode(m_begin);
+    }
+
     if (!m_begin->validate(m_begin))
     {
         throw ContextMsgException("loop found in MtsInterAlgDag");
@@ -107,10 +113,26 @@ bool MtsInterAlgDag::run_once()
 
 SniperJSON MtsInterAlgDag::json()
 {
-    SniperJSON json;
+    SniperJSON json = SniperJSON::loads("{}");
+    for (auto &node : m_nodes)
+    {
+        auto &nodeName = node.second->m_alg->objName();
+        for (auto post : node.second->m_post)
+        {
+            if (post != m_end)
+            {
+                json[post->m_alg->objName()].push_back(SniperJSON().from(nodeName));
+            }
+        }
+    }
+
     return json;
 }
 
 void MtsInterAlgDag::eval(const SniperJSON &json)
 {
+    for (auto jNode = json.map_begin(); jNode != json.map_end(); ++jNode)
+    {
+        node(jNode->first)->dependOn(jNode->second.get<std::vector<std::string>>());
+    }
 }

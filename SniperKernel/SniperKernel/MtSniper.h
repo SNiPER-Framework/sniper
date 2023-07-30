@@ -41,6 +41,10 @@ public:
     Task *createOutputTask(const std::string &identifier);
     Task *createMainTask(const std::string &identifier);
 
+    // the interfaces for json
+    virtual SniperJSON json() override;
+    virtual void eval(const SniperJSON &json) override;
+
     // create and start workers
     bool run();
 
@@ -61,6 +65,7 @@ protected:
 
     Task *m_itask{nullptr};
     Task *m_otask{nullptr};
+    Task *m_mtask{nullptr};
     std::atomic_flag m_ilock{ATOMIC_FLAG_INIT};
     std::atomic_flag m_olock{ATOMIC_FLAG_INIT};
 

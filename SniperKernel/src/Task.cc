@@ -116,6 +116,11 @@ SniperJSON Task::json()
     SniperJSON j = ExecUnit::json();
     j.insert("ordered_keys", keys);
 
+    if (m_interAlgConcurrency)
+    {
+        j.insert("algDAG", DAG()->json());
+    }
+
     return j;
 }
 
@@ -125,6 +130,12 @@ void Task::eval(const SniperJSON &json)
     ExecUnit::eval(json);
     //set event number limitation
     m_limited = (m_evtMax >= 0);
+
+    if (json.find("algDAG") != json.map_end())
+    {
+        enableInterAlgConcurrency();
+        DAG()->eval(json["algDAG"]);
+    }
 }
 
 void Task::enableInterAlgConcurrency()

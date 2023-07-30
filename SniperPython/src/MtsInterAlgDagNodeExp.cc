@@ -19,16 +19,32 @@
 #include "SniperPrivate/MtsInterAlgNode.h"
 #include <boost/python/class.hpp>
 
+extern boost::python::object &BoostPyJsonModule();
+
+namespace MtsInterAlgDagNodeExp
+{
+    static auto json = BoostPyJsonModule().attr("dumps");
+
+    void nodeDependOn(MtsInterAlgNode &node, boost::python::object &var)
+    {
+        std::string vstr = boost::python::extract<std::string>(json(var));
+        if (vstr[0] != '[')
+        {
+            node.dependOn(boost::python::extract<std::string>(var));
+        }
+        else
+        {
+            node.dependOn(SniperJSON(vstr).get<std::vector<std::string>>());
+        }
+    }
+}
+
 void export_Sniper_MtsInterAlgDagNode()
 {
     using namespace boost::python;
 
-    void (MtsInterAlgNode::*f1dependOn)(const std::string &) = &MtsInterAlgNode::dependOn;
-    void (MtsInterAlgNode::*f2dependOn)(const std::vector<std::string> &) = &MtsInterAlgNode::dependOn;
-
     class_<MtsInterAlgNode, boost::noncopyable>("MtsInterAlgNode", no_init)
-        .def("dependOn", f1dependOn)
-        .def("dependOn", f2dependOn);
+        .def("dependOn", MtsInterAlgDagNodeExp::nodeDependOn);
 
     class_<MtsInterAlgDag, boost::noncopyable>("MtsInterAlgDag", no_init)
         .def("node", &MtsInterAlgDag::node, return_value_policy<reference_existing_object>())

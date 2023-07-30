@@ -87,13 +87,51 @@ Task *MtSniper::createOutputTask(const std::string &identifier)
 
 Task *MtSniper::createMainTask(const std::string &identifier)
 {
-    auto mtask = createSniperTask(identifier);
-    if (mtask != nullptr)
+    m_mtask = createSniperTask(identifier);
+    if (m_mtask != nullptr)
     {
-        mtask->setScopeString("(1)");
-        m_sniperTaskPool->deallocate(mtask);
+        m_mtask->setScopeString("(1)");
     }
-    return mtask;
+    return m_mtask;
+}
+
+SniperJSON MtSniper::json()
+{
+    static SniperJSON keys = SniperJSON().from(std::vector<std::string>{
+        "sniper",
+        //"description",
+        "identifier",
+        "properties",
+        "InputTask",
+        "OutputTask",
+        "MainTask"});
+
+    SniperJSON j = DLElement::json();
+    if (m_itask != nullptr)
+    {
+        j.insert("InputTask", m_itask->json());
+        j["InputTask"].erase("sniper");
+    }
+    if (m_otask != nullptr)
+    {
+        j.insert("OutputTask", m_otask->json());
+        j["OutputTask"].erase("sniper");
+    }
+    if (m_mtask != nullptr)
+    {
+        j.insert("MainTask", m_mtask->json());
+        j.insert("sniper", j["MainTask"]["sniper"]);
+        j["MainTask"].erase("sniper");
+    }
+
+    j.insert("ordered_keys", keys);
+
+    return j;
+}
+
+void MtSniper::eval(const SniperJSON &json)
+{
+    // TODO:
 }
 
 bool MtSniper::initialize()
@@ -120,9 +158,8 @@ bool MtSniper::initialize()
     m_microTaskQueue->enqueue(new InitializeSniperTask(m_otask, m_olock));
 
     // get the sniper main Task instance and create its copies and micro tasks for initialize
-    auto *mtask = m_sniperTaskPool->allocate();
-    m_microTaskQueue->enqueue(new InitializeSniperTask(mtask));
-    auto jtask = mtask->json();
+    m_microTaskQueue->enqueue(new InitializeSniperTask(m_mtask));
+    auto jtask = m_mtask->json();
     auto identifier = jtask["identifier"].get<std::string>();
     for (int i = m_nthrds; i > 1; --i)
     {
