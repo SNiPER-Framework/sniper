@@ -17,6 +17,7 @@
 
 #include "SniperKernel/DLElement.h"
 #include "SniperKernel/ExecUnit.h"
+#include "SniperKernel/DataMemSvc.h"
 
 DLElement::DLElement(const std::string &name)
     : NamedElement(name),
@@ -131,4 +132,32 @@ void DLElement::eval(const SniperJSON &json)
 void DLElement::show()
 {
     std::cout << json().str(2) << std::endl;
+}
+
+DLElement *DLElement::findRecursivelyUpToRoot(const std::string &name)
+{
+    DLElement *res = nullptr;
+    if (auto p = m_par)
+    {
+        res = p->find(name);
+        while (res == nullptr && (p = p->getParent()))
+        {
+            res = p->find(name);
+        }
+    }
+    return res;
+}
+
+IDataBlock *DLElement::findDataRecursivelyUpToRoot(const std::string &path)
+{
+    IDataBlock *res = nullptr;
+    if (auto p = m_par)
+    {
+        res = dynamic_cast<DataMemSvc *>(p->find("DataMemSvc"))->find(path);
+        while (res == nullptr && (p = p->getParent()))
+        {
+            res = dynamic_cast<DataMemSvc *>(p->find("DataMemSvc"))->find(path);
+        }
+    }
+    return res;
 }

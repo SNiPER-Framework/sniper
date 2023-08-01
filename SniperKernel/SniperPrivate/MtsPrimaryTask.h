@@ -22,6 +22,7 @@
 #include "SniperKernel/SniperObjPool.h"
 #include "SniperKernel/MtsEvtBufferRing.h"
 #include "SniperKernel/Task.h"
+#include "SniperKernel/DataStore.h"
 #include <atomic>
 
 class MtsPrimaryTask final : public MtsMicroTask
@@ -45,6 +46,8 @@ private:
     Status execMainTask(MtsEvtBufferRing::EvtSlot *slot);
     Status cleanTaskPool();
 
+    void setGBEvt2Task(std::any &evt, Task *task);
+
     long m_evtMax{-1};          // the max event number to be processed
     std::atomic_long m_done{0}; // the event number has been processed
 
@@ -61,6 +64,7 @@ private:
 
     // helpers
     MtsEvtBufferRing* m_gb;
+    std::map<Task *, Sniper::DataStore<std::any *> *> m_dataStore;
 };
 
 #endif

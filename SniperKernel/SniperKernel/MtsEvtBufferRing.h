@@ -60,12 +60,6 @@ public:
     EvtSlot *front() { return m_begin; }
     EvtSlot *next();
 
-    // bind a GlobalBuffer event to a thread local reference, and later can be accessed in a SniperTask
-    void bindEventToThread(std::any &evt) { s_bindingEvt = &evt; }
-
-    // get the binding event in a running thread (generally in a MainTask or OutputTask)
-    std::any &getEventInThread() { return *s_bindingEvt; }
-
 private:
     EvtSlot *m_begin;
     EvtSlot *m_end;
@@ -78,8 +72,6 @@ private:
     bool m_vigorous{true};
     std::atomic_int m_size{0};
     std::atomic_flag m_lock{ATOMIC_FLAG_INIT};
-
-    static thread_local std::any *s_bindingEvt;
 };
 
 template <typename EvtType>

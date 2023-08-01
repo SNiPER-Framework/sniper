@@ -17,6 +17,7 @@
 
 #include "SniperPrivate/MtsPrimaryTask.h"
 #include "SniperKernel/MtSniperUtility.h"
+#include "SniperKernel/DataMemSvc.h"
 #include "SniperKernel/SniperLog.h"
 
 MtsPrimaryTask::MtsPrimaryTask(std::atomic_flag &ilock, std::atomic_flag &olock)
@@ -49,7 +50,6 @@ MtsMicroTask::Status MtsPrimaryTask::exec()
     auto evtslot = m_gb->next();
     if (evtslot != nullptr)
     {
-        m_gb->bindEventToThread(evtslot->evt);
         returnCode = execMainTask(evtslot);
         ++nsubtask;
     }
@@ -61,7 +61,7 @@ MtsMicroTask::Status MtsPrimaryTask::exec()
         AtomicFlagLockGuard<false> guard(m_olock);
         while (evtslot->status == MtsEvtBufferRing::SlotStatus::Done)
         {
-            m_gb->bindEventToThread(evtslot->evt);
+            setGBEvt2Task(evtslot->evt, m_otask);
             snoopy.run_once(); // suppose it never fails
             m_gb->pop_front();
             evtslot = m_gb->front();
@@ -98,6 +98,7 @@ MtsMicroTask::Status MtsPrimaryTask::execMainTask(MtsEvtBufferRing::EvtSlot *slo
     if (infinite || count++ < m_evtMax)
     {
         auto task = m_sniperTaskPool->allocate();
+        setGBEvt2Task(slot->evt, task);
         bool status = task->Snoopy().run_once();
         slot->status = MtsEvtBufferRing::SlotStatus::Done;
         m_sniperTaskPool->deallocate(task);
@@ -126,4 +127,16 @@ MtsMicroTask::Status MtsPrimaryTask::cleanTaskPool()
         delete task;
     }
     return Status::NoMoreEvt;
+}
+
+void MtsPrimaryTask::setGBEvt2Task(std::any &evt, Task *task)
+{
+    auto p = m_dataStore[task];
+    if (p == nullptr)
+    {
+        auto dsvc = dynamic_cast<DataMemSvc *>(task->find("DataMemSvc"));
+        p = dynamic_cast<Sniper::DataStore<std::any *> *>(dsvc->find("GBEVENT"));
+        m_dataStore[task] = p;
+    }
+    p->put(&evt);
 }

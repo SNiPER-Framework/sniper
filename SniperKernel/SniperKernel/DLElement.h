@@ -23,6 +23,7 @@
 #include <string>
 
 class ExecUnit;
+class IDataBlock;
 
 // The base class of Dynamically Loadable Element
 class DLElement : public NamedElement
@@ -71,7 +72,18 @@ public:
     // show its information
     void show();
 
+    // get an element by its name recursively up to the ROOT, like the C++ scope
+    template <typename Type>
+    Type *get(const std::string &name);
+
+    // get data in DataMemSvc by path recursively up to the ROOT, like the C++ scope
+    template <typename DataType>
+    DataType *getData(const std::string &path);
+
 protected:
+    DLElement *findRecursivelyUpToRoot(const std::string &name);
+    IDataBlock *findDataRecursivelyUpToRoot(const std::string &path);
+
     template <typename Type>
     bool declProp(const std::string &key, Type &var);
 
@@ -86,6 +98,18 @@ protected:
     DLElement(const DLElement &) = delete;
     DLElement &operator=(const DLElement &) = delete;
 };
+
+template <typename Type>
+Type *DLElement::get(const std::string &name)
+{
+    return dynamic_cast<Type *>(findRecursivelyUpToRoot(name));
+}
+
+template <typename DataType>
+DataType *DLElement::getData(const std::string &path)
+{
+    return dynamic_cast<DataType *>(findDataRecursivelyUpToRoot(path));
+}
 
 template <typename Type>
 bool DLElement::declProp(const std::string &key, Type &var)

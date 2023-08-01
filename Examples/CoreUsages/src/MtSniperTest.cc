@@ -23,6 +23,7 @@
 #include "SniperKernel/SvcBase.h"
 #include "SniperKernel/AlgBase.h"
 #include "SniperKernel/ToolBase.h"
+#include "SniperKernel/DataStore.h"
 #include "SniperKernel/DeclareDLE.h"
 #include <random>
 #include <cmath>
@@ -126,11 +127,14 @@ public:
     GetGlobalBufSvc(const std::string &name)
         : SvcBase(name)
     {
-        m_gb = MtSniperUtil::GlobalBuffer::instance();
     }
     virtual ~GetGlobalBufSvc() = default;
 
-    virtual bool initialize() override { return true; }
+    virtual bool initialize() override
+    {
+        m_ds = getData<Sniper::DataStore<std::any *>>("GBEVENT");
+        return m_ds != nullptr;
+    }
     virtual bool finalize() override { return true; }
 
     virtual MappedEvent &get() override;
@@ -138,18 +142,18 @@ public:
     virtual void done() override {}
 
 private:
-    MtsEvtBufferRing *m_gb;
+    Sniper::DataStore<std::any *> *m_ds;
 };
 SNIPER_DECLARE_DLE(GetGlobalBufSvc);
 
 MappedEvent &GetGlobalBufSvc::get()
 {
-    return std::any_cast<MappedEvent &>(m_gb->getEventInThread());
+    return std::any_cast<MappedEvent &>(*(m_ds->get()));
 }
 
 MappedEvent &GetGlobalBufSvc::pop()
 {
-    return std::any_cast<MappedEvent &>(m_gb->getEventInThread());
+    return std::any_cast<MappedEvent &>(*(m_ds->get()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

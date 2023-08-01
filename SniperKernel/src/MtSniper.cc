@@ -18,6 +18,8 @@
 #include "SniperKernel/MtSniper.h"
 #include "SniperKernel/MtsMicroTask4Sniper.h"
 #include "SniperKernel/MtSniperUtility.h"
+#include "SniperKernel/DataMemSvc.h"
+#include "SniperKernel/DataStore.h"
 #include "SniperKernel/SniperContext.h"
 #include "SniperKernel/SniperLog.h"
 #include "SniperKernel/Sniper.h"
@@ -70,6 +72,9 @@ Task *MtSniper::createSniperTask(const std::string &identifier)
         LogError << "Failed to create " << identifier << std::endl;
         delete pobj;
     }
+
+    dynamic_cast<DataMemSvc *>(ptask->find("DataMemSvc"))->regist("GBEVENT", new Sniper::DataStore<std::any *>());
+
     return ptask;
 }
 

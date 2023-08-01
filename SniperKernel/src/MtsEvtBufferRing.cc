@@ -17,8 +17,6 @@
 
 #include "SniperKernel/MtsEvtBufferRing.h"
 
-thread_local std::any *MtsEvtBufferRing::s_bindingEvt{nullptr};
-
 MtsEvtBufferRing::MtsEvtBufferRing(int capacity, int threshold)
 {
     config(capacity, threshold);
