@@ -98,10 +98,13 @@ MtsMicroTask::Status MtsPrimaryTask::execMainTask(MtsEvtBufferRing::EvtSlot *slo
     if (infinite || count++ < m_evtMax)
     {
         auto task = m_sniperTaskPool->allocate();
-        setGBEvt2Task(slot->evt, task);
+        setGBSlot2Task(slot, task);
         bool status = task->Snoopy().run_once();
-        slot->status = MtsEvtBufferRing::SlotStatus::Done;
-        m_sniperTaskPool->deallocate(task);
+        // in case of inter-algorithm MT:
+        // 1. the slot status must be set at the EndEvent point
+        // 2. the SniperTask must not be deallocated until the EndEvent point
+        // slot->status = MtsEvtBufferRing::SlotStatus::Done;
+        // m_sniperTaskPool->deallocate(task);
         if (status)
         {
             LogDebug << "processed event: " << ++m_done << std::endl;
@@ -131,12 +134,26 @@ MtsMicroTask::Status MtsPrimaryTask::cleanTaskPool()
 
 void MtsPrimaryTask::setGBEvt2Task(std::any &evt, Task *task)
 {
-    auto p = m_dataStore[task];
+    auto p = m_eventStore[task];
     if (p == nullptr)
     {
         auto dsvc = dynamic_cast<DataMemSvc *>(task->find("DataMemSvc"));
         p = dynamic_cast<Sniper::DataStore<std::any *> *>(dsvc->find("GBEVENT"));
-        m_dataStore[task] = p;
+        m_eventStore[task] = p;
     }
     p->put(&evt);
+}
+
+void MtsPrimaryTask::setGBSlot2Task(MtsEvtBufferRing::EvtSlot *slot, Task *task)
+{
+    auto p = m_eventStore[task];
+    if (p == nullptr)
+    {
+        auto dsvc = dynamic_cast<DataMemSvc *>(task->find("DataMemSvc"));
+        p = dynamic_cast<Sniper::DataStore<std::any *> *>(dsvc->find("GBEVENT"));
+        m_eventStore[task] = p;
+        m_statusStore[task] = dynamic_cast<Sniper::DataStore<MtsEvtBufferRing::SlotStatus *> *>(dsvc->find("GBSTATUS"));
+    }
+    p->put(&(slot->evt));
+    m_statusStore[task]->put(&(slot->status));
 }

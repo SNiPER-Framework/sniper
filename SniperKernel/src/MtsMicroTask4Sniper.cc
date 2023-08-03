@@ -16,16 +16,58 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/MtsMicroTask4Sniper.h"
+#include "SniperKernel/DataStore.h"
+#include "SniperKernel/MtsEvtBufferRing.h"
 #include "SniperKernel/SniperObjPool.h"
-#include "SniperKernel/SniperLog.h"
+#include "SniperKernel/DataMemSvc.h"
+#include "SniperKernel/IIncidentHandler.h"
+#include <any>
+
+class EndEvtHandler4MtsMainTask : public IIncidentHandler
+{
+public:
+    EndEvtHandler4MtsMainTask(Task *task, Sniper::DataStore<MtsEvtBufferRing::SlotStatus *> *store);
+    virtual ~EndEvtHandler4MtsMainTask() = default;
+
+    virtual bool handle(Incident &incident) override;
+
+private:
+    Task *m_task;
+    Sniper::DataStore<MtsEvtBufferRing::SlotStatus *> *m_store;
+    SniperObjPool<Task> *m_sniperTaskPool{nullptr};
+};
+
+EndEvtHandler4MtsMainTask::EndEvtHandler4MtsMainTask(Task *task, Sniper::DataStore<MtsEvtBufferRing::SlotStatus *> *store)
+    : IIncidentHandler(task),
+      m_task(task),
+      m_store(store)
+{
+    m_sniperTaskPool = SniperObjPool<Task>::instance();
+}
+
+bool EndEvtHandler4MtsMainTask::handle(Incident & /*Incident*/)
+{
+    *(m_store->get()) = MtsEvtBufferRing::SlotStatus::Done;
+    m_sniperTaskPool->deallocate(m_task);
+    return true;
+}
 
 MtsMicroTask::Status InitializeSniperTask::exec()
 {
+    auto dsvc = dynamic_cast<DataMemSvc *>(m_sniperTask->find("DataMemSvc"));
+    dsvc->regist("GBEVENT", new Sniper::DataStore<std::any *>());
+
     auto &snoopy = m_sniperTask->Snoopy();
     bool status = snoopy.config() && snoopy.initialize();
     if (m_lock == nullptr)
     {
-        // this is a MainTask, put it back to the SniperTaskPool
+        // this is a MainTask
+        auto store = new Sniper::DataStore<MtsEvtBufferRing::SlotStatus *>();
+        dsvc->regist("GBSTATUS", store);
+        auto handler = new EndEvtHandler4MtsMainTask(m_sniperTask, store);
+        handler->regist("EndEvent");
+        SniperObjPool<EndEvtHandler4MtsMainTask>::instance()->deallocate(handler);
+        // put it back to the SniperTaskPool
         SniperObjPool<Task>::instance()->deallocate(m_sniperTask);
     }
     delete this; // manages itself

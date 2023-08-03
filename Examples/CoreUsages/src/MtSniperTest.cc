@@ -438,6 +438,9 @@ private:
     IFillResultTool *m_fillTool;
     IGetGlobalBufSvc *m_svc;
     double m_timeScale;
+
+    std::string m_input;
+    std::string m_output;
 };
 SNIPER_DECLARE_DLE(TimeConsumeAlg);
 
@@ -445,6 +448,8 @@ TimeConsumeAlg::TimeConsumeAlg(const std::string &name)
     : AlgBase(name)
 {
     declProp("TimeScale", m_timeScale = 1.0);
+    declProp("Input", m_input);
+    declProp("Output", m_output);
 }
 
 bool TimeConsumeAlg::initialize()
@@ -455,9 +460,9 @@ bool TimeConsumeAlg::initialize()
     {
         dynamic_cast<ToolBase*>(m_fillTool)->initialize();
     }
-    m_svc = SniperPtr<IGetGlobalBufSvc>(getParent(), "GetGlobalBufSvc").data();
+    m_svc = get<IGetGlobalBufSvc>("GetGlobalBufSvc");
 
-    return true;
+    return m_svc != nullptr;
 }
 
 bool TimeConsumeAlg::execute()
@@ -468,23 +473,148 @@ bool TimeConsumeAlg::execute()
     auto eid = evt["EventID"].str(-1);
     LogDebug << "begin event: " << eid << std::endl;
 
-    auto input = evt["input"].get<double>() * m_timeScale;
-    auto result = m_calcTool->numberIntegral4Sin(0, input);
+    auto input = evt[m_input].get<double>() * m_timeScale;
+    auto output = m_calcTool->numberIntegral4Sin(0, input);
 
-    evt["result"].from(result);
+    evt[m_output].from(output);
 
     if (m_fillTool != nullptr)
     {
         m_fillTool->fill(emap);
     }
 
-    m_svc->done();
     LogDebug << "end event: " << eid << std::endl;
 
     return true;
 }
 
 bool TimeConsumeAlg::finalize()
+{
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+class FanOutAlg : public AlgBase
+{
+public:
+    FanOutAlg(const std::string &name);
+    virtual ~FanOutAlg() = default;
+
+    virtual bool initialize() override;
+    virtual bool execute() override;
+    virtual bool finalize() override;
+
+private:
+    IFillResultTool *m_fillTool;
+    IGetGlobalBufSvc *m_svc;
+
+    std::vector<std::string> m_keys;
+};
+SNIPER_DECLARE_DLE(FanOutAlg);
+
+FanOutAlg::FanOutAlg(const std::string &name)
+    : AlgBase(name)
+{
+    declProp("InitKeys", m_keys);
+}
+
+bool FanOutAlg::initialize()
+{
+    m_fillTool = tool<IFillResultTool>("FillResultTool");
+    if (m_fillTool != nullptr)
+    {
+        dynamic_cast<ToolBase *>(m_fillTool)->initialize();
+    }
+    m_svc = get<IGetGlobalBufSvc>("GetGlobalBufSvc");
+
+    return m_svc != nullptr;
+}
+
+bool FanOutAlg::execute()
+{
+    static double initValue = 0.0;
+
+    auto &emap = m_svc->get();
+    auto &evt = *std::any_cast<std::shared_ptr<JsonEvent> &>(emap["event"]);
+
+    auto eid = evt["EventID"].str(-1);
+    LogDebug << "begin event: " << eid << std::endl;
+
+    for (auto &k : m_keys)
+    {
+        evt[k].from(initValue);
+    }
+
+    LogDebug << "end event: " << eid << std::endl;
+
+    return true;
+}
+
+bool FanOutAlg::finalize()
+{
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+class FanInAlg : public AlgBase
+{
+public:
+    FanInAlg(const std::string &name);
+    virtual ~FanInAlg() = default;
+
+    virtual bool initialize() override;
+    virtual bool execute() override;
+    virtual bool finalize() override;
+
+private:
+    IFillResultTool *m_fillTool;
+    IGetGlobalBufSvc *m_svc;
+
+    std::string m_output;
+    std::vector<std::string> m_inputs;
+};
+SNIPER_DECLARE_DLE(FanInAlg);
+
+FanInAlg::FanInAlg(const std::string &name)
+    : AlgBase(name)
+{
+    declProp("Output", m_output);
+    declProp("Inputs", m_inputs);
+}
+
+bool FanInAlg::initialize()
+{
+    m_fillTool = tool<IFillResultTool>("FillResultTool");
+    if (m_fillTool != nullptr)
+    {
+        dynamic_cast<ToolBase *>(m_fillTool)->initialize();
+    }
+    m_svc = get<IGetGlobalBufSvc>("GetGlobalBufSvc");
+
+    return m_svc != nullptr;
+}
+
+bool FanInAlg::execute()
+{
+    auto &emap = m_svc->get();
+    auto &evt = *std::any_cast<std::shared_ptr<JsonEvent> &>(emap["event"]);
+
+    auto eid = evt["EventID"].str(-1);
+    LogDebug << "begin event: " << eid << std::endl;
+
+    double output = 0.0;
+    for (auto &i : m_inputs)
+    {
+        output += evt[i].get<double>();
+    }
+    evt[m_output].from(output);
+
+    LogDebug << "end event: " << eid << std::endl;
+
+    return true;
+}
+
+bool FanInAlg::finalize()
 {
     return true;
 }

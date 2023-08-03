@@ -47,6 +47,7 @@ private:
     Status cleanTaskPool();
 
     void setGBEvt2Task(std::any &evt, Task *task);
+    void setGBSlot2Task(MtsEvtBufferRing::EvtSlot *slot, Task *task);
 
     long m_evtMax{-1};          // the max event number to be processed
     std::atomic_long m_done{0}; // the event number has been processed
@@ -64,7 +65,8 @@ private:
 
     // helpers
     MtsEvtBufferRing* m_gb;
-    std::map<Task *, Sniper::DataStore<std::any *> *> m_dataStore;
+    std::map<Task *, Sniper::DataStore<std::any *> *> m_eventStore;
+    std::map<Task *, Sniper::DataStore<MtsEvtBufferRing::SlotStatus *> *> m_statusStore;
 };
 
 #endif

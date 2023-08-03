@@ -73,8 +73,6 @@ Task *MtSniper::createSniperTask(const std::string &identifier)
         delete pobj;
     }
 
-    dynamic_cast<DataMemSvc *>(ptask->find("DataMemSvc"))->regist("GBEVENT", new Sniper::DataStore<std::any *>());
-
     return ptask;
 }
 
