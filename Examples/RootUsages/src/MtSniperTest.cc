@@ -47,7 +47,6 @@ class IGetGlobalBufSvc
 public:
     virtual MappedEvent &get() = 0;
     virtual MappedEvent &pop() = 0;
-    virtual void done() = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

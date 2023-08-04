@@ -45,7 +45,6 @@ class IGetGlobalBufSvc
 public:
     virtual MappedEvent &get() = 0;
     virtual MappedEvent &pop() = 0;
-    virtual void done() = 0;
 };
 
 class IFillResultTool
@@ -74,7 +73,6 @@ public:
     virtual void stop() override {}
     virtual MappedEvent &get() override { return s_evt; }
     virtual MappedEvent &pop() override { return s_evt; }
-    virtual void done() override {}
 
 private:
     static MappedEvent s_evt;
@@ -139,7 +137,6 @@ public:
 
     virtual MappedEvent &get() override;
     virtual MappedEvent &pop() override;
-    virtual void done() override {}
 
 private:
     Sniper::DataStore<std::any *> *m_ds;
