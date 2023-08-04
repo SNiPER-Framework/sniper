@@ -523,10 +523,9 @@ bool FanOutAlg::initialize()
     m_fillTool = tool<IFillResultTool>("FillResultTool");
     if (m_fillTool != nullptr)
     {
-        dynamic_cast<ToolBase *>(m_fillTool)->initialize();
+        dynamic_cast<ToolBase*>(m_fillTool)->initialize();
     }
     m_svc = get<IGetGlobalBufSvc>("GetGlobalBufSvc");
-
     return m_svc != nullptr;
 }
 
@@ -543,6 +542,11 @@ bool FanOutAlg::execute()
     for (auto &k : m_keys)
     {
         evt[k].from(initValue);
+    }
+
+    if (m_fillTool != nullptr)
+    {
+        m_fillTool->fill(emap);
     }
 
     LogDebug << "end event: " << eid << std::endl;
@@ -608,6 +612,11 @@ bool FanInAlg::execute()
         output += evt[i].get<double>();
     }
     evt[m_output].from(output);
+
+    if (m_fillTool != nullptr)
+    {
+        m_fillTool->fill(emap);
+    }
 
     LogDebug << "end event: " << eid << std::endl;
 

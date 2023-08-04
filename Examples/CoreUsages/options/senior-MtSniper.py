@@ -13,14 +13,12 @@ if __name__ == "__main__":
     ###################################################
     Sniper.setLogLevel(3)
     useRootWriter = False
+    useInterAlg = True
     nthrd = 4
-    timeScale = 10
     mtsniper.setEvtMax(50)
+
     mtsniper.setNumThreads(nthrd)
-    if nthrd != 1:
-        mtsniper.configGlobalBuffer(nthrd*3, nthrd+2)
-    else:
-        mtsniper.configGlobalBuffer(3, 1)
+    mtsniper.configGlobalBuffer(nthrd*3, nthrd*2)
 
     ###################################################
     if useRootWriter:
@@ -52,17 +50,55 @@ if __name__ == "__main__":
     task = mtsniper.createMainTask("Task/MainTask")
     task.createSvc("GetGlobalBufSvc")
     svc = task.createSvc("SniperProfiling")
-    alg = task.createAlg("TimeConsumeAlg")
-    alg.property("TimeScale").set(timeScale)
-    if nthrd == 1:
-        svc.property("SaveDetails").set(True)
-        alg.createTool("TimeConsumeTool")
-    else:
-        tool = alg.createTool("MtTimeConsumeTool/TimeConsumeTool")
-        tool.property("MicroStep").set(10*timeScale)
+
+    ####################################
+    alg = task.createAlg("FanOutAlg/input")
+    alg.property("InitKeys").set(["v1", "v2", "v4", "sum12", "sum24"])
+    
+    alg = task.createAlg("TimeConsumeAlg/v1")
+    alg.property("TimeScale").set(1)
+    alg.property("Input").set("input")
+    alg.property("Output").set("v1")
+    alg.createTool("MtTimeConsumeTool/TimeConsumeTool")
+    
+    alg = task.createAlg("TimeConsumeAlg/v2")
+    alg.property("TimeScale").set(2)
+    alg.property("Input").set("input")
+    alg.property("Output").set("v2")
+    alg.createTool("MtTimeConsumeTool/TimeConsumeTool")
+    
+    alg = task.createAlg("TimeConsumeAlg/v4")
+    alg.property("TimeScale").set(4)
+    alg.property("Input").set("input")
+    alg.property("Output").set("v4")
+    alg.createTool("MtTimeConsumeTool/TimeConsumeTool")
+    
+    alg = task.createAlg("FanInAlg/sum12")
+    alg.property("Inputs").set(["v1", "v2"])
+    alg.property("Output").set("sum12")
+    
+    alg = task.createAlg("FanInAlg/sum24")
+    alg.property("Inputs").set(["v2", "v4"])
+    alg.property("Output").set("sum24")
+
     if useRootWriter:
         task.addSvc(wroot)
-        alg.createTool("FillRootTool/FillResultTool")
+        task.createSvc("EndEvtHandler4MtRootWriter")
+        task.findAlg("input").createTool("FillRootTool/FillResultTool")
+        task.findAlg("v1").createTool("FillRootTool/FillResultTool")
+        task.findAlg("v2").createTool("FillRootTool/FillResultTool")
+        task.findAlg("v4").createTool("FillRootTool/FillResultTool")
+        task.findAlg("sum12").createTool("FillRootTool/FillResultTool")
+        task.findAlg("sum24").createTool("FillRootTool/FillResultTool")
+
+    if useInterAlg:
+        task.enableInterAlgConcurrency()
+        dag = task.DAG()
+        dag.node("v1").dependOn("input")
+        dag.node("v2").dependOn("input")
+        dag.node("v4").dependOn("input")
+        dag.node("sum12").dependOn(["v1", "v2"])
+        dag.node("sum24").dependOn(["v2", "v4"])
 
     ###################################################
     mtsniper.show()
