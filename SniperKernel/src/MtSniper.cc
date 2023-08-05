@@ -23,11 +23,14 @@
 #include "SniperKernel/SniperContext.h"
 #include "SniperKernel/SniperLog.h"
 #include "SniperKernel/Sniper.h"
+#include "SniperKernel/DeclareDLE.h"
 #include "SniperPrivate/MtsPrimaryTask.h"
 #include <thread>
 
-MtSniper::MtSniper()
-    : DLElement("MtSniper")
+SNIPER_DECLARE_DLE(MtSniper);
+
+MtSniper::MtSniper(const std::string &name)
+    : DLElement(name)
 {
     m_tag = "MtSniper";
 
@@ -102,7 +105,7 @@ SniperJSON MtSniper::json()
 {
     static SniperJSON keys = SniperJSON().from(std::vector<std::string>{
         "sniper",
-        //"description",
+        "description",
         "identifier",
         "properties",
         "InputTask",
@@ -134,7 +137,19 @@ SniperJSON MtSniper::json()
 
 void MtSniper::eval(const SniperJSON &json)
 {
-    // TODO:
+    DLElement::eval(json);
+
+    auto &jitask = json["InputTask"];
+    auto itask = createInputTask(jitask["identifier"].get<std::string>());
+    itask->eval(jitask);
+
+    auto &jotask = json["OutputTask"];
+    auto otask = createOutputTask(jotask["identifier"].get<std::string>());
+    otask->eval(jotask);
+
+    auto &jmtask = json["MainTask"];
+    auto mtask = createMainTask(jmtask["identifier"].get<std::string>());
+    mtask->eval(jmtask);
 }
 
 bool MtSniper::initialize()

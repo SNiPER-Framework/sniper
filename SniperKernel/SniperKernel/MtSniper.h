@@ -25,7 +25,7 @@ class MtSniper : public DLElement
 {
 public:
     // constructor and destructor
-    MtSniper();
+    MtSniper(const std::string &name = "MtSniper");
     virtual ~MtSniper();
 
     // public methods
