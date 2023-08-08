@@ -74,7 +74,7 @@ public:
 
     // get an element by its name recursively up to the ROOT, like the C++ scope
     template <typename Type>
-    Type *get(const std::string &name);
+    Type *getElem(const std::string &name);
 
     // get data in DataMemSvc by path recursively up to the ROOT, like the C++ scope
     template <typename DataType>
@@ -100,7 +100,7 @@ protected:
 };
 
 template <typename Type>
-Type *DLElement::get(const std::string &name)
+Type *DLElement::getElem(const std::string &name)
 {
     return dynamic_cast<Type *>(findRecursivelyUpToRoot(name));
 }

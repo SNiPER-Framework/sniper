@@ -77,7 +77,7 @@ bool FillRootTool::initialize()
 {
     m_vstr = getParentAlg()->objName();
 
-    auto rw = get<RootWriter>("RootWriter");
+    auto rw = getElem<RootWriter>("RootWriter");
     m_tree = rw->bookTree(*m_par, (std::string("MtsTest/") + m_vstr).c_str(), "Result of MtSniper Test");
     m_tree->Branch("EventID", &m_id, "EventID/L");
     m_tree->Branch(m_vstr.c_str(), &m_value, (m_vstr + "/D").c_str());

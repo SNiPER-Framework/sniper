@@ -457,7 +457,7 @@ bool TimeConsumeAlg::initialize()
     {
         dynamic_cast<ToolBase*>(m_fillTool)->initialize();
     }
-    m_svc = get<IGetGlobalBufSvc>("GetGlobalBufSvc");
+    m_svc = getElem<IGetGlobalBufSvc>("GetGlobalBufSvc");
 
     return m_svc != nullptr;
 }
@@ -522,7 +522,7 @@ bool FanOutAlg::initialize()
     {
         dynamic_cast<ToolBase*>(m_fillTool)->initialize();
     }
-    m_svc = get<IGetGlobalBufSvc>("GetGlobalBufSvc");
+    m_svc = getElem<IGetGlobalBufSvc>("GetGlobalBufSvc");
     return m_svc != nullptr;
 }
 
@@ -590,7 +590,7 @@ bool FanInAlg::initialize()
     {
         dynamic_cast<ToolBase *>(m_fillTool)->initialize();
     }
-    m_svc = get<IGetGlobalBufSvc>("GetGlobalBufSvc");
+    m_svc = getElem<IGetGlobalBufSvc>("GetGlobalBufSvc");
 
     return m_svc != nullptr;
 }
