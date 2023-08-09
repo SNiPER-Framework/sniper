@@ -18,6 +18,7 @@
 #include "SniperPrivate/MtsInterAlgDag.h"
 #include "SniperPrivate/MtsInterAlgNode.h"
 #include "SniperKernel/SniperException.h"
+#include <algorithm>
 
 MtsInterAlgDag::MtsInterAlgDag(ExecUnit *task)
     : TaskWatchDog(task)
@@ -58,17 +59,47 @@ MtsInterAlgNode *MtsInterAlgDag::node(const std::string &name)
     return inode->second;
 }
 
-bool MtsInterAlgDag::config()
+void MtsInterAlgDag::buildDAG()
 {
-    // create nodes for the algorithms that the Dag doesn't know yet
     auto &algs = algList();
-    for (auto alg : algs)
+    for (auto _src : algs)
     {
-        if (m_nodes.find(alg->objName()) == m_nodes.end())
+        auto src = dynamic_cast<AlgBase *>(_src);
+        auto sNode = node(src->objName());
+        auto &sOuts = src->outputs();
+        for (auto _target : algs)
         {
-            m_nodes[alg->objName()] = new MtsInterAlgNode(this, dynamic_cast<AlgBase *>(alg));
+            if (_target == _src)
+            {
+                continue;
+            }
+            auto target = dynamic_cast<AlgBase *>(_target);
+            for (auto &input : target->inputs())
+            {
+                if (std::find(sOuts.begin(), sOuts.end(), input) != std::end(sOuts))
+                {
+                    auto tNode = node(target->objName());
+                    tNode->dependOn(sNode);
+                    break;
+                }
+            }
         }
     }
+}
+
+bool MtsInterAlgDag::config()
+{
+    // build the DAG first
+    buildDAG();
+    //for (auto &_node : m_nodes)
+    //{
+    //    auto node = _node.second;
+    //    std::cout << node->m_alg->objName() << ": " << node->m_nPre << std::endl;
+    //    for (auto p : node->m_post)
+    //    {
+    //        std::cout << "    " << p->m_alg->objName() << std::endl;
+    //    }
+    //}
 
     // set the dependencies correlated to the begin and end nodes
     for (auto &node : m_nodes)
@@ -76,18 +107,18 @@ bool MtsInterAlgDag::config()
         auto pNode = node.second;
         if (pNode->m_nPre == 0)
         {
-            pNode->dependOnNode(m_begin);
+            pNode->dependOn(m_begin);
         }
         if (pNode->m_post.empty())
         {
-            m_end->dependOnNode(pNode);
+            m_end->dependOn(pNode);
         }
     }
 
     // if the DAG is empty, there should be a way to invoke the end node
     if (m_nodes.empty())
     {
-        m_end->dependOnNode(m_begin);
+        m_end->dependOn(m_begin);
     }
 
     if (!m_begin->validate(m_begin))
@@ -109,30 +140,4 @@ bool MtsInterAlgDag::run_once()
     m_begin->exec();
 
     return true;
-}
-
-SniperJSON MtsInterAlgDag::json()
-{
-    SniperJSON json = SniperJSON::loads("{}");
-    for (auto &node : m_nodes)
-    {
-        auto &nodeName = node.second->m_alg->objName();
-        for (auto post : node.second->m_post)
-        {
-            if (post != m_end)
-            {
-                json[post->m_alg->objName()].push_back(SniperJSON().from(nodeName));
-            }
-        }
-    }
-
-    return json;
-}
-
-void MtsInterAlgDag::eval(const SniperJSON &json)
-{
-    for (auto jNode = json.map_begin(); jNode != json.map_end(); ++jNode)
-    {
-        node(jNode->first)->dependOn(jNode->second.get<std::vector<std::string>>());
-    }
 }

@@ -47,17 +47,10 @@ MtsMicroTask::Status MtsInterAlgNode::exec()
     return status ? spawnPost() : Status::Failed;
 }
 
-void MtsInterAlgNode::dependOn(const std::string &name)
+void MtsInterAlgNode::dependOn(MtsInterAlgNode *node)
 {
-    dependOnNode(m_dag->node(name));
-}
-
-void MtsInterAlgNode::dependOn(const std::vector<std::string> &names)
-{
-    for (auto &name : names)
-    {
-        this->dependOn(name);
-    }
+    node->m_post.push_back(this);
+    ++m_nPre;
 }
 
 bool MtsInterAlgNode::validate(MtsInterAlgNode *node)
@@ -71,12 +64,6 @@ bool MtsInterAlgNode::validate(MtsInterAlgNode *node)
         }
     }
     return true;
-}
-
-void MtsInterAlgNode::dependOnNode(MtsInterAlgNode *node)
-{
-    node->m_post.push_back(this);
-    ++m_nPre;
 }
 
 MtsMicroTask::Status MtsInterAlgNode::spawnPost()

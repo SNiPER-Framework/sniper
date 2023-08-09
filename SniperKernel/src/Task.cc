@@ -41,6 +41,7 @@ Task::Task(const std::string &name)
         m_tag = "Task"; //protection for derived classes
 
     declProp("EvtMax", m_evtMax);
+    declProp("EnableInterAlgConcurrency", m_interAlgConcurrency);
     m_pmgr.addProperty(new TaskProperty("svcs", this));
     m_pmgr.addProperty(new TaskProperty("algs", this));
 }
@@ -110,16 +111,10 @@ SniperJSON Task::json()
         "identifier",
         "properties",
         "services",
-        "algorithms",
-        "algDAG"});
+        "algorithms"});
 
     SniperJSON j = ExecUnit::json();
     j.insert("ordered_keys", keys);
-
-    if (m_interAlgConcurrency)
-    {
-        j.insert("algDAG", DAG()->json());
-    }
 
     return j;
 }
@@ -131,10 +126,9 @@ void Task::eval(const SniperJSON &json)
     //set event number limitation
     m_limited = (m_evtMax >= 0);
 
-    if (json.find("algDAG") != json.map_end())
+    if (m_interAlgConcurrency)
     {
-        enableInterAlgConcurrency();
-        DAG()->eval(json["algDAG"]);
+        setSnoopy(new MtsInterAlgDag(this));
     }
 }
 
@@ -142,11 +136,6 @@ void Task::enableInterAlgConcurrency()
 {
     setSnoopy(new MtsInterAlgDag(this));
     m_interAlgConcurrency = true;
-}
-
-MtsInterAlgDag *Task::DAG()
-{
-    return dynamic_cast<MtsInterAlgDag *>(m_snoopy);
 }
 
 bool Task::config()

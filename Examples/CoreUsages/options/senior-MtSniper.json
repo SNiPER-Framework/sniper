@@ -14,6 +14,7 @@
   "InputTask": {
     "identifier": "Task/InputTask",
     "properties": {
+      "EnableInterAlgConcurrency": false,
       "EvtMax": -1,
       "LogLevel": 3
     },
@@ -26,7 +27,9 @@
       {
         "identifier": "FillGlobalBufAlg/FillGlobalBufAlg",
         "properties": {
-          "MaxEvtNum": 9223372036854775807
+          "MaxEvtNum": 9223372036854775807,
+          "inputs": [],
+          "outputs": []
         }
       }
     ]
@@ -34,6 +37,7 @@
   "OutputTask": {
     "identifier": "Task/OutputTask",
     "properties": {
+      "EnableInterAlgConcurrency": false,
       "EvtMax": -1,
       "LogLevel": 3
     },
@@ -45,6 +49,10 @@
     "algorithms": [
       {
         "identifier": "PruneGlobalBufAlg/PruneGlobalBufAlg",
+        "properties": {
+          "inputs": [],
+          "outputs": []
+        },
         "tools": [
           {
             "identifier": "WriteAsciiTool/WriteResultTool",
@@ -59,6 +67,7 @@
   "MainTask": {
     "identifier": "Task/MainTask",
     "properties": {
+      "EnableInterAlgConcurrency": true,
       "EvtMax": -1,
       "LogLevel": 3
     },
@@ -77,15 +86,17 @@
       {
         "identifier": "FanOutAlg/input",
         "properties": {
-          "InitKeys": [ "v1", "v2", "v4", "sum12", "sum24" ]
+          "InitKeys": [ "v1", "v2", "v4", "sum12", "sum24" ],
+          "inputs": [],
+          "outputs": [ "input" ]
         }
       },
       {
         "identifier": "TimeConsumeAlg/v1",
         "properties": {
-          "Input": "input",
-          "Output": "v1",
-          "TimeScale": 1
+          "TimeScale": 1,
+          "inputs": [ "input" ],
+          "outputs": [ "v1" ]
         },
         "tools": [
           {
@@ -99,9 +110,9 @@
       {
         "identifier": "TimeConsumeAlg/v2",
         "properties": {
-          "Input": "input",
-          "Output": "v2",
-          "TimeScale": 2
+          "TimeScale": 2,
+          "inputs": [ "input" ],
+          "outputs": [ "v2" ]
         },
         "tools": [
           {
@@ -115,9 +126,9 @@
       {
         "identifier": "TimeConsumeAlg/v4",
         "properties": {
-          "Input": "input",
-          "Output": "v4",
-          "TimeScale": 4
+          "TimeScale": 4,
+          "inputs": [ "input" ],
+          "outputs": [ "v4" ]
         },
         "tools": [
           {
@@ -131,36 +142,17 @@
       {
         "identifier": "FanInAlg/sum12",
         "properties": {
-          "Inputs": [ "v1", "v2" ],
-          "Output": "sum12"
+          "inputs": [ "v1", "v2" ],
+          "outputs": [ "sum12" ]
         }
       },
       {
         "identifier": "FanInAlg/sum24",
         "properties": {
-          "Inputs": [ "v2", "v4" ],
-          "Output": "sum24"
+          "inputs": [ "v2", "v4" ],
+          "outputs": [ "sum24" ]
         }
       }
-    ],
-    "algDAG": {
-      "sum12": [
-        "v1",
-        "v2"
-      ],
-      "sum24": [
-        "v2",
-        "v4"
-      ],
-      "v1": [
-        "input"
-      ],
-      "v2": [
-        "input"
-      ],
-      "v4": [
-        "input"
-      ]
-    }
+    ]
   }
 }

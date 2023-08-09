@@ -435,9 +435,6 @@ private:
     IFillResultTool *m_fillTool;
     IGetGlobalBufSvc *m_svc;
     double m_timeScale;
-
-    std::string m_input;
-    std::string m_output;
 };
 SNIPER_DECLARE_DLE(TimeConsumeAlg);
 
@@ -445,12 +442,16 @@ TimeConsumeAlg::TimeConsumeAlg(const std::string &name)
     : AlgBase(name)
 {
     declProp("TimeScale", m_timeScale = 1.0);
-    declProp("Input", m_input);
-    declProp("Output", m_output);
 }
 
 bool TimeConsumeAlg::initialize()
 {
+    if (m_inputs.size() != 1 || m_outputs.size() != 1)
+    {
+        LogError << "inputs/outputs property is not set correctly" << std::endl;
+        return false;
+    }
+
     m_calcTool = tool<ITimeConsumeTool>("TimeConsumeTool");
     m_fillTool = tool<IFillResultTool>("FillResultTool");
     if (m_fillTool != nullptr)
@@ -470,10 +471,10 @@ bool TimeConsumeAlg::execute()
     auto eid = evt["EventID"].str(-1);
     LogDebug << "begin event: " << eid << std::endl;
 
-    auto input = evt[m_input].get<double>() * m_timeScale;
+    auto input = evt[m_inputs[0]].get<double>() * m_timeScale;
     auto output = m_calcTool->numberIntegral4Sin(0, input);
 
-    evt[m_output].from(output);
+    evt[m_outputs[0]].from(output);
 
     if (m_fillTool != nullptr)
     {
@@ -536,6 +537,7 @@ bool FanOutAlg::execute()
     auto eid = evt["EventID"].str(-1);
     LogDebug << "begin event: " << eid << std::endl;
 
+    // to prevent inter-algorithms concurrently insert values to the event
     for (auto &k : m_keys)
     {
         evt[k].from(initValue);
@@ -570,21 +572,22 @@ public:
 private:
     IFillResultTool *m_fillTool;
     IGetGlobalBufSvc *m_svc;
-
-    std::string m_output;
-    std::vector<std::string> m_inputs;
 };
 SNIPER_DECLARE_DLE(FanInAlg);
 
 FanInAlg::FanInAlg(const std::string &name)
     : AlgBase(name)
 {
-    declProp("Output", m_output);
-    declProp("Inputs", m_inputs);
 }
 
 bool FanInAlg::initialize()
 {
+    if (m_inputs.empty() || m_outputs.size() != 1)
+    {
+        LogError << "inputs/outputs property is not set correctly" << std::endl;
+        return false;
+    }
+
     m_fillTool = tool<IFillResultTool>("FillResultTool");
     if (m_fillTool != nullptr)
     {
@@ -608,7 +611,7 @@ bool FanInAlg::execute()
     {
         output += evt[i].get<double>();
     }
-    evt[m_output].from(output);
+    evt[m_outputs[0]].from(output);
 
     if (m_fillTool != nullptr)
     {

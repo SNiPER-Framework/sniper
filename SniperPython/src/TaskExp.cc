@@ -49,6 +49,5 @@ void export_Sniper_Task()
         .def("run",        &Task::run, &TaskWrap::default_run)
         .def("setEvtMax",  &Task::setEvtMax)
         .def("evtMax",  &Task::evtMax)
-        .def("enableInterAlgConcurrency", &Task::enableInterAlgConcurrency)
-        .def("DAG", &Task::DAG, return_value_policy<reference_existing_object>());
+        .def("enableInterAlgConcurrency", &Task::enableInterAlgConcurrency);
 }

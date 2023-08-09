@@ -26,8 +26,8 @@ if __name__ == "__main__":
         import SniperRootUsages
         wroot = Sniper.create("MtRootWriter/RootWriter")
         wroot.property("Output").set(
-                {"MtsTest": "mtresult.root"}
-                )
+            {"MtsTest": "mtresult.root"}
+        )
 
     ###################################################
     task = mtsniper.createInputTask("Task/InputTask")
@@ -54,32 +54,33 @@ if __name__ == "__main__":
     ####################################
     alg = task.createAlg("FanOutAlg/input")
     alg.property("InitKeys").set(["v1", "v2", "v4", "sum12", "sum24"])
-    
+    alg.property("outputs").set(["input"])
+
     alg = task.createAlg("TimeConsumeAlg/v1")
     alg.property("TimeScale").set(1)
-    alg.property("Input").set("input")
-    alg.property("Output").set("v1")
+    alg.property("inputs").set(["input"])
+    alg.property("outputs").set(["v1"])
     alg.createTool("MtTimeConsumeTool/TimeConsumeTool")
-    
+
     alg = task.createAlg("TimeConsumeAlg/v2")
     alg.property("TimeScale").set(2)
-    alg.property("Input").set("input")
-    alg.property("Output").set("v2")
+    alg.property("inputs").set(["input"])
+    alg.property("outputs").set(["v2"])
     alg.createTool("MtTimeConsumeTool/TimeConsumeTool")
-    
+
     alg = task.createAlg("TimeConsumeAlg/v4")
     alg.property("TimeScale").set(4)
-    alg.property("Input").set("input")
-    alg.property("Output").set("v4")
+    alg.property("inputs").set(["input"])
+    alg.property("outputs").set(["v4"])
     alg.createTool("MtTimeConsumeTool/TimeConsumeTool")
-    
+
     alg = task.createAlg("FanInAlg/sum12")
-    alg.property("Inputs").set(["v1", "v2"])
-    alg.property("Output").set("sum12")
-    
+    alg.property("inputs").set(["v1", "v2"])
+    alg.property("outputs").set(["sum12"])
+
     alg = task.createAlg("FanInAlg/sum24")
-    alg.property("Inputs").set(["v2", "v4"])
-    alg.property("Output").set("sum24")
+    alg.property("inputs").set(["v2", "v4"])
+    alg.property("outputs").set(["sum24"])
 
     if useRootWriter:
         task.addSvc(wroot)
@@ -93,12 +94,6 @@ if __name__ == "__main__":
 
     if useInterAlg:
         task.enableInterAlgConcurrency()
-        dag = task.DAG()
-        dag.node("v1").dependOn("input")
-        dag.node("v2").dependOn("input")
-        dag.node("v4").dependOn("input")
-        dag.node("sum12").dependOn(["v1", "v2"])
-        dag.node("sum24").dependOn(["v2", "v4"])
 
     ###################################################
     mtsniper.show()

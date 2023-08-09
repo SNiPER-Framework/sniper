@@ -48,7 +48,6 @@ void export_Sniper_Timer();
 void export_Sniper_TimerSvc();
 void export_Sniper_SniperJSON();
 void export_Sniper_MtSniper();
-void export_Sniper_MtsInterAlgDagNode();
 
 BOOST_PYTHON_MODULE(libSniperPython)
 {
@@ -75,5 +74,4 @@ BOOST_PYTHON_MODULE(libSniperPython)
     export_Sniper_TimerSvc();
     export_Sniper_SniperJSON();
     export_Sniper_MtSniper();
-    export_Sniper_MtsInterAlgDagNode();
 }

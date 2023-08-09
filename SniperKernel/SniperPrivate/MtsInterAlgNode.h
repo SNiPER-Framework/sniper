@@ -36,8 +36,7 @@ public:
     virtual Status exec() override;
 
     // set which algorithm(s) this node depends on
-    void dependOn(const std::string &name);
-    void dependOn(const std::vector<std::string> &names);
+    void dependOn(MtsInterAlgNode *node);
 
     // check whether there is any loop in the DAG
     bool validate(MtsInterAlgNode *node);
@@ -48,7 +47,6 @@ public:
 protected:
     friend class MtsInterAlgDag;
 
-    void dependOnNode(MtsInterAlgNode *node);
     Status spawnPost();
 
     MtsInterAlgDag *m_dag;

@@ -29,19 +29,17 @@ public:
     MtsInterAlgDag(ExecUnit *task);
     virtual ~MtsInterAlgDag();
 
-    // get (or create if not exist) a node by its alg name
-    MtsInterAlgNode *node(const std::string &name);
-
     // override interfaces in the base class
     virtual bool config() override;
     virtual bool run_once() override;
 
-    //// the json value of this object
-    SniperJSON json();
-    //// eval the DAG from json
-    void eval(const SniperJSON &json);
-
 private:
+    // get (or create if not exist) a node by its alg name
+    MtsInterAlgNode *node(const std::string &name);
+
+    // build the DAG according to the algorithms inputs/outputs dependencies
+    void buildDAG();
+
     // the event number has been processed
     long m_done{0};
 
