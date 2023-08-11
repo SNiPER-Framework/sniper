@@ -1,17 +1,17 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2018-2023
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
- 
+
    SNiPER is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
- 
+
    SNiPER is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU Lesser General Public License for more details.
- 
+
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
@@ -24,6 +24,7 @@
 
 class SvcBase;
 class AlgBase;
+class DataMemSvc;
 
 class ExecUnit : public DLElement
 {
@@ -39,17 +40,19 @@ public:
     SvcBase *findSvc(const std::string &svcName);
     // find an owned algorithm
     AlgBase *findAlg(const std::string &algName);
+    // get the owned DataMemSvc
+    DataMemSvc *dataSvc() { return m_dataSvc; }
 
     // create an owned service
     SvcBase *createSvc(const std::string &svcName);
     // create an owned algorithm
     AlgBase *createAlg(const std::string &algName);
-    //add concrete Svc/Alg to Task without ownership
-    //it may be helpful for writing Svc/Alg in Python
+    // add concrete Svc/Alg to Task without ownership
+    // it may be helpful for writing Svc/Alg in Python
     SvcBase *addSvc(SvcBase *svc);
     AlgBase *addAlg(AlgBase *alg);
 
-    //clear all svcs/algs seperately
+    // clear all svcs/algs seperately
     void clearSvcs() { m_svcs.clear(); }
     void clearAlgs() { m_algs.clear(); }
 
@@ -59,10 +62,10 @@ public:
     virtual DLElement *create(const std::string &type, const std::string &name);
     // remove an owned element
     virtual void remove(const std::string &name);
-    //clear all elements
+    // clear all elements
     virtual void reset();
 
-    //the json value of this object
+    // the json value of this object
     virtual SniperJSON json() override;
     // eval this Task from json
     virtual void eval(const SniperJSON &json) override;
@@ -73,9 +76,9 @@ public:
     TaskWatchDog &Snoopy() { return *m_snoopy; }
 
 public:
-    //none state check... Please use Snoopy for state control
+    // none state check... Please use Snoopy for state control
     friend class TaskWatchDog;
-    //the concrete task operations
+    // the concrete task operations
     virtual bool config() = 0;
     virtual bool execute() = 0;
     virtual bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly) = 0;
@@ -83,6 +86,8 @@ public:
 protected:
     // the pointer to the WatchDog
     TaskWatchDog *m_snoopy;
+    // the pointer to the DataMemSvc
+    DataMemSvc *m_dataSvc;
 
     // the supervisors of services and algorithms
     DleSupervisor m_svcs;

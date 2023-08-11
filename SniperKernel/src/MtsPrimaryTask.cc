@@ -145,8 +145,7 @@ void MtsPrimaryTask::setGBEvt2Task(std::any &evt, Task *task)
     auto p = m_eventStore[task];
     if (p == nullptr)
     {
-        auto dsvc = dynamic_cast<DataMemSvc *>(task->find("DataMemSvc"));
-        p = dynamic_cast<Sniper::DataStore<std::any *> *>(dsvc->find("GBEVENT"));
+        p = dynamic_cast<Sniper::DataStore<std::any *> *>(task->dataSvc()->find("GBEVENT"));
         m_eventStore[task] = p;
     }
     p->put(&evt);
@@ -157,7 +156,7 @@ void MtsPrimaryTask::setGBSlot2Task(MtsEvtBufferRing::EvtSlot *slot, Task *task)
     auto p = m_eventStore[task];
     if (p == nullptr)
     {
-        auto dsvc = dynamic_cast<DataMemSvc *>(task->find("DataMemSvc"));
+        auto dsvc = task->dataSvc();
         p = dynamic_cast<Sniper::DataStore<std::any *> *>(dsvc->find("GBEVENT"));
         m_eventStore[task] = p;
         m_statusStore[task] = dynamic_cast<Sniper::DataStore<MtsEvtBufferRing::SlotStatus *> *>(dsvc->find("GBSTATUS"));

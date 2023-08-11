@@ -54,7 +54,7 @@ bool EndEvtHandler4MtsMainTask::handle(Incident & /*Incident*/)
 
 MtsMicroTask::Status InitializeSniperTask::exec()
 {
-    auto dsvc = dynamic_cast<DataMemSvc *>(m_sniperTask->find("DataMemSvc"));
+    auto dsvc = m_sniperTask->dataSvc();
     dsvc->regist("GBEVENT", new Sniper::DataStore<std::any *>());
 
     auto &snoopy = m_sniperTask->Snoopy();

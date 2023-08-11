@@ -148,8 +148,7 @@ bool EndEvtHandler4MtRootWriter::EndEvtHandler::handle(Incident & /*incident*/)
     // in other words, after the initialize of all algorithms
     if (m_treeStore == nullptr)
     {
-        DataMemSvc *dsvc = dynamic_cast<DataMemSvc *>(m_domain.find("DataMemSvc"));
-        m_treeStore = dynamic_cast<MtTTreeStore *>(dsvc->find("MtTTreeStore"));
+        m_treeStore = dynamic_cast<MtTTreeStore *>(m_domain.dataSvc()->find("MtTTreeStore"));
     }
 
     // move the TTree clones into GlobalBuffer in case of MtRootWriter

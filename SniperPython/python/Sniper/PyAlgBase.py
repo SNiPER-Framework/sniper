@@ -15,7 +15,7 @@ class PyAlgBase(AlgBase):
             log.msg('\n')
 
     def get(self, name):
-        return self.getParent().find("DataMemSvc").find(name)
+        return self.getParent().dataSvc().find(name)
 
     def LogTest(self, *msgs):
         self._log(0, msgs)

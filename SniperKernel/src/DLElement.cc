@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2022
+/* Copyright (C) 2018-2023
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -153,10 +153,10 @@ IDataBlock *DLElement::findDataRecursivelyUpToRoot(const std::string &path)
     IDataBlock *res = nullptr;
     if (auto p = m_par)
     {
-        res = dynamic_cast<DataMemSvc *>(p->find("DataMemSvc"))->find(path);
+        res = (p->dataSvc())->find(path);
         while (res == nullptr && (p = p->getParent()))
         {
-            res = dynamic_cast<DataMemSvc *>(p->find("DataMemSvc"))->find(path);
+            res = (p->dataSvc())->find(path);
         }
     }
     return res;

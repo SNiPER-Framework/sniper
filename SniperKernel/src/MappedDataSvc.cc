@@ -52,7 +52,7 @@ bool MappedDataSvc::regist(ExecUnit &domain, const std::string &src, const std::
 
 bool MappedDataSvc::initialize()
 {
-    auto dsvc = dynamic_cast<DataMemSvc *>(m_par->findSvc("DataMemSvc"));
+    auto dsvc = m_par->dataSvc();
 
     for (auto &it : m_dataMap)
     {

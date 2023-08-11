@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2018-2023
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -92,6 +92,7 @@ void export_Sniper_ExecUnit()
         .def("isRoot", &ExecUnit::isRoot)
         .def("findSvc", &ExecUnit::findSvc, return_value_policy<reference_existing_object>())
         .def("findAlg", &ExecUnit::findAlg, return_value_policy<reference_existing_object>())
+        .def("dataSvc", &ExecUnit::dataSvc, return_value_policy<reference_existing_object>())
         .def("createSvc", &ExecUnit::createSvc, return_value_policy<reference_existing_object>())
         .def("createAlg", &ExecUnit::createAlg, return_value_policy<reference_existing_object>())
         .def("addSvc", &ExecUnit::addSvc, return_value_policy<reference_existing_object>())
