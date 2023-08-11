@@ -18,6 +18,7 @@
 #include "SniperPrivate/MtsPrimaryTask.h"
 #include "SniperKernel/MtSniperUtility.h"
 #include "SniperKernel/DataMemSvc.h"
+#include "SniperKernel/SniperException.h"
 #include "SniperKernel/SniperLog.h"
 
 MtsPrimaryTask::MtsPrimaryTask(std::atomic_flag &ilock, std::atomic_flag &olock)
@@ -84,8 +85,15 @@ MtsMicroTask::Status MtsPrimaryTask::execInputTask()
     bool status = true;
     while (m_gb->eager() && status)
     {
-        status = snoopy.run_once();
-        MtSniperUtil::Thread::resumeOne();
+        try
+        {
+            status = snoopy.run_once();
+            MtSniperUtil::Thread::resumeOne();
+        }
+        catch (StopRunProcess &e)
+        {
+            m_gb->deVigorous();
+        }
     }
     return status ? Status::OK : Status::Failed;
 }
