@@ -1,26 +1,36 @@
 {
-  "sniper": {
+  "Config": {
     "Colorful": 3,
     "LoadDlls": [ "libSniperCoreUsages.so" ],
-    "LogLevel": 2,
-    "ShowTime": false
-  },
-  "description": "an example to use SniperLog and Properties",
-  "identifier": "Task/task",
-  "properties": {
-    "EvtMax": 5,
     "LogLevel": 2
   },
-  "services": [],
-  "algorithms": [
-    {
-      "identifier": "HelloWorld/HelloWorld",
+  "Engine": {
+    "identifier": "Sniper/Sniper",
+    "properties": {
+      "LogLevel": 2
+    },
+    "Task": {
+      "description": "an example to use SniperLog and Properties",
+      "identifier": "Task/task",
       "properties": {
-        "MapIntStr": { "1": "str1" },
-        "PairDVD": [ 0.09, [ 1.1, 2.2, 3.3 ] ],
-        "VarBool": true,
-        "VecFloat": [ 0.01 ]
-      }
+        "EnableInterAlgConcurrency": false,
+        "EvtMax": 5,
+        "LogLevel": 2
+      },
+      "services": [],
+      "algorithms": [
+        {
+          "identifier": "HelloWorld/HelloWorld",
+          "properties": {
+            "MapIntStr": { "1": "str1" },
+            "PairDVD": [ 0.09, [ 1.1, 2.2, 3.3 ] ],
+            "VarBool": true,
+            "VecFloat": [ 0.01 ],
+            "inputs": [],
+            "outputs": []
+          }
+        }
+      ]
     }
-  ]
+  }
 }

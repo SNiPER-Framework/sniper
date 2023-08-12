@@ -66,29 +66,6 @@ void Task::setLogLevel(int level)
     }
 }
 
-bool Task::run()
-{
-    if (sniper_context->check(Sniper::SysMode::MT))
-    {
-        LogWarn << "please use Muster::run() instead" << std::endl;
-        return true;
-    }
-
-    if (m_snoopy->config())
-    {
-        if (m_snoopy->initialize())
-        {
-            if (!m_snoopy->run())
-            {
-                //LogError << "Failed to execute algorithms" << std::endl;
-            }
-            m_snoopy->finalize();
-        }
-    }
-
-    return !m_snoopy->isErr();
-}
-
 bool Task::stop(Sniper::StopRun mode)
 {
     return m_snoopy->stop(mode);
@@ -106,7 +83,6 @@ void Task::reset()
 SniperJSON Task::json()
 {
     static SniperJSON keys = SniperJSON().from(std::vector<std::string>{
-        "sniper",
         "description",
         "identifier",
         "properties",

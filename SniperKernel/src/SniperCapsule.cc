@@ -16,7 +16,7 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/Sniper.h"
-#include "SniperKernel/Task.h"
+#include "SniperKernel/SingleThreadSniper.h"
 #include "SniperKernel/MtSniper.h"
 #include "SniperKernel/SniperContext.h"
 #include <fstream>
@@ -71,11 +71,11 @@ extern "C"
         }
         else
         {
-            // try Task
-            auto pTask = dynamic_cast<Task *>(pobj);
-            if (pTask != nullptr)
+            // try SingleThreadSniper
+            auto pStSniper = dynamic_cast<SingleThreadSniper *>(pobj);
+            if (pStSniper != nullptr)
             {
-                return pTask->run();
+                return pStSniper->run();
             }
         }
 

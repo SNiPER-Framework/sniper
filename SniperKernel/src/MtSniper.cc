@@ -104,7 +104,6 @@ Task *MtSniper::createMainTask(const std::string &identifier)
 SniperJSON MtSniper::json()
 {
     static SniperJSON keys = SniperJSON().from(std::vector<std::string>{
-        "sniper",
         "description",
         "identifier",
         "properties",
@@ -112,25 +111,27 @@ SniperJSON MtSniper::json()
         "OutputTask",
         "MainTask"});
 
-    SniperJSON j = DLElement::json();
+    SniperJSON j;
+    j.insert("Config", SniperJSON(Sniper::Config::json_str()));
+    if (j["Config"].find("LoadDlls") != j["Config"].map_end())
+    {
+        j["Config"]["LoadDlls"].format(false);
+    }
+
+    j.insert("Engine", DLElement::json());
     if (m_itask != nullptr)
     {
-        j.insert("InputTask", m_itask->json());
-        j["InputTask"].erase("sniper");
+        j["Engine"].insert("InputTask", m_itask->json());
     }
     if (m_otask != nullptr)
     {
-        j.insert("OutputTask", m_otask->json());
-        j["OutputTask"].erase("sniper");
+        j["Engine"].insert("OutputTask", m_otask->json());
     }
     if (m_mtask != nullptr)
     {
-        j.insert("MainTask", m_mtask->json());
-        j.insert("sniper", j["MainTask"]["sniper"]);
-        j["MainTask"].erase("sniper");
+        j["Engine"].insert("MainTask", m_mtask->json());
     }
-
-    j.insert("ordered_keys", keys);
+    j["Engine"].insert("ordered_keys", keys);
 
     return j;
 }

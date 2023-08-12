@@ -171,14 +171,6 @@ SniperJSON ExecUnit::json()
 {
     SniperJSON j = DLElement::json();
 
-    if (isRoot())
-    {
-        j.insert("sniper", SniperJSON(Sniper::Config::json_str()));
-        auto &jsniper = j["sniper"];
-        if (jsniper.find("LoadDlls") != jsniper.map_end())
-            jsniper["LoadDlls"].format(false);
-    }
-
     for (auto target : m_targets)
     {
         SniperJSON &jcomponents = j[target->objName()];

@@ -44,9 +44,6 @@ public:
     //set the log level of this domain
     void setLogLevel(int level) final;
 
-    //run this task
-    virtual bool run();
-
     //stop this task
     virtual bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly) override;
 
