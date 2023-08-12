@@ -1,24 +1,38 @@
 {
-  "sniper": {
-    "LoadDlls": [ "libRootWriterLib.so", "libSniperRootUsages.so" ]
+  "Config": {
+    "LoadDlls": [ "libRootWriterLib.so", "libSniperRootUsages.so" ],
+    "LogLevel": 3
   },
-  "description": "an example to fill ROOT Trees in an algorithm",
-  "identifier": "Task/task",
-  "properties": {
-    "EvtMax": 5,
-    "LogLevel": 2
-  },
-  "services": [
-    {
-      "identifier": "RootWriter/RootWriter",
+  "Engine": {
+    "identifier": "Sniper/Sniper",
+    "properties": {
+      "LogLevel": 3
+    },
+    "Task": {
+      "description": "an example to fill ROOT Trees in an algorithm",
+      "identifier": "Task/task",
       "properties": {
-        "Output": { "FILE1": "output1.root", "FILE2": "output2.root" }
-      }
+        "EnableInterAlgConcurrency": false,
+        "EvtMax": 5,
+        "LogLevel": 2
+      },
+      "services": [
+        {
+          "identifier": "RootWriter/RootWriter",
+          "properties": {
+            "Output": { "FILE1": "output1.root", "FILE2": "output2.root" }
+          }
+        }
+      ],
+      "algorithms": [
+        {
+          "identifier": "WriteRootAlg/WriteRootAlg",
+          "properties": {
+            "inputs": [],
+            "outputs": []
+          }
+        }
+      ]
     }
-  ],
-  "algorithms": [
-    {
-      "identifier": "WriteRootAlg/WriteRootAlg"
-    }
-  ]
+  }
 }

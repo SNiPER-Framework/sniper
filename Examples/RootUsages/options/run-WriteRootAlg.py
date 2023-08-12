@@ -3,8 +3,9 @@
 # author: lintao
 
 import Sniper
+sniper = Sniper.Sniper()
 
-task = Sniper.Task("task")
+task = sniper.createTask("Task/task")
 task.setLogLevel(2)
 
 import RootWriter
@@ -17,5 +18,5 @@ import SniperRootUsages
 alg = task.createAlg("WriteRootAlg")
 
 task.setEvtMax(5)
-task.show()
-task.run()
+sniper.show()
+sniper.run()

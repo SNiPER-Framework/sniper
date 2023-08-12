@@ -4,8 +4,9 @@
 if __name__ == "__main__":
 
     import Sniper
+    sniper = Sniper.Sniper()
 
-    task = Sniper.Task("task")
+    task = sniper.createTask("Task/task")
     task.setEvtMax(5)
 
     import SniperPython
@@ -27,5 +28,5 @@ if __name__ == "__main__":
     pyalg2 = SniperPyUsages.PyGetAlg("PyAlg2")
     task.addAlg(pyalg2)
 
-    task.show()
-    task.run()
+    sniper.show()
+    sniper.run()

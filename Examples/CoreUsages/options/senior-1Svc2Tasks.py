@@ -5,8 +5,9 @@ if __name__ == "__main__":
 
     import Sniper
     import SniperCoreUsages
+    sniper = Sniper.Sniper()
 
-    top = Sniper.TopTask("TopT")
+    top = sniper.createTask("TopTask/TopT")
     top.setLogLevel(2)
     top.setDescription("an example to share a service in multiple tasks")
     top.setEvtMax(5)
@@ -30,5 +31,5 @@ if __name__ == "__main__":
     alg2.property("OwnedTool").set(toolname)
     alg2.createTool("DummyTool/"+toolname).setDescription("a DummyTool instance owned by alg2")
 
-    top.show()
-    top.run()
+    sniper.show()
+    sniper.run()
