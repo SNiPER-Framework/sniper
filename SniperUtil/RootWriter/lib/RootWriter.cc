@@ -53,8 +53,8 @@ bool RootWriter::initialize()
                 const char *preDir = gDirectory->GetPath();
                 auto fptr = TFile::Open(iKey2Path.second.c_str(), "RECREATE");
 
-                // check whether file is open
-                if (not fptr) {
+                // check whether file is open or zombie
+                if (not fptr or fptr->IsZombie()) {
                     LogError << "Cannot open file " << iKey2Path.second << std::endl;
                     return false;
                 }
