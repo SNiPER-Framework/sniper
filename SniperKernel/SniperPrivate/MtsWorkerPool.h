@@ -50,7 +50,8 @@ private:
     bool m_active{true};
     MtsWorkerPool *m_pool;
     ucontext_t m_ctx;
-    char m_stack[1024*8];
+    // ATTENTION: it may crash the program when the stack is not big enough in some extreme scene
+    char m_stack[1024*256];
 
     static std::atomic_int s_id;
 };
