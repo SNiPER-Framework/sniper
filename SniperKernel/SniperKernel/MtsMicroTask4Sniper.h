@@ -28,12 +28,19 @@ public:
     // for a MainTask, no lock needed
     InitializeSniperTask(Task *task)
         : m_sniperTask(task),
-          m_lock(nullptr) {}
+          m_lock(nullptr)
+    {
+        ++s_count;
+    }
 
     // for an I/O Task, it should be locked before it initialized
     InitializeSniperTask(Task *task, std::atomic_flag &lock)
         : m_sniperTask(task),
-          m_lock(&lock) { lock.test_and_set(); }
+          m_lock(&lock)
+    {
+        ++s_count;
+        lock.test_and_set();
+    }
 
     virtual ~InitializeSniperTask()
     {
@@ -46,6 +53,7 @@ public:
 private:
     Task *m_sniperTask;
     std::atomic_flag *m_lock;
+    static std::atomic_int s_count;
 };
 
 #endif

@@ -21,7 +21,10 @@
 #include "SniperKernel/SniperObjPool.h"
 #include "SniperKernel/DataMemSvc.h"
 #include "SniperKernel/IIncidentHandler.h"
+#include "SniperKernel/MtSniper.h"
 #include <any>
+
+std::atomic_int InitializeSniperTask::s_count = 0;
 
 class EndEvtHandler4MtsMainTask : public IIncidentHandler
 {
@@ -70,6 +73,12 @@ MtsMicroTask::Status InitializeSniperTask::exec()
         // put it back to the SniperTaskPool
         SniperObjPool<Task>::instance()->deallocate(m_sniperTask);
     }
+
+    if (--s_count == 0)
+    {
+        MtSniper::notifyInitialized();
+    }
     delete this; // manages itself
+
     return status ? Status::OK : Status::Failed;
 }

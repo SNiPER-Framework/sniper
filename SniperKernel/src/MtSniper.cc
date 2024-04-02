@@ -26,8 +26,11 @@
 #include "SniperKernel/DeclareDLE.h"
 #include "SniperPrivate/MtsPrimaryTask.h"
 #include <thread>
+#include <mutex>
 
 SNIPER_DECLARE_DLE(MtSniper);
+
+std::condition_variable MtSniper::s_initialized;
 
 MtSniper::MtSniper(const std::string &name)
     : DLElement(name)
@@ -232,4 +235,11 @@ bool MtSniper::run()
     LogInfo << "all workers finished successfully" << std::endl;
 
     return true;
+}
+
+void MtSniper::wait4Initialize()
+{
+    std::mutex mtmp;
+    std::unique_lock ltmp(mtmp);
+    s_initialized.wait(ltmp);
 }

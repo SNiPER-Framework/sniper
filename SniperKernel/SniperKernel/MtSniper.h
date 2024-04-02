@@ -20,6 +20,7 @@
 
 #include "SniperKernel/Task.h"
 #include "SniperKernel/MtsMicroTaskQueue.h"
+#include <condition_variable>
 
 class MtSniper : public DLElement
 {
@@ -36,17 +37,23 @@ public:
     // set the primary micro task (not a SNiPER Task) for MtSniper
     void setPrimaryTask(MtsMicroTask *task);
 
-    // create the SNiPER Tasks for data processing
+    // create or get the SNiPER Tasks for data processing
     Task *createInputTask(const std::string &identifier);
     Task *createOutputTask(const std::string &identifier);
     Task *createMainTask(const std::string &identifier);
-
+    Task *getInputTask() { return m_itask; }
+    Task *getOutputTask() { return m_otask; }
+    Task *getMainTask() { return m_mtask; }
     // the interfaces for json
     virtual SniperJSON json() override;
     virtual void eval(const SniperJSON &json) override;
 
     // create and start workers
     bool run();
+
+    // notify and wait for the initialize of all SNiPER Tasks
+    static void notifyInitialized() { s_initialized.notify_one(); }
+    static void wait4Initialize();
 
 protected:
     Task *createSniperTask(const std::string &identifier);
@@ -71,6 +78,8 @@ protected:
 
     MtsMicroTaskQueue *m_microTaskQueue;
     SniperObjPool<Task> *m_sniperTaskPool; // for all the main task copies
+
+    static std::condition_variable s_initialized;
 };
 
 #endif

@@ -31,6 +31,7 @@ public:
     ~SingleThreadSniper();
 
     Task *createTask(const std::string &identifier);
+    Task *task() { return m_task; }
     bool run();
 
     // the interfaces for json
