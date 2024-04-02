@@ -271,6 +271,13 @@ bool SniperProfiling::finalize()
     return true;
 }
 
+const SniperTimer* SniperProfiling::getAlgTimer(const std::string& algName) const {
+    if(m_algTimer.count(algName) == 0){
+        return nullptr;
+    }
+    return m_algTimer.at(algName);
+}
+
 void SniperProfiling::dumpDetails()
 {
     for (const auto &it : m_algName)
