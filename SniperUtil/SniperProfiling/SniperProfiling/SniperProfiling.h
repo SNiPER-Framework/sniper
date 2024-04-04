@@ -41,6 +41,8 @@ public:
 
     bool initialize();
     bool finalize();
+    const std::vector<std::string>& getTrackedAlg() const {return m_algName;}
+    const SniperTimer* getAlgTimer(const std::string& algName) const;
 
 private:
     SniperTimer* m_evtTimer;
