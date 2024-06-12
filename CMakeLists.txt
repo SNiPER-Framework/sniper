@@ -13,7 +13,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 endif()
 
 # Project and Build Options
-project(SNiPER VERSION 2.1.0 LANGUAGES CXX)
+project(SNiPER VERSION 3.0.0 LANGUAGES CXX)
 
 option(DEBUG       "Turn debug options on" OFF)
 option(BUILD_TESTS "Whether to build the examples and enable testing" ON)
@@ -35,10 +35,11 @@ if(WIN32)
 endif()
 
 # Compiler and Linker Settings
-set(CMAKE_CXX_STANDARD 11 CACHE STRING "")
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "")
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-braced-scalar-init")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed -Wl,--no-undefined")

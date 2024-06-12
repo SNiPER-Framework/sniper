@@ -183,7 +183,7 @@ bool SniperProfiling::initialize()
     m_endEvtHdl->setLogLevel(this->logLevel());
     m_endAlgHdl->setLogLevel(this->logLevel());
 
-    LogInfo << m_description << std::endl;
+    //LogInfo << m_description << std::endl;
 
     if ( m_saveDetails ) {
         m_fname = m_par->scope() + m_par->objName() + '_' + std::to_string(getpid()) + ".profiling";
@@ -267,7 +267,7 @@ bool SniperProfiling::finalize()
     for (auto& it : m_algTimer)
         delete it.second;
 
-    LogInfo << "finalized successfully" << std::endl;
+    LogDebug << "finalized successfully" << std::endl;
     return true;
 }
 

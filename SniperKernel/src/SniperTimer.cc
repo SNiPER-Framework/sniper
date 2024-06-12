@@ -23,8 +23,7 @@ bool SniperTimer::start( void ) {
     m_started = true;
     m_paused = false;
     m_elapsed = 0.0;
-    // TODO
-    // if already started, the start time will be over-written
+    // TODO: if already started, the start time will be over-written
     gettimeofday(&tv, 0);
     m_startTime = tv;
     return true;

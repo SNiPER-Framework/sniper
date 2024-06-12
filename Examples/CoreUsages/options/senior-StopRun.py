@@ -6,16 +6,17 @@ import Sniper
 import SniperCoreUsages
 
 def run_stop(mode):
-    task = Sniper.Task("task")
+    sniper = Sniper.Sniper()
+    task = sniper.createTask("Task/task")
     task.setLogLevel(2)
     task.setEvtMax(5)
     task.createSvc("DataIOSvc").setDescription("a dummy service for data I/O")
-
     task.createAlg("DummyAlg/alg1").property("INFO").set("The beginning of event ")
     task.createAlg("StopRunAlg/alg2").property("StopMode").set(mode)
     task.createAlg("DummyAlg/alg3").property("INFO").set("The ending of event ")
-    task.show()
-    task.run()
+
+    sniper.show()
+    sniper.run()
 
 if __name__ == "__main__":
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2023
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
 
@@ -15,12 +15,36 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "SniperPrivate/AlgNode.h"
+#ifndef SNIPER_DATA_STORE_H
+#define SNIPER_DATA_STORE_H
 
-AlgNode::AlgNode(AlgBase* alg) : realAlg(alg) {
-    preNum = 0;
-}
+#include "SniperKernel/IDataBlock.h"
 
-AlgNode::~AlgNode() {
+namespace Sniper
+{
+    template <typename DataType>
+    class DataStore : public IDataBlock
+    {
+    public:
+        DataStore();
+        virtual ~DataStore();
 
-}
+        void put(const DataType &data) { m_data = data; }
+        DataType &get() { return m_data; }
+
+    protected:
+        DataType m_data;
+    };
+
+    template <typename DataType>
+    DataStore<DataType>::DataStore()
+    {
+    }
+
+    template <typename DataType>
+    DataStore<DataType>::~DataStore()
+    {
+    }
+} // namespace Sniper
+
+#endif

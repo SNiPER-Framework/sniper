@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2023
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
 
@@ -15,28 +15,31 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef SNIPER_ALG_NODE_H
-#define SNIPER_ALG_NODE_H
+#ifndef SNIPER_MTS_MICRO_TASK_QUEUE_H
+#define SNIPER_MTS_MICRO_TASK_QUEUE_H
 
-#include <string>
-#include <vector>
+#include "SniperKernel/MtsMicroTask.h"
+#include "SniperKernel/SniperQueue.h"
 
-class AlgBase;
-
-class AlgNode {
-
+class MtsMicroTaskQueue : private Sniper::Queue<MtsMicroTask *>
+{
 public:
-    AlgNode(AlgBase* alg);
-    ~AlgNode();
+    static MtsMicroTaskQueue *instance();
+    static void destroy();
 
-    AlgBase* realAlg;
-    // Record the number of precursors of current node that has not been traversed.
-    int preNum;
-    // Store successors of current node.
-    std::vector<AlgNode*> nextNodes;
+    void enqueue(MtsMicroTask *task);
+    void enqueue(Sniper::Queue<MtsMicroTask *> &tasks);
+
+    MtsMicroTask *dequeue() { return s_instance->concurrentPop(); }
+
+    void setPrimaryTask(MtsMicroTask *ptask);
+    MtsMicroTask *getPrimaryTask() { return m_tail->value; }
 
 private:
-    AlgNode() = delete;
+    MtsMicroTaskQueue();
+    virtual ~MtsMicroTaskQueue();
+
+    static MtsMicroTaskQueue *s_instance;
 };
 
 #endif

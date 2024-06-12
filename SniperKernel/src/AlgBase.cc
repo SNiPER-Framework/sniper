@@ -1,17 +1,17 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2018-2023
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
- 
+
    SNiPER is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
- 
+
    SNiPER is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU Lesser General Public License for more details.
- 
+
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
@@ -23,6 +23,8 @@
 AlgBase::AlgBase(const std::string &name)
     : DLElement(name)
 {
+    declProp("inputs", m_inputs);
+    declProp("outputs", m_outputs);
 }
 
 AlgBase::~AlgBase()
@@ -30,7 +32,8 @@ AlgBase::~AlgBase()
     m_tools.clear();
     for (auto it = m_vtools.rbegin(); it != m_vtools.rend(); ++it)
     {
-        if (it->second) delete it->first;
+        if (it->second)
+            delete it->first;
     }
 }
 
@@ -81,7 +84,7 @@ ToolBase *AlgBase::findTool(const std::string &toolName)
     {
         return (*it).second;
     }
-    //LogInfo << "cannot find tool: " << toolName << std::endl;
+    // LogInfo << "cannot find tool: " << toolName << std::endl;
     return nullptr;
 }
 
@@ -113,10 +116,10 @@ SniperJSON AlgBase::json()
 
 void AlgBase::eval(const SniperJSON &json)
 {
-    //eval for base class
+    // eval for base class
     DLElement::eval(json);
 
-    //eval the tools
+    // eval the tools
     if (json.find("tools") != json.map_end())
     {
         auto &tools = json["tools"];

@@ -5,8 +5,9 @@ if __name__ == "__main__":
 
     import Sniper
     Sniper.setLogLevel(2)
+    sniper = Sniper.Sniper()
 
-    task = Sniper.Task("task")
+    task = sniper.createTask("Task/task")
     task.setDescription("an example to use data I/O service")
     task.setEvtMax(5)
 
@@ -16,5 +17,5 @@ if __name__ == "__main__":
 
     task.createAlg("DummyAlg").property("INFO").set("Get input data ")
 
-    task.show()
-    task.run()
+    sniper.show()
+    sniper.run()

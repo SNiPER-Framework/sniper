@@ -5,7 +5,9 @@ if __name__ == "__main__":
 
     import Sniper
     Sniper.setLogLevel(3)
-    task = Sniper.Task("task")
+    sniper = Sniper.Sniper()
+
+    task = sniper.createTask("Task/task")
     task.setDescription("an example to use profiling")
     task.setEvtMax(5)
     
@@ -34,5 +36,5 @@ if __name__ == "__main__":
     tool2 = alg2.createTool("DummyTool/"+toolname)
     tool2.setDescription("a DummyTool instance owned by alg2")
 
-    task.show()
-    task.run()
+    sniper.show()
+    sniper.run()

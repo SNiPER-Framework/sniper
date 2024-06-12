@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2018-2023
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -68,11 +68,6 @@ struct ExecUnitWarp : ExecUnit, bp::wrapper<ExecUnit>
          return this->ExecUnit::reset();
     }
 
-    TaskWatchDog &Snoopy()
-    {
-        return this->get_override("Snoopy")();
-    }
-
     bool config()
     {
         return this->get_override("config")();
@@ -97,6 +92,7 @@ void export_Sniper_ExecUnit()
         .def("isRoot", &ExecUnit::isRoot)
         .def("findSvc", &ExecUnit::findSvc, return_value_policy<reference_existing_object>())
         .def("findAlg", &ExecUnit::findAlg, return_value_policy<reference_existing_object>())
+        .def("dataSvc", &ExecUnit::dataSvc, return_value_policy<reference_existing_object>())
         .def("createSvc", &ExecUnit::createSvc, return_value_policy<reference_existing_object>())
         .def("createAlg", &ExecUnit::createAlg, return_value_policy<reference_existing_object>())
         .def("addSvc", &ExecUnit::addSvc, return_value_policy<reference_existing_object>())
@@ -109,7 +105,7 @@ void export_Sniper_ExecUnit()
              return_value_policy<reference_existing_object>())
         .def("remove", &ExecUnit::remove, &ExecUnitWarp::default_remove)
         .def("reset", &ExecUnit::reset, &ExecUnitWarp::default_reset)
-        .def("Snoopy", pure_virtual(&ExecUnit::Snoopy), return_value_policy<reference_existing_object>())
+        .def("Snoopy", &ExecUnit::Snoopy, return_value_policy<reference_existing_object>())
         .def("config", pure_virtual(&ExecUnit::config))
         .def("execute", pure_virtual(&ExecUnit::execute))
         .def("stop", pure_virtual(&ExecUnit::stop));

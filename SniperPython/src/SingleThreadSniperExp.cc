@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2023
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
 
@@ -15,25 +15,15 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef SNIPER_DAG_BASE_H
-#define SNIPER_DAG_BASE_H
+#include "SniperKernel/SingleThreadSniper.h"
+#include <boost/python/class.hpp>
 
-#include <string>
+void export_Sniper_SingleThreadSniper()
+{
+    using namespace boost::python;
 
-#include "SniperKernel/TopTask.h"
-
-class AlgBase;
-class SniperJSON;
-
-class DagBase : public TopTask {
-
-public:
-    DagBase(const std::string& name) : TopTask(name) {}
-    virtual ~DagBase() {}
-
-    virtual AlgBase* insertNode(const std::string& alg) = 0;
-    virtual bool makeEdge(const std::string& alg1, const std::string& alg2) = 0;
-    virtual bool done() = 0;
-};
-
-#endif
+    class_<SingleThreadSniper, bases<DLElement>, boost::noncopyable>("Sniper")
+        .def("createTask", &SingleThreadSniper::createTask,
+             return_value_policy<reference_existing_object>())
+        .def("run", &SingleThreadSniper::run);
+}

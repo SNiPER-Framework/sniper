@@ -72,10 +72,11 @@ DLElement *Sniper::eval(const char *fname)
     std::ifstream ifs(fname);
     auto json = SniperJSON::load(ifs);
 
-    Sniper::Config::eval(json["sniper"].str(-1));
+    Sniper::Config::eval(json["Config"].str(-1));
 
-    DLElement *pobj = DLEFactory::instance().create(json["identifier"].get<std::string>());
-    pobj->eval(json);
+    auto &jengine = json["Engine"];
+    DLElement *pobj = DLEFactory::instance().create(jengine["identifier"].get<std::string>());
+    pobj->eval(jengine);
 
     return pobj;
 }

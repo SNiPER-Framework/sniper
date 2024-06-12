@@ -46,9 +46,9 @@ void export_Sniper_SniperLog();
 void export_SniperPython_PyDataStore();
 void export_Sniper_Timer();
 void export_Sniper_TimerSvc();
-void export_Sniper_DagTask();
-void export_Sniper_DagBase();
 void export_Sniper_SniperJSON();
+void export_Sniper_SingleThreadSniper();
+void export_Sniper_MtSniper();
 
 BOOST_PYTHON_MODULE(libSniperPython)
 {
@@ -73,7 +73,7 @@ BOOST_PYTHON_MODULE(libSniperPython)
     export_SniperPython_PyDataStore();
     export_Sniper_Timer();
     export_Sniper_TimerSvc();
-    export_Sniper_DagBase();
-    export_Sniper_DagTask();
     export_Sniper_SniperJSON();
+    export_Sniper_SingleThreadSniper();
+    export_Sniper_MtSniper();
 }

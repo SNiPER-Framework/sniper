@@ -21,6 +21,7 @@
 #include "SniperKernel/SniperContext.h"
 #include "SniperKernel/SniperException.h"
 #include "SniperKernel/DeclareDLE.h"
+#include "SniperPrivate/MtsInterAlgDag.h"
 #include "SniperPrivate/TaskProperty.h"
 #include "SniperPrivate/WhiteBoard.h"
 
@@ -31,7 +32,6 @@ Task::Task(const std::string &name)
       m_limited(false),
       m_evtMax(-1),
       m_done(0),
-      m_snoopy(this),
       m_beginEvt("BeginEvent"),
       m_endEvt("EndEvent"),
       m_beginAlg("BeginAlg"),
@@ -41,16 +41,16 @@ Task::Task(const std::string &name)
         m_tag = "Task"; //protection for derived classes
 
     declProp("EvtMax", m_evtMax);
+    declProp("EnableInterAlgConcurrency", m_interAlgConcurrency);
     m_pmgr.addProperty(new TaskProperty("svcs", this));
     m_pmgr.addProperty(new TaskProperty("algs", this));
 }
 
 Task::~Task()
 {
-    m_snoopy.terminate();
 }
 
-void Task::setEvtMax(int evtMax_)
+void Task::setEvtMax(long evtMax_)
 {
     m_evtMax = evtMax_;
     m_limited = (m_evtMax >= 0);
@@ -66,32 +66,9 @@ void Task::setLogLevel(int level)
     }
 }
 
-bool Task::run()
-{
-    if (sniper_context->check(Sniper::SysMode::MT))
-    {
-        LogWarn << "please use Muster::run() instead" << std::endl;
-        return true;
-    }
-
-    if (m_snoopy.config())
-    {
-        if (m_snoopy.initialize())
-        {
-            if (!m_snoopy.run())
-            {
-                //LogError << "Failed to execute algorithms" << std::endl;
-            }
-            m_snoopy.finalize();
-        }
-    }
-
-    return !m_snoopy.isErr();
-}
-
 bool Task::stop(Sniper::StopRun mode)
 {
-    return m_snoopy.stop(mode);
+    return m_snoopy->stop(mode);
 }
 
 void Task::reset()
@@ -106,7 +83,6 @@ void Task::reset()
 SniperJSON Task::json()
 {
     static SniperJSON keys = SniperJSON().from(std::vector<std::string>{
-        "sniper",
         "description",
         "identifier",
         "properties",
@@ -125,6 +101,17 @@ void Task::eval(const SniperJSON &json)
     ExecUnit::eval(json);
     //set event number limitation
     m_limited = (m_evtMax >= 0);
+
+    if (m_interAlgConcurrency)
+    {
+        setSnoopy(new MtsInterAlgDag(this));
+    }
+}
+
+void Task::enableInterAlgConcurrency()
+{
+    setSnoopy(new MtsInterAlgDag(this));
+    m_interAlgConcurrency = true;
 }
 
 bool Task::config()
@@ -147,7 +134,7 @@ bool Task::initialize()
     }
     else
     {
-        m_snoopy.setErr();
+        m_snoopy->setErr();
     }
 
     return stat;
@@ -165,7 +152,7 @@ bool Task::finalize()
 
     if (!stat)
     {
-        m_snoopy.setErr();
+        m_snoopy->setErr();
     }
 
     return stat;
@@ -175,15 +162,15 @@ bool Task::execute()
 {
     if (m_limited && m_done >= m_evtMax)
     {
-        m_snoopy.stop();
+        m_snoopy->stop();
         return true;
     }
 
     try
     {
-        if (m_snoopy.state() == Sniper::RunState::Stopped)
+        if (m_snoopy->state() == Sniper::RunState::Stopped)
             return true;
-        if (m_snoopy.isErr())
+        if (m_snoopy->isErr())
             return false;
         //BeginEvent is fired
         m_beginEvt.load(m_done).fire(*this);
@@ -206,21 +193,21 @@ bool Task::execute()
     }
     catch (StopRunProcess &e)
     {
-        LogInfo << "stop run promtly." << std::endl;
+        LogInfo << "stop run promptly." << std::endl;
         throw e;
     }
     catch (std::exception &e)
     {
-        m_snoopy.setErr();
+        m_snoopy->setErr();
         LogError << e.what() << std::endl;
     }
     catch (...)
     {
-        m_snoopy.setErr();
+        m_snoopy->setErr();
         LogError << "catch an unknown exception" << std::endl;
     }
 
-    bool stat = !m_snoopy.isErr();
+    bool stat = !m_snoopy->isErr();
     if (stat)
     {
         ++m_done;

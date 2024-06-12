@@ -171,7 +171,7 @@ bool TopTask::config()
     }
 
     if (!stat)
-        m_snoopy.setErr();
+        m_snoopy->setErr();
 
     return stat;
 }
@@ -191,7 +191,7 @@ bool TopTask::initialize()
     }
 
     if (!stat)
-        m_snoopy.setErr();
+        m_snoopy->setErr();
 
     return stat;
 }
@@ -212,7 +212,7 @@ bool TopTask::finalize()
         stat = false;
 
     if (!stat)
-        m_snoopy.setErr();
+        m_snoopy->setErr();
 
     return stat;
 }

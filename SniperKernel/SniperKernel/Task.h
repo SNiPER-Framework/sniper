@@ -25,6 +25,7 @@
 //Pre-declarations
 class SvcBase;
 class AlgBase;
+class MtsInterAlgDag;
 
 //Task definition
 class Task : public ExecUnit
@@ -37,14 +38,11 @@ public:
     virtual ~Task();
 
     //set and get the max event number to be processed
-    void setEvtMax(int evtMax);
-    int evtMax() { return m_evtMax; }
+    void setEvtMax(long evtMax);
+    long evtMax() { return m_evtMax; }
 
     //set the log level of this domain
     void setLogLevel(int level) final;
-
-    //run this task
-    virtual bool run();
 
     //stop this task
     virtual bool stop(Sniper::StopRun mode = Sniper::StopRun::Promptly) override;
@@ -58,8 +56,8 @@ public:
     // eval this Task from json
     virtual void eval(const SniperJSON &json) override;
 
-    //ooo~~ just as its name
-    TaskWatchDog &Snoopy() override { return m_snoopy; }
+    // for inter-algorithm parallelizations
+    void enableInterAlgConcurrency();
 
 protected:
     //none state check... Please use Snoopy for state control
@@ -73,9 +71,10 @@ protected:
 protected:
     //member data
     bool m_limited;
-    int m_evtMax;
-    int m_done;
-    TaskWatchDog m_snoopy;
+    long m_evtMax;
+    long m_done;
+
+    bool m_interAlgConcurrency{false};
 
 protected:
     //incidents

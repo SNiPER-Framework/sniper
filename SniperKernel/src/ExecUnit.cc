@@ -1,17 +1,17 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2018-2023
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
- 
+
    SNiPER is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
- 
+
    SNiPER is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU Lesser General Public License for more details.
- 
+
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
@@ -25,15 +25,19 @@
 
 ExecUnit::ExecUnit(const std::string &name)
     : DLElement(name),
+      m_snoopy(new TaskWatchDog(this)),
       m_svcs(name, "services"),
       m_algs(name, "algorithms"),
       m_targets{&m_svcs, &m_algs}
 {
-    this->createSvc("DataMemSvc");
+    m_dataSvc = dynamic_cast<DataMemSvc *>(this->createSvc("DataMemSvc"));
 }
 
 ExecUnit::~ExecUnit()
 {
+    m_snoopy->terminate();
+    delete m_snoopy;
+
     reset();
 }
 
@@ -167,14 +171,6 @@ SniperJSON ExecUnit::json()
 {
     SniperJSON j = DLElement::json();
 
-    if (isRoot())
-    {
-        j.insert("sniper", SniperJSON(Sniper::Config::json_str()));
-        auto &jsniper = j["sniper"];
-        if (jsniper.find("LoadDlls") != jsniper.map_end())
-            jsniper["LoadDlls"].format(false);
-    }
-
     for (auto target : m_targets)
     {
         SniperJSON &jcomponents = j[target->objName()];
@@ -196,10 +192,10 @@ SniperJSON ExecUnit::json()
 
 void ExecUnit::eval(const SniperJSON &json)
 {
-    //eval for base class
+    // eval for base class
     DLElement::eval(json);
 
-    //eval the services
+    // eval the services
     auto &svcs = json["services"];
     for (auto it = svcs.vec_begin(); it != svcs.vec_end(); ++it)
     {
@@ -216,7 +212,7 @@ void ExecUnit::eval(const SniperJSON &json)
         }
     }
 
-    //eval the algorithms
+    // eval the algorithms
     auto &algs = json["algorithms"];
     for (auto it = algs.vec_begin(); it != algs.vec_end(); ++it)
     {
@@ -232,4 +228,15 @@ void ExecUnit::eval(const SniperJSON &json)
             this->addAlg(alg);
         }
     }
+}
+
+void ExecUnit::setSnoopy(TaskWatchDog *snoopy)
+{
+    if (&(snoopy->host()) != this)
+    {
+        throw ContextMsgException("unmatched host in ExecUnit::setSnoopy()");
+    }
+
+    delete m_snoopy;
+    m_snoopy = snoopy;
 }

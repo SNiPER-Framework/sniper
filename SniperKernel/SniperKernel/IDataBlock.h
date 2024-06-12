@@ -20,9 +20,8 @@
 
 class IDataBlock
 {
-    public :
-
-        virtual ~IDataBlock() {}
+public:
+    virtual ~IDataBlock() {}
 };
 
 #endif

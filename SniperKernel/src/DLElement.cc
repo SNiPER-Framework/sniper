@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2022
+/* Copyright (C) 2018-2023
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
  
@@ -17,6 +17,7 @@
 
 #include "SniperKernel/DLElement.h"
 #include "SniperKernel/ExecUnit.h"
+#include "SniperKernel/DataMemSvc.h"
 
 DLElement::DLElement(const std::string &name)
     : NamedElement(name),
@@ -37,6 +38,18 @@ ExecUnit *DLElement::getRoot()
         p = p->m_par;
     }
     return dynamic_cast<ExecUnit *>(p);
+}
+
+void DLElement::setScopeString(const std::string &scope_)
+{
+    if (m_par == nullptr)
+    {
+        m_scope = scope_;
+    }
+    else
+    {
+        LogWarn << "this object has a parent, cannot set its scope string manually" << std::endl;
+    }
 }
 
 void DLElement::setProperties(const SniperJSON &json)
@@ -119,4 +132,32 @@ void DLElement::eval(const SniperJSON &json)
 void DLElement::show()
 {
     std::cout << json().str(2) << std::endl;
+}
+
+DLElement *DLElement::findRecursivelyUpToRoot(const std::string &name)
+{
+    DLElement *res = nullptr;
+    if (auto p = m_par)
+    {
+        res = p->find(name);
+        while (res == nullptr && (p = p->getParent()))
+        {
+            res = p->find(name);
+        }
+    }
+    return res;
+}
+
+IDataBlock *DLElement::findDataRecursivelyUpToRoot(const std::string &path)
+{
+    IDataBlock *res = nullptr;
+    if (auto p = m_par)
+    {
+        res = (p->dataSvc())->find(path);
+        while (res == nullptr && (p = p->getParent()))
+        {
+            res = (p->dataSvc())->find(path);
+        }
+    }
+    return res;
 }

@@ -16,7 +16,7 @@
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "SniperKernel/TaskWatchDog.h"
-#include "SniperKernel/ExecUnit.h"
+#include "SniperKernel/Task.h"
 #include "SniperKernel/SniperLog.h"
 #include "SniperKernel/SniperContext.h"
 #include "SniperKernel/SniperException.h"
@@ -285,4 +285,15 @@ const std::string &TaskWatchDog::scope()
 const std::string &TaskWatchDog::objName()
 {
     return m_task.objName();
+}
+
+const std::list<DLElement *> &TaskWatchDog::algList()
+{
+    return m_task.m_algs.list();
+}
+
+long *TaskWatchDog::evtDone()
+{
+    Task *task = dynamic_cast<Task *>(&m_task);
+    return (task != nullptr) ? &(task->m_done) : nullptr;
 }

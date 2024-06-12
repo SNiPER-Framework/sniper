@@ -23,6 +23,7 @@
 #include <string>
 
 class ExecUnit;
+class IDataBlock;
 
 // The base class of Dynamically Loadable Element
 class DLElement : public NamedElement
@@ -47,6 +48,9 @@ public:
     // set the tag
     void setTag(const std::string &tag_) { m_tag = tag_; }
 
+    // set the scope string if it has no parent, for better SniperLog
+    void setScopeString(const std::string &scope_);
+
     // set the description
     void setDescription(const std::string &desc) { m_description = desc; }
 
@@ -68,7 +72,18 @@ public:
     // show its information
     void show();
 
+    // get an element by its name recursively up to the ROOT, like the C++ scope
+    template <typename Type>
+    Type *getElem(const std::string &name);
+
+    // get data in DataMemSvc by path recursively up to the ROOT, like the C++ scope
+    template <typename DataType>
+    DataType *getData(const std::string &path);
+
 protected:
+    DLElement *findRecursivelyUpToRoot(const std::string &name);
+    IDataBlock *findDataRecursivelyUpToRoot(const std::string &path);
+
     template <typename Type>
     bool declProp(const std::string &key, Type &var);
 
@@ -83,6 +98,18 @@ protected:
     DLElement(const DLElement &) = delete;
     DLElement &operator=(const DLElement &) = delete;
 };
+
+template <typename Type>
+Type *DLElement::getElem(const std::string &name)
+{
+    return dynamic_cast<Type *>(findRecursivelyUpToRoot(name));
+}
+
+template <typename DataType>
+DataType *DLElement::getData(const std::string &path)
+{
+    return dynamic_cast<DataType *>(findDataRecursivelyUpToRoot(path));
+}
 
 template <typename Type>
 bool DLElement::declProp(const std::string &key, Type &var)

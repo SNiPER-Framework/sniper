@@ -1,63 +1,82 @@
 {
-  "sniper": {
+  "Config": {
     "LoadDlls": [ "libSniperCoreUsages.so" ],
     "LogLevel": 3
   },
-  "description": "an example to use sub-tasks",
-  "identifier": "TopTask/TopT",
-  "properties": {
-    "EvtMax": 5,
-    "LogLevel": 2
-  },
-  "services": [],
-  "algorithms": [
-    {
-      "description": "fire SubT1 for odd events and SubT2 for even events",
-      "identifier": "SubTasksAlg/SubTasksAlg"
-    }
-  ],
-  "subtasks": [
-    {
-      "identifier": "Task/SubT1",
-      "properties": {
-        "EvtMax": -1
-      },
-      "services": [
-        {
-          "identifier": "DataIOSvc/DataIOSvc"
-        }
-      ],
-      "algorithms": [
-        {
-          "identifier": "DummyAlg/DummyAlg",
-          "properties": {
-            "INFO": "SubT1 execute "
-          }
-        }
-      ]
+  "Engine": {
+    "identifier": "Sniper/Sniper",
+    "properties": {
+      "LogLevel": 3
     },
-    {
-      "identifier": "Task/SubT2",
+    "Task": {
+      "description": "an example to use sub-tasks",
+      "identifier": "TopTask/TopT",
       "properties": {
-        "EvtMax": -1
+        "EnableInterAlgConcurrency": false,
+        "EvtMax": 5,
+        "LogLevel": 2
       },
-      "services": [
+      "services": [],
+      "algorithms": [
         {
-          "identifier": "MappedDataSvc/MappedDataSvc",
+          "description": "fire SubT1 for odd events and SubT2 for even events",
+          "identifier": "SubTasksAlg/SubTasksAlg",
           "properties": {
-            "input": "TopT:SubT1:output",
-            "output": "TopT:SubT1:output"
+            "inputs": [],
+            "outputs": []
           }
         }
       ],
-      "algorithms": [
+      "subtasks": [
         {
-          "identifier": "DummyAlg/DummyAlg",
+          "identifier": "Task/SubT1",
           "properties": {
-            "INFO": "SubT2 execute "
-          }
+            "EnableInterAlgConcurrency": false,
+            "EvtMax": -1
+          },
+          "services": [
+            {
+              "identifier": "DataIOSvc/DataIOSvc"
+            }
+          ],
+          "algorithms": [
+            {
+              "identifier": "DummyAlg/DummyAlg",
+              "properties": {
+                "INFO": "SubT1 execute ",
+                "inputs": [],
+                "outputs": []
+              }
+            }
+          ]
+        },
+        {
+          "identifier": "Task/SubT2",
+          "properties": {
+            "EnableInterAlgConcurrency": false,
+            "EvtMax": -1
+          },
+          "services": [
+            {
+              "identifier": "MappedDataSvc/MappedDataSvc",
+              "properties": {
+                "input": "TopT:SubT1:output",
+                "output": "TopT:SubT1:output"
+              }
+            }
+          ],
+          "algorithms": [
+            {
+              "identifier": "DummyAlg/DummyAlg",
+              "properties": {
+                "INFO": "SubT2 execute ",
+                "inputs": [],
+                "outputs": []
+              }
+            }
+          ]
         }
       ]
     }
-  ]
+  }
 }

@@ -5,8 +5,9 @@ if __name__ == "__main__":
 
     import Sniper
     import SniperCoreUsages
+    sniper = Sniper.Sniper()
 
-    top = Sniper.TopTask("TopT")
+    top = sniper.createTask("TopTask/TopT")
     top.setLogLevel(2)
     top.setDescription("an example to use sub-tasks")
     top.setEvtMax(5)
@@ -23,5 +24,5 @@ if __name__ == "__main__":
     md.regist(t1, "output", "output")
     t2.createAlg("DummyAlg").property("INFO").set("SubT2 execute ")
 
-    top.show()
-    top.run()
+    sniper.show()
+    sniper.run()

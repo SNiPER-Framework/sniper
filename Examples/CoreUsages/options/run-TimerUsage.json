@@ -1,55 +1,69 @@
 {
-  "sniper": {
+  "Config": {
     "LoadDlls": [ "libSniperProfilingLib.so", "libSniperCoreUsages.so" ],
     "LogLevel": 3
   },
-  "description": "an example to use profiling",
-  "identifier": "Task/task",
-  "properties": {
-    "EvtMax": 5,
-    "LogLevel": 3
-  },
-  "services": [
-    {
-      "description": "a service for providing some profiles",
-      "identifier": "SniperProfiling/SniperProfiling",
-      "properties": {
-        "LogLevel": 2
-      }
+  "Engine": {
+    "identifier": "Sniper/Sniper",
+    "properties": {
+      "LogLevel": 3
     },
-    {
-      "description": "a service instance that can be share by all algorithms",
-      "identifier": "DummySvc/SharedSvc"
-    }
-  ],
-  "algorithms": [
-    {
-      "description": "the 1st SvcAndToolAlg instance named as alg1",
-      "identifier": "SvcAndToolAlg/alg1",
+    "Task": {
+      "description": "an example to use profiling",
+      "identifier": "Task/task",
       "properties": {
-        "OwnedTool": "tool1",
-        "SharedSvc": "SharedSvc"
+        "EnableInterAlgConcurrency": false,
+        "EvtMax": 5,
+        "LogLevel": 3
       },
-      "tools": [
+      "services": [
         {
-          "description": "a DummyTool instance owned by alg1",
-          "identifier": "DummyTool/tool1"
+          "description": "a service for providing some profiles",
+          "identifier": "SniperProfiling/SniperProfiling",
+          "properties": {
+            "LogLevel": 2,
+            "SaveDetails": false
+          }
+        },
+        {
+          "description": "a service instance that can be share by all algorithms",
+          "identifier": "DummySvc/SharedSvc"
+        }
+      ],
+      "algorithms": [
+        {
+          "description": "the 1st SvcAndToolAlg instance named as alg1",
+          "identifier": "SvcAndToolAlg/alg1",
+          "properties": {
+            "OwnedTool": "tool1",
+            "SharedSvc": "SharedSvc",
+            "inputs": [],
+            "outputs": []
+          },
+          "tools": [
+            {
+              "description": "a DummyTool instance owned by alg1",
+              "identifier": "DummyTool/tool1"
+            }
+          ]
+        },
+        {
+          "description": "the 2nd SvcAndToolAlg instance named as alg2",
+          "identifier": "SvcAndToolAlg/alg2",
+          "properties": {
+            "OwnedTool": "tool2",
+            "SharedSvc": "SharedSvc",
+            "inputs": [],
+            "outputs": []
+          },
+          "tools": [
+            {
+              "description": "a DummyTool instance owned by alg2",
+              "identifier": "DummyTool/tool2"
+            }
+          ]
         }
       ]
-    },
-    {
-      "description": "the 2nd SvcAndToolAlg instance named as alg2",
-      "identifier": "SvcAndToolAlg/alg2",
-      "properties": {
-        "OwnedTool": "tool2",
-        "SharedSvc": "SharedSvc"
-      },
-      "tools": [
-        {
-          "description": "a DummyTool instance owned by alg2",
-          "identifier": "DummyTool/tool2"
-        }
-      ]
     }
-  ]
+  }
 }

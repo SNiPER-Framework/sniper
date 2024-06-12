@@ -8,7 +8,8 @@ if __name__ == "__main__":
     Sniper.setColorful(3)
     #Sniper.setShowTime(True)
 
-    task = Sniper.Task("task")
+    sniper = Sniper.Sniper()
+    task = sniper.createTask("Task/task")
     task.setEvtMax(5)
     task.setDescription("an example to use SniperLog and Properties")
 
@@ -19,5 +20,5 @@ if __name__ == "__main__":
     alg.property("PairDVD").set([0.09, [1.1, 2.2, 3.3]])
     alg.property("MapIntStr").set({1: 'str1'})
 
-    task.show()
-    task.run()
+    sniper.show()
+    sniper.run()

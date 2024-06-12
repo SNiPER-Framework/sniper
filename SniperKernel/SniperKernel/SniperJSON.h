@@ -37,6 +37,10 @@ public:
     // construct from a json string
     SniperJSON(const std::string &jstr);
 
+    // construct from a cpp object
+    template <typename T>
+    SniperJSON(const T &var);
+
     // whether this is a valid json
     bool valid() const { return m_type > 0; }
 
@@ -206,6 +210,14 @@ private:
     inline void fromCppVar(const std::map<K, V> &var);
 
 };
+
+template <typename T>
+SniperJSON::SniperJSON(const T &var)
+    : m_format(true),
+      m_type()
+{
+    fromCppVar(var);
+}
 
 template <typename T>
 T SniperJSON::get() const

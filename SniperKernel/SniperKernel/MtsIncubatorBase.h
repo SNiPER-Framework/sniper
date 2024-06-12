@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021
+/* Copyright (C) 2023
    Institute of High Energy Physics and Shandong University
    This file is part of SNiPER.
 
@@ -15,19 +15,14 @@
    You should have received a copy of the GNU Lesser General Public License
    along with SNiPER.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "SniperKernel/AlgBase.h"
-#include "SniperKernel/DagTask.h"
-#include <boost/python/class.hpp>
+#ifndef SNIPER_MTS_INCUBATOR_BASE_H
+#define SNIPER_MTS_INCUBATOR_BASE_H
 
-namespace bp = boost::python;
+class MtsMicroTask;
 
-void export_Sniper_DagTask()
+struct MtsIncubatorBase
 {
-    bp::class_<DagTask, bp::bases<DagBase>, boost::noncopyable>
-        ("DagTask", bp::init<const std::string&>())
-        .def("insertNode", &DagTask::insertNode,
-                bp::return_value_policy<bp::reference_existing_object>())
-        .def("makeEdge", &DagTask::makeEdge)
-        .def("done", &DagTask::done)
-    ;
-}
+    virtual bool notify(MtsMicroTask *) = 0;
+};
+
+#endif

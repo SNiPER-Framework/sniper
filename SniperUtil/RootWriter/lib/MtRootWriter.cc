@@ -64,7 +64,7 @@ TTree *MtRootWriter::bookTree(ExecUnit &domain, const std::string &fullPath, con
     }
 
     // get (or create) and set the MtTTreeStore
-    auto dSvc = dynamic_cast<DataMemSvc*>(domain.findSvc("DataMemSvc"));
+    auto dSvc = domain.dataSvc();
     auto store = dynamic_cast<MtTTreeStore*>(dSvc->find("MtTTreeStore"));
     if (store == nullptr)
     {

@@ -1,0 +1,160 @@
+{
+  "Config": {
+    "LoadDlls": [ "libSniperCoreUsages.so", "libSniperProfilingLib.so" ],
+    "LogLevel": 3
+  },
+  "Engine": {
+    "identifier": "MtSniper/MtSniper",
+    "properties": {
+      "EvtMax": 50,
+      "GlobalBufferCapacity": 12,
+      "GlobalBufferThreshold": 8,
+      "LogLevel": 3,
+      "NumThreads": 4
+    },
+    "InputTask": {
+      "identifier": "Task/InputTask",
+      "properties": {
+        "EnableInterAlgConcurrency": false,
+        "EvtMax": -1,
+        "LogLevel": 3
+      },
+      "services": [
+        {
+          "identifier": "FillGlobalBufSvc/FillGlobalBufSvc"
+        }
+      ],
+      "algorithms": [
+        {
+          "identifier": "FillGlobalBufAlg/FillGlobalBufAlg",
+          "properties": {
+            "MaxEvtNum": 9223372036854775807,
+            "inputs": [],
+            "outputs": []
+          }
+        }
+      ]
+    },
+    "OutputTask": {
+      "identifier": "Task/OutputTask",
+      "properties": {
+        "EnableInterAlgConcurrency": false,
+        "EvtMax": -1,
+        "LogLevel": 3
+      },
+      "services": [
+        {
+          "identifier": "GetGlobalBufSvc/GetGlobalBufSvc"
+        }
+      ],
+      "algorithms": [
+        {
+          "identifier": "PruneGlobalBufAlg/PruneGlobalBufAlg",
+          "properties": {
+            "inputs": [],
+            "outputs": []
+          },
+          "tools": [
+            {
+              "identifier": "WriteAsciiTool/WriteResultTool",
+              "properties": {
+                "OutputFile": "mtresult.txt"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "MainTask": {
+      "identifier": "Task/MainTask",
+      "properties": {
+        "EnableInterAlgConcurrency": true,
+        "EvtMax": -1,
+        "LogLevel": 3
+      },
+      "services": [
+        {
+          "identifier": "GetGlobalBufSvc/GetGlobalBufSvc"
+        },
+        {
+          "identifier": "SniperProfiling/SniperProfiling",
+          "properties": {
+            "SaveDetails": false
+          }
+        }
+      ],
+      "algorithms": [
+        {
+          "identifier": "FanOutAlg/input",
+          "properties": {
+            "InitKeys": [ "v1", "v2", "v4", "sum12", "sum24" ],
+            "inputs": [],
+            "outputs": [ "input" ]
+          }
+        },
+        {
+          "identifier": "TimeConsumeAlg/v1",
+          "properties": {
+            "TimeScale": 1,
+            "inputs": [ "input" ],
+            "outputs": [ "v1" ]
+          },
+          "tools": [
+            {
+              "identifier": "MtTimeConsumeTool/TimeConsumeTool",
+              "properties": {
+                "MicroStep": 10
+              }
+            }
+          ]
+        },
+        {
+          "identifier": "TimeConsumeAlg/v2",
+          "properties": {
+            "TimeScale": 2,
+            "inputs": [ "input" ],
+            "outputs": [ "v2" ]
+          },
+          "tools": [
+            {
+              "identifier": "MtTimeConsumeTool/TimeConsumeTool",
+              "properties": {
+                "MicroStep": 10
+              }
+            }
+          ]
+        },
+        {
+          "identifier": "TimeConsumeAlg/v4",
+          "properties": {
+            "TimeScale": 4,
+            "inputs": [ "input" ],
+            "outputs": [ "v4" ]
+          },
+          "tools": [
+            {
+              "identifier": "MtTimeConsumeTool/TimeConsumeTool",
+              "properties": {
+                "MicroStep": 10
+              }
+            }
+          ]
+        },
+        {
+          "identifier": "FanInAlg/sum12",
+          "properties": {
+            "inputs": [ "v1", "v2" ],
+            "outputs": [ "sum12" ]
+          }
+        },
+        {
+          "identifier": "FanInAlg/sum24",
+          "properties": {
+            "inputs": [ "v2", "v4" ],
+            "outputs": [ "sum24" ]
+          }
+        }
+      ]
+    }
+  }
+}

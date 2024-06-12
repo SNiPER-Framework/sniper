@@ -18,34 +18,18 @@
 #include "SniperKernel/Task.h"
 #include "SniperKernel/SvcBase.h"
 #include "SniperKernel/AlgBase.h"
+#include "SniperPrivate/MtsInterAlgDag.h"
 #include <boost/python/class.hpp>
 
 namespace bp = boost::python;
-
-struct TaskWrap : Task, bp::wrapper<Task>
-{
-    TaskWrap(const std::string& name)
-        : Task(name)
-    {
-    }
-
-    bool run() {
-        if ( bp::override f = this->get_override("run") ) return f();
-        return Task::run();
-    }
-
-    bool default_run() {
-        return this->Task::run();
-    }
-};
 
 void export_Sniper_Task()
 {
     using namespace boost::python;
 
-    class_<TaskWrap, bases<ExecUnit>, boost::noncopyable>
+    class_<Task, bases<ExecUnit>, boost::noncopyable>
         ("Task", init<const std::string&>())
-        .def("run",        &Task::run, &TaskWrap::default_run)
         .def("setEvtMax",  &Task::setEvtMax)
-        .def("evtMax",  &Task::evtMax);
+        .def("evtMax",  &Task::evtMax)
+        .def("enableInterAlgConcurrency", &Task::enableInterAlgConcurrency);
 }

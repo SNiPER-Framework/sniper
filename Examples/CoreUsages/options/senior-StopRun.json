@@ -1,36 +1,52 @@
 {
-  "sniper": {
-    "LoadDlls": [ "libSniperCoreUsages.so" ]
+  "Config": {
+    "LoadDlls": [ "libSniperCoreUsages.so" ],
+    "LogLevel": 3
   },
-  "identifier": "Task/task",
-  "properties": {
-    "EvtMax": 5,
-    "LogLevel": 2
-  },
-  "services": [
-    {
-      "description": "a dummy service for data I/O",
-      "identifier": "DataIOSvc/DataIOSvc"
-    }
-  ],
-  "algorithms": [
-    {
-      "identifier": "DummyAlg/alg1",
-      "properties": {
-        "INFO": "The beginning of event "
-      }
+  "Engine": {
+    "identifier": "Sniper/Sniper",
+    "properties": {
+      "LogLevel": 3
     },
-    {
-      "identifier": "StopRunAlg/alg2",
+    "Task": {
+      "identifier": "Task/task",
       "properties": {
-        "StopMode": "ThisEvent"
-      }
-    },
-    {
-      "identifier": "DummyAlg/alg3",
-      "properties": {
-        "INFO": "The ending of event "
-      }
+        "EnableInterAlgConcurrency": false,
+        "EvtMax": 5,
+        "LogLevel": 2
+      },
+      "services": [
+        {
+          "description": "a dummy service for data I/O",
+          "identifier": "DataIOSvc/DataIOSvc"
+        }
+      ],
+      "algorithms": [
+        {
+          "identifier": "DummyAlg/alg1",
+          "properties": {
+            "INFO": "The beginning of event ",
+            "inputs": [],
+            "outputs": []
+          }
+        },
+        {
+          "identifier": "StopRunAlg/alg2",
+          "properties": {
+            "StopMode": "ThisEvent",
+            "inputs": [],
+            "outputs": []
+          }
+        },
+        {
+          "identifier": "DummyAlg/alg3",
+          "properties": {
+            "INFO": "The ending of event ",
+            "inputs": [],
+            "outputs": []
+          }
+        }
+      ]
     }
-  ]
+  }
 }
