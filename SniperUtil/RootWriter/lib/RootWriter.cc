@@ -18,6 +18,7 @@
 #include "RootWriter/RootWriter.h"
 #include "SniperKernel/SvcFactory.h"
 #include "SniperKernel/SharedElemFactory.h"
+#include "SniperKernel/SniperLog.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TNtuple.h"
@@ -51,6 +52,13 @@ bool RootWriter::initialize()
             {
                 const char *preDir = gDirectory->GetPath();
                 auto fptr = TFile::Open(iKey2Path.second.c_str(), "RECREATE");
+
+                // check whether file is open or zombie
+                if (not fptr or fptr->IsZombie()) {
+                    LogError << "Cannot open file " << iKey2Path.second << std::endl;
+                    return false;
+                }
+
                 gDirectory->cd(preDir);
                 m_absfile[iKey2Path.second] = fptr;
                 m_key2file[iKey2Path.first] = fptr;
