@@ -136,7 +136,8 @@ bool sp::EndAlgHandler::handle(Incident &incident)
 
 SniperProfiling::SniperProfiling(const std::string &name)
     : SvcBase(name),
-      m_fDetails(nullptr)
+      m_fDetails(nullptr),
+      m_finalized(false)
 {
     declProp("SaveDetails", m_saveDetails = false);
 }
@@ -205,6 +206,16 @@ bool SniperProfiling::initialize()
 
 bool SniperProfiling::finalize()
 {
+    // Guard against double-call: after toptask.run() completes, Python's
+    // Py_FinalizeEx destroys the boost.python TopTask wrapper, whose
+    // destructor re-enters Task::finalize() -> DleSupervisor::finalize()
+    // -> here. All handlers and timers are already deleted by the first
+    // call; dereferencing them again segfaults.
+    if (m_finalized) {
+        return true;
+    }
+    m_finalized = true;
+
     if ( m_fDetails ) {
         m_fDetails->close();
         delete m_fDetails;

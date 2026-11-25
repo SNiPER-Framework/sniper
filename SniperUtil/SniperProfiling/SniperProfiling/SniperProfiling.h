@@ -61,6 +61,7 @@ private:
     bool m_saveDetails;
     std::string m_fname;
     std::ofstream* m_fDetails;
+    bool m_finalized;  // guard against double-call from boost.python destructor
 };
 
 #endif
